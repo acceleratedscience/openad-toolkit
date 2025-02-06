@@ -328,84 +328,84 @@ NOTE_TOOLKITS = "<soft>To learn more about toolkits, run <cmd>toolkit ?</cmd>.</
 #     )
 
 # List toolkits
-statements.append(Forward(lister + toolkits("toolkits"))("list_toolkits"))
-grammar_help.append(
-    help_dict_create(
-        name="list toolkits",
-        category="Toolkits",
-        command="list toolkits",
-        description=f"List all installed toolkits.",
-        note=f"{NOTE_TOOLKITS_SEE_ALL}\n{NOTE_TOOLKITS}",
-    )
-)
+# statements.append(Forward(lister + toolkits("toolkits"))("list_toolkits"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="list toolkits",
+#        category="Toolkits",
+#        command="list toolkits",
+#        description=f"List all installed toolkits.",
+#        note=f"{NOTE_TOOLKITS_SEE_ALL}\n{NOTE_TOOLKITS}",
+#    )
+# )
 
 # List all toolkits
-statements.append(Forward(lister + CaselessKeyword("all") + toolkits("toolkits"))("list_all_toolkits"))
-grammar_help.append(
-    help_dict_create(
-        name="list all toolkits",
-        category="Toolkits",
-        command="list all toolkits",
-        description="List all available toolkits.",
-        note=NOTE_TOOLKITS,
-    )
-)
+# statements.append(Forward(lister + CaselessKeyword("all") + toolkits("toolkits"))("list_all_toolkits"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="list all toolkits",
+#        category="Toolkits",
+#        command="list all toolkits",
+#        description="List all available toolkits.",
+#        note=NOTE_TOOLKITS,
+#    )
+# )
 
 # Install toolkit
 # Note: Update toolkit yet to be implemented (currently de-register, then add toolkit with new source)
-statements.append(Forward(add + toolkit("workspace") + Word(alphas, alphanums + "_")("toolkit_name"))("add_toolkit"))
-grammar_help.append(
-    help_dict_create(
-        name="add toolkit",
-        category="Toolkits",
-        command="add toolkit <toolkit_name>",
-        description="Install a toolkit.",
-        note=f"{NOTE_TOOLKITS_SEE_ALL}\n{NOTE_TOOLKITS}",
-    )
-)
+# statements.append(Forward(add + toolkit("workspace") + Word(alphas, alphanums + "_")("toolkit_name"))("add_toolkit"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="add toolkit",
+#        category="Toolkits",
+#        command="add toolkit <toolkit_name>",
+#        description="Install a toolkit.",
+#        note=f"{NOTE_TOOLKITS_SEE_ALL}\n{NOTE_TOOLKITS}",
+#    )
+# )
 
 # Remove toolkit
-statements.append(Forward(remove + toolkit + Word(alphas, alphanums + "_")("toolkit_name"))("remove_toolkit"))
-grammar_help.append(
-    help_dict_create(
-        name="remove toolkit",
-        category="Toolkits",
-        command="remove toolkit <toolkit_name>",
-        description=(
-            "Remove a toolkit from the registry.\n\n"
-            "<b>Note:</b> This doesn't delete the toolkit code. If the toolkit is added again, a backup of the previous install is created in the toolkit directory at <cmd>~/.openad/toolkits</cmd>."
-        ),
-        note=NOTE_TOOLKITS,
-        # Correct description but we have to update the functionality first.
-        # description="Remove a toolkit from the registry. This affects all workspaces. A backup of the toolkit directory is stored in <yellow>~/.openad/toolkits_archive</yellow>."
-    )
-)
+# statements.append(Forward(remove + toolkit + Word(alphas, alphanums + "_")("toolkit_name"))("remove_toolkit"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="remove toolkit",
+#        category="Toolkits",
+#        command="remove toolkit <toolkit_name>",
+#        description=(
+#            "Remove a toolkit from the registry.\n\n"
+#            "<b>Note:</b> This doesn't delete the toolkit code. If the toolkit is added again, a backup of the previous install is created in the toolkit directory at <cmd>~/.openad/toolkits</cmd>."
+#        ),
+#        note=NOTE_TOOLKITS,
+#        # Correct description but we have to update the functionality first.
+# description="Remove a toolkit from the registry. This affects all workspaces. A backup of the toolkit directory is stored in <yellow>~/.openad/toolkits_archive</yellow>."
+#    )
+# )
 
 # Update toolkit
-statements.append(Forward(update + toolkit + Word(alphas, alphanums + "_")("toolkit_name"))("update_toolkit"))
-grammar_help.append(
-    help_dict_create(
-        name="update toolkit",
-        category="Toolkits",
-        command="update toolkit <toolkit_name>",
-        description=("Update a toolkit with the latest version. It is recommended to do this on a regular basis."),
-        note=NOTE_TOOLKITS,
-    )
-)
+# statements.append(Forward(update + toolkit + Word(alphas, alphanums + "_")("toolkit_name"))("update_toolkit"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="update toolkit",
+#        category="Toolkits",
+#        command="update toolkit <toolkit_name>",
+#        description=("Update a toolkit with the latest version. It is recommended to do this on a regular basis."),
+#        note=NOTE_TOOLKITS,
+#    )
+# )
 
 # Update all toolkits
-statements.append(Forward(update + CaselessKeyword("all") + toolkits("toolkits"))("update_all_toolkits"))
-grammar_help.append(
-    help_dict_create(
-        name="update all toolkits",
-        category="Toolkits",
-        command="update all toolkits",
-        description=(
-            "Update all installed toolkits with the latest version. Happens automatically whenever OpenAD is updated to a new version."
-        ),
-        note=NOTE_TOOLKITS,
-    )
-)
+# statements.append(Forward(update + CaselessKeyword("all") + toolkits("toolkits"))("update_all_toolkits"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="update all toolkits",
+#        category="Toolkits",
+#        command="update all toolkits",
+#        description=(
+#            "Update all installed toolkits with the latest version. Happens automatically whenever OpenAD is updated to a new version."
+#        ),
+#        note=NOTE_TOOLKITS,
+#    )
+# )
 
 # Set a toolkit as the current context
 statements.append(
@@ -427,27 +427,27 @@ grammar_help.append(
 )
 
 # Get the current context
-statements.append(Forward(get + context("context"))("get_context"))
-grammar_help.append(
-    help_dict_create(
-        name="get context",
-        category="Toolkits",
-        command="get context",
-        description="Display the currently selected toolkit.",
-    )
-)
+# statements.append(Forward(get + context("context"))("get_context"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="get context",
+#        category="Toolkits",
+#        command="get context",
+#        description="Display the currently selected toolkit.",
+#    )
+# )
 
 # Unset a toolkit as the current context
-statements.append(Forward(unset + context("context"))("unset_context"))
-grammar_help.append(
-    help_dict_create(
-        name="unset context",
-        category="Toolkits",
-        command="unset context",
-        description="Exit your toolkit context. You will no longer have access to toolkit-specific functions.",
-        note=NOTE_TOOLKITS,
-    )
-)
+# statements.append(Forward(unset + context("context"))("unset_context"))
+# grammar_help.append(
+#    help_dict_create(
+#        name="unset context",
+#        category="Toolkits",
+#        command="unset context",
+#        description="Exit your toolkit context. You will no longer have access to toolkit-specific functions.",
+#        note=NOTE_TOOLKITS,
+#    )
+# )
 
 # endregion
 

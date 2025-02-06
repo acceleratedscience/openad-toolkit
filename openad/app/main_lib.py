@@ -151,7 +151,20 @@ def lang_parse(cmd_pointer, parser):
     elif parser.getName() == "list_all_toolkits":
         return list_all_toolkits(cmd_pointer, parser)
     elif parser.getName() == "set_context":
-        return set_context(cmd_pointer, parser)
+        next_text = """
+        <yellow>OpenAD Toolkits have been discontinued and replaced by Plugins.</yellow>
+        
+        To add the respective toolkits as Plugins:
+            
+            - <green>RXN Plugin Install and Usage Instructions</green>
+                https://github.com/acceleratedscience/openad-plugin-rxn
+            
+            - <green>DeepSearch (DS4SD) Install and Usage Instructions</green>
+                https://github.com/acceleratedscience/openad-plugin-ds
+
+        """
+        return output_text(next_text)
+        # return set_context(cmd_pointer, parser)
     elif parser.getName() == "get_context":
         return get_context(cmd_pointer, parser)
     elif parser.getName() == "unset_context":
