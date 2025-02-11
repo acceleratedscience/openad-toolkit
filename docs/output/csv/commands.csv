@@ -7,17 +7,7 @@ get workspace [ <workspace_name> ];Workspaces
 create workspace <workspace_name> [ description('<description>') on path '<path>' ];Workspaces
 remove workspace <workspace_name> ;Workspaces
 list workspaces;Workspaces
-ds4sd;Toolkits
-rxn;Toolkits
-list toolkits;Toolkits
-list all toolkits;Toolkits
-add toolkit <toolkit_name>;Toolkits
-remove toolkit <toolkit_name>;Toolkits
-update toolkit <toolkit_name>;Toolkits
-update all toolkits;Toolkits
 set context <toolkit_name> [ reset ];Toolkits
-get context;Toolkits
-unset context;Toolkits
 create run;Runs
 remove run <run_name>;Runs
 save run as <run_name>;Runs
