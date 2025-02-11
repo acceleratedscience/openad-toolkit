@@ -151,7 +151,16 @@ def lang_parse(cmd_pointer, parser):
     elif parser.getName() == "list_all_toolkits":
         return list_all_toolkits(cmd_pointer, parser)
     elif parser.getName() == "set_context":
-        return set_context(cmd_pointer, parser)
+        next_text = """<red>Attention: OpenAD toolkits have been discontinued and replaced by plugins.</red>
+<yellow>To get started with the new plugins:</yellow>
+
+- <green>RXN</green>
+  https://github.com/acceleratedscience/openad-plugin-rxn
+
+- <green>Deep Search (aka DS4SD)</green>
+  https://github.com/acceleratedscience/openad-plugin-ds"""
+        return output_text(next_text, edge=True, pad=2)
+        # return set_context(cmd_pointer, parser)
     elif parser.getName() == "get_context":
         return get_context(cmd_pointer, parser)
     elif parser.getName() == "unset_context":
@@ -600,7 +609,8 @@ def get_context(cmd_pointer, parser):  # pylint: disable=unused-argument # gener
 def unset_context(cmd_pointer, parser):  # pylint: disable=unused-argument # generic pass through used or unused
     """Unsets current toolkit Context"""
     if cmd_pointer.settings["context"] is None:
-        return output_text(msg("no_context_set"), pad=1)
+        return
+        # return output_text(msg("no_context_set"), pad=1)
     cmd_pointer.settings["context"] = None
     cmd_pointer.toolkit_current = None
     cmd_pointer.current_help.reset_help()
