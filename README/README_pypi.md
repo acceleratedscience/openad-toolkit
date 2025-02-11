@@ -25,9 +25,6 @@ Open Accelerated Discovery (aka OpenAD) is an open-source framework for molecula
 
 The OpenAD client is accessible from our command line interface, via Jupyter Notebook or our API. It provides unified access to a variety of tools and AI models for literature knowledge extraction, forward and retrosynthesis prediction, generative methods and property inference. OpenAD lets you train models on your own data, to then visualize and filter your candidate molecules.
 
-
-
-
 **[INSTALLATION]**
 &nbsp;&nbsp;&nbsp;
 **[GETTING STARTED]**
@@ -46,7 +43,8 @@ The OpenAD client is accessible from our command line interface, via Jupyter Not
 
 </sub>
 
-# Release Notes
+<br><br>
+## Latest Release Notes
 OpenAD has remove the RXN and Deep Search toolkits and replaced them with new and more user Friendly plugins !
         
         To add the respective toolkits as Plugins:
@@ -56,8 +54,6 @@ OpenAD has remove the RXN and Deep Search toolkits and replaced them with new an
             
             - DeepSearch (DS4SD) Install and Usage Instructions
                 https://github.com/acceleratedscience/openad-plugin-ds
-
-<br><br>
 
 ### Useful links
 
@@ -75,6 +71,7 @@ OpenAD has remove the RXN and Deep Search toolkits and replaced them with new an
 <div align="center"><img src="https://raw.githubusercontent.com/acceleratedscience/open-ad-toolkit/main/assets/openad-ui.png" width="100%" alt="OpenAD interface" /></div>
 
 <br><br>
+
 
 ## Quick Install
 

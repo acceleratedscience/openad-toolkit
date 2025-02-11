@@ -136,81 +136,9 @@ Lists all your workspaces. <br>
 
 <details markdown="block" class="cmd-wrap">
 <summary markdown="block">
-`ds4sd`{: .cmd }
-</summary>
-Display the splash screen for the DS4SD toolkit. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`rxn`{: .cmd }
-</summary>
-Display the splash screen for the RXN toolkit. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`list toolkits`{: .cmd }
-</summary>
-List all installed toolkits. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`list all toolkits`{: .cmd }
-</summary>
-List all available toolkits. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`add toolkit <toolkit_name>`{: .cmd }
-</summary>
-Install a toolkit. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`remove toolkit <toolkit_name>`{: .cmd }
-</summary>
-Remove a toolkit from the registry. <br> 
-
-<b>Note:</b> This doesn't delete the toolkit code. If the toolkit is added again, a backup of the previous install is created in the toolkit directory at `~/.openad/toolkits`. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`update toolkit <toolkit_name>`{: .cmd }
-</summary>
-Update a toolkit with the latest version. It is recommended to do this on a regular basis. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`update all toolkits`{: .cmd }
-</summary>
-Update all installed toolkits with the latest version. Happens automatically whenever OpenAD is updated to a new version. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
 `set context <toolkit_name> [ reset ]`{: .cmd }
 </summary>
 Set your context to the chosen toolkit. By setting the context, the selected toolkit functions become available to you. The optional parameter `reset` can be used to reset your login information. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`get context`{: .cmd }
-</summary>
-Display the currently selected toolkit. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`unset context`{: .cmd }
-</summary>
-Exit your toolkit context. You will no longer have access to toolkit-specific functions. <br>
 </details>
 
 ### Runs

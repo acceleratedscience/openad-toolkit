@@ -148,92 +148,10 @@ This is the full list of available commands.
 ### Toolkits
 
 <details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>ds4sd</code></summary>
-<br>
-
-> Display the splash screen for the DS4SD toolkit. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>rxn</code></summary>
-<br>
-
-> Display the splash screen for the RXN toolkit. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>list toolkits</code></summary>
-<br>
-
-> List all installed toolkits. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>list all toolkits</code></summary>
-<br>
-
-> List all available toolkits. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>add toolkit <toolkit_name></code></summary>
-<br>
-
-> Install a toolkit. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>remove toolkit <toolkit_name></code></summary>
-<br>
-
-> Remove a toolkit from the registry. <br> 
-> 
-> <b>Note:</b> This doesn't delete the toolkit code. If the toolkit is added again, a backup of the previous install is created in the toolkit directory at `~/.openad/toolkits`. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>update toolkit <toolkit_name></code></summary>
-<br>
-
-> Update a toolkit with the latest version. It is recommended to do this on a regular basis. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>update all toolkits</code></summary>
-<br>
-
-> Update all installed toolkits with the latest version. Happens automatically whenever OpenAD is updated to a new version. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
 <summary markdown="block"><code>set context <toolkit_name> [ reset ]</code></summary>
 <br>
 
 > Set your context to the chosen toolkit. By setting the context, the selected toolkit functions become available to you. The optional parameter `reset` can be used to reset your login information. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>get context</code></summary>
-<br>
-
-> Display the currently selected toolkit. <br>
-
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block"><code>unset context</code></summary>
-<br>
-
-> Exit your toolkit context. You will no longer have access to toolkit-specific functions. <br>
 
 </details>
 
