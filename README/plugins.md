@@ -3,7 +3,7 @@
 # OpenAD Plugins
 
 <!-- about_plugin -->
-Plugins are how various molecular applications are made available to the OpenAD client. The plugins give you simplified access to advanced tools, and they make it easy for your own Python applications to interface with OpenAD.
+Plugins are how molecular tools and AI models are made available to the OpenAD client. They provide drastically simplified access to a series of advanced tools, and they make it easy for your own Python applications to interface with OpenAD.
 
 Creating your own plugins is easy if you have a basic understanding of Python.
 <!-- /about_plugin -->
