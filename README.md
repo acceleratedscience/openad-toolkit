@@ -97,11 +97,14 @@ The OpenAD client is accessible from our command line interface, via Jupyter Not
 <!-- /navigation -->
 
 <br><br>
-## Latest Release Notes
 
-We have retired the RXN and Deep Search toolkits and replaced them with new and more user-friendly plugins.
+## Release Notes
 
-More information on the [plugin](#README/plugins.md) page.
+`0.7.5`
+- We have retired the RXN and Deep Search toolkits and replaced them with new and more user-friendly plugins.<br>
+  More information on the [plugin](#README/plugins.md) page.
+
+<br><br>
 
 ### Useful links
 
