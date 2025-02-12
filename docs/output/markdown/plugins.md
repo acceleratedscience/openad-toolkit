@@ -39,8 +39,7 @@ Currently there are two publicly available plugins available.
 
         pip install git+https://github.com/acceleratedscience/openad-plugin-ds
 
-   <br><br>
-1. **RXN**<br>
+2. **RXN**<br>
     RXN helps you predict chemical reactions, retrosynthesis pathways and experimental procedures.<br>
     More information about this plugin can be found in the [openad-plugin-rxn](https://github.com/acceleratedscience/openad-plugin-rxn) repo.
 
