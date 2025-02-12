@@ -48,8 +48,7 @@ The OpenAD client is accessible from our command line interface, via Jupyter Not
 ## Release Notes
 
 `0.7.5`
-- We have retired the RXN and Deep Search toolkits and replaced them with new and more user-friendly plugins.<br>
-  More information on the [plugin](https://acceleratedscience.github.io/openad-docs/#README/plugins.html) page.
+- We have retired the RXN and Deep Search toolkits and replaced them with new and more user-friendly [plugins](https://acceleratedscience.github.io/openad-docs/plugins.html).
 
 <br><br>
 
