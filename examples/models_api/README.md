@@ -3,7 +3,7 @@
 ## What does OpenAD model service do?
 
 OpenAD model inference API enables you to run model inference as a service
-(MIaaS). Public models are available to anyone by connecting to OpenAD model
+(IaaS). Public models are available to anyone by connecting to OpenAD model
 service with an api key. Private models can also be hosted by the service so you
 can run inference without installing Python packages locally, downloading model
 checkpoints, and other technical details.
@@ -29,8 +29,9 @@ generate an access token. First you need an IBMid.
 https://open.accelerate.science/  
 
     The first time you login it will say, _Your account is pending to be added to a
-    group._
-    <img src="/assets/proxy/openad-portal.png" width="200" title="/assets/proxy/openad-portal.png" alt="OpenAD Portal"/>
+    group._  
+    
+    <img src="/assets/proxy/openad-portal.png" width="400" title="/assets/proxy/openad-portal.png" alt="OpenAD Portal"/>
 
 3. Logout and email your group admin (if you have one),
 or email us at  
