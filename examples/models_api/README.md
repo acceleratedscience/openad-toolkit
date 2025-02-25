@@ -1,33 +1,60 @@
 # Beginners Guide to using OpenAD model inference API
 
+## What does OpenAD model service do?
 
-## What does this service do?
-
-OpenAD model inference API enables you to run model inference as a service (MIaaS). Public models are available to anyone by connecting to OpenAD model service with an api key. Private models can also be hosted by the service so you can run inference without installing Python packages locally, downloading model checkpoints, and other technical details.
+OpenAD model inference API enables you to run model inference as a service
+(MIaaS). Public models are available to anyone by connecting to OpenAD model
+service with an api key. Private models can also be hosted by the service so you
+can run inference without installing Python packages locally, downloading model
+checkpoints, and other technical details.
 
 In short, OpenAD model service gives you these benefits:
+
 - Eliminate the need to run inference locally.
 - Easily deploy ML models as a service.
 - Integrate an ML model so you can use it directly in the OpenAD Toolkit CLI and notebooks.
 - Don't worry about infrastructure; just focus on making and using models.
 
-# Getting Started
+## Getting Started with OpenAD model service
+
+To run inference with OpenAD model service, you need to create an account and
+generate an access token. First you need an IBMid.
 
 ### 1. Create Account
-To run infere an Account using IBMidt need to create an account [here](https://open.accelerate.science/)
 
-OpenAD,nce on OpenAD model service, you first need to create an account... Fo
-For that you need an IBMid.
+1. To create an IBMid, all you need is an email address. Instructions are
+[here](https://www.ibm.com/docs/en/ibmid?topic=introduction).  
 
+2. To create an OpenAD account, login with your IBMid at
+https://open.accelerate.science/  
 
-1. 
-enlink for laterodel invferencf crea.. F
-If you have any issues or inquiries please reach out to us via [phil.downey1@ibm.com](mailto:phil.downey1@ibm.com)
+    The first time you login it will say, _Your account is pending to be added to a
+    group._
+    <img src="/assets/proxy/openad-portal.png" width="200" title="/assets/proxy/openad-portal.png" alt="OpenAD Portal"/>
 
-questionsemailatt openad.toolkit@ibm.com openad.toolkit@ibm.com### 2. Generate access token
-Upon account creation you will have access to the default publicly available groups. Now you need to get your access token to use the service. Once generated copy and proceed.
+3. Logout and email your group admin (if you have one),
+or email us at  
+[openad.toolkit@ibm.com](mailto:openad.toolkit@ibm.com). A system administrator
+will add you to a group.
 
-![alt text](/assets/proxy/access_token.png)
+4. After you receive confirmation, login again. It should display your _group_
+and your _role_ in that group, group admin or user. Congratulations! This is
+confirmation you have an account on OpenAD, and you are logged in to OpenAD
+portal.
+
+_[Email us](mailto:openad.toolkit@ibm.com) again if you have any problems or
+concerns about your account or access to the portal._
+
+### 2. Generate access token
+
+Once you are logged in to OpenAD portal, select the **Access Token** tab.
+
+If it says, _You do not have a token yet,_ click **Generate Token**.
+The token is a long sequence of random-seeming letters and numbers.
+
+To copy the token, click anywhere on it. Then paste it wherever you need to
+enter the token. _Guard this token like you would guard your username/password.
+It grants the same access to the system._
 
 ### 3. Connect the Inference Model to OpenAD Toolkit
 
