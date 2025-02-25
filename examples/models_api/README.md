@@ -1,69 +1,90 @@
 # Beginners Guide to using OpenAD model inference API
 
-⚠️**Current Available Public Models. Under Construction** ⚠️
-
-| Molformer                 | Moler         | Properties| Generation|
-| --------                  | --------      | --------  | --------  |
-| regression                |               |           |           |
-| multitask classification  |               |           |           |
-| classifciation            |               |           |           |
-
 
 ## What does this service do?
 
-This service offered by Accelerated Discovery at IBM enables researchers to run model inference as a service (MIaaS). Public models are available to use by all by connecting to our service with an api key. Private models can also be hosted by our service to enable users to run inference without setting up machine learning models locally.
+OpenAD model inference API enables you to run model inference as a service (MIaaS). Public models are available to anyone by connecting to OpenAD model service with an api key. Private models can also be hosted by the service so you can run inference without installing Python packages locally, downloading model checkpoints, and other technical details.
 
-Our service helps users:
-- Eliminate the need to run inference locally
-- Easy deployment of ML models as a service
-- Integrate an ML model to be usable directly in the Openad Toolkit CLI and notebooks
-- Not worry about infrastructure just focus on making ML models
+In short, OpenAD model service gives you these benefits:
+- Eliminate the need to run inference locally.
+- Easily deploy ML models as a service.
+- Integrate an ML model so you can use it directly in the OpenAD Toolkit CLI and notebooks.
+- Don't worry about infrastructure; just focus on making and using models.
+
+# Getting Started
+
+### 1. Create Account
+To run infere an Account using IBMidt need to create an account [here](https://open.accelerate.science/)
+
+OpenAD,nce on OpenAD model service, you first need to create an account... Fo
+For that you need an IBMid.
 
 
-## Getting Started
-
-### Create Account
-To run inference with our models via the api you first need to create an account [[here](https://open.accelerator.cafe/)](https://open.accelerator.cafe/)
-
+1. 
+enlink for laterodel invferencf crea.. F
 If you have any issues or inquiries please reach out to us via [phil.downey1@ibm.com](mailto:phil.downey1@ibm.com)
 
-### Generate token
+questionsemailatt openad.toolkit@ibm.com openad.toolkit@ibm.com### 2. Generate access token
 Upon account creation you will have access to the default publicly available groups. Now you need to get your access token to use the service. Once generated copy and proceed.
 
 ![alt text](/assets/proxy/access_token.png)
 
-### Connect openad to api
+### 3. Connect the Inference Model to OpenAD Toolkit
 
-Start up openad toolkit cli. Example connecting to the `molformer` model:
+#### Example connecting to the `molformer` model:
+
+Install OpenAD Toolkit
 ```shell
-OpenAD:DEFAULT >> catalog model service from remote 'https://open.accelerator.cafe/proxy' as 'molformer' USING (Inference-Service=molformer)
+pip install openad
 ```
 
-Lets break this command down
-- `catalog model service from remote` *command in openad that processes the connection*
-- `https://open.accelerator.cafe/proxy` *URL endpoint for inference*
-- `'molformer'` *name you want to give this service (could be anything you want)*
-- `USING (Inference-Service=molformer)` *select the model you want to interface with (check your dashboard for available models)*
-
-Create an authentication group for your api and pass the access token to the service to authenticate yourself. Replace `<api_key>` with your token from the dashboard.
+Start up OpenAD Toolkit.
 ```shell
-OpenAD:DEFAULT >> model auth add group admin with  '<access_token>'
-
-OpenAD:DEFAULT >> model auth add service molformer to group admin
+openad
 ```
+
+Add your token as a resuable authentication group.
+```shell
+>> model auth add group default with '<access_token>'
+```
+
+Add the inference model using your authentication group.
+```shell
+>> catalog model service from remote 'https://open.accelerate.science' as 'molformer' USING (auth_group=default Inference-Service=molformer)
+```
+
+### Lets break this command down
+> for a more detailed information run the command `catalog ?`
+
+#### `catalog model service from remote`
+Connect to model from url
+
+#### `'https://open.accelerate.science'`
+Endpoint for model inference
+
+#### `'molformer'`
+Any name you want to give this service
+
+#### `USING (auth_group=default ...)` 
+The authentication group name for api access
+
+#### `USING (... Inference-Service=molformer)` 
+The model subscription name (check your dashboard for available models)
+
+### Check Model Connection
 
 The service should show as Connected
 ```shell
-OpenAD:DEFAULT >>  model service status
+>>  model service status
 
-Service    Status     Endpoint                             Host    Token Expires
----------  ---------  -----------------------------------  ------  --------------------------
-molformer  Connected  https://open.accelerator.cafe/proxy  remote  Wed Sep  11, 2030
+Service    Status     Endpoint                          Host    Token Expires
+---------  ---------  --------------------------------  ------  ----------------
+molformer  Connected  https://open.accelerate.science   remote  Wed Sep  11, 2030
 ```
 
-Take a peak at the whats available in the model
+Get more information about this model.
 ```shell
-OpenAD:DEFAULT >>  molformer ?
+>>  molformer ?
 
 Commands starting with "molformer"
 - molformer get molecule property molformer_classification for [<list of SMILES>] | <SMILES>   USING (<parameter>=<value> <parameter>=<value>) (save_as '<filename.csv>')
@@ -71,11 +92,11 @@ Commands starting with "molformer"
 - molformer get molecule property molformer_regression for [<list of SMILES>] | <SMILES>   USING (<parameter>=<value> <parameter>=<value>) (save_as '<filename.csv>')
 ```
 
-### Inference in CLI
+### Run Inference on Model
 
 Run the following command to get a classification result
 ```shell
-OpenAD:DEFAULT >>  molformer get molecule property molformer_classification for 'OC12COC3=NCC1C23'
+>>  molformer get molecule property molformer_classification for 'OC12COC3=NCC1C23'
 ✔ Request Returned
 
 subject           property                  result
