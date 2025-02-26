@@ -10,10 +10,10 @@ The OpenAD model inference API provides **inference as a service (IaaS)**, allow
 
 ### Key Benefits
 
-- ✅ Run inference in the cloud instead of locally
-- ✅ Deploy ML models as services with minimal setup
-- ✅ Seamless integration with OpenAD Toolkit CLI and notebooks
-- ✅ Focus on using models, not managing infrastructure
+- ✅ Run inference in the cloud instead of locally  
+- ✅ Deploy ML models as services with minimal setup  
+- ✅ Seamless integration with OpenAD Toolkit CLI and notebooks  
+- ✅ Focus on using models, not managing infrastructure  
 
 ## Getting Started: Step-by-Step Guide
 
@@ -24,10 +24,10 @@ The OpenAD model inference API provides **inference as a service (IaaS)**, allow
    - You only need an email address to register
 
 2. **Create an OpenAD Account**
-   - Go to https://open.accelerate.science/
+   - Go to [https://open.accelerate.science/](https://open.accelerate.science/)
    - Log in with your IBMid
    - You'll see: _"Your account is pending to be added to a group"_
-   
+
    ![OpenAD Portal](</assets/proxy/openad-portal.png> "OpenAD Portal")
 
 3. **Request Group Assignment**
@@ -97,7 +97,8 @@ openad
 ```
 
 Expected output:
-```
+
+```text
 Service    Status     Endpoint                               Host    Token Expires
 ---------  ---------  -------------------------------------  ------  -----------------
 molformer  Connected  https://open.accelerate.science/proxy  remote  Wed Sep 11, 2030
@@ -110,7 +111,8 @@ molformer  Connected  https://open.accelerate.science/proxy  remote  Wed Sep 11,
 ```
 
 You'll see available commands for the model:
-```
+
+```text
 Commands starting with "molformer"
 - molformer get molecule property molformer_classification for [<list of SMILES>] | <SMILES> USING (<parameter>=<value> <parameter>=<value>) (save_as '<filename.csv>')
 - molformer get molecule property molformer_multitask_classification for [<list of SMILES>] | <SMILES> USING (<parameter>=<value> <parameter>=<value>) (save_as '<filename.csv>')
@@ -124,7 +126,8 @@ Commands starting with "molformer"
 ```
 
 Expected output:
-```
+
+```text
 ✔ Request Returned
 
 subject           property                  result
