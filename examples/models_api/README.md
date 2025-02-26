@@ -8,46 +8,46 @@ The OpenAD model inference API provides **inference as a service (IaaS)**, allow
 - **Private models**: Host your own models on the service
 - **Simplified workflow**: No need for local Python packages or model checkpoint downloads
 
-### Key Benefits
+### Key Benefits  
 
-- ✅ Run inference in the cloud instead of locally  
-- ✅ Deploy ML models as services with minimal setup  
-- ✅ Seamless integration with OpenAD Toolkit CLI and notebooks  
-- ✅ Focus on using models, not managing infrastructure  
+   ✅ Run inference in the cloud instead of locally  
+   ✅ Deploy ML models as services with minimal setup  
+   ✅ Seamless integration with OpenAD Toolkit CLI and notebooks  
+   ✅ Focus on using models, not managing infrastructure  
 
 ## Getting Started: Step-by-Step Guide
 
 ### Step 1: Create an Account
 
-1. **Create an IBMid** (if you don't already have one)
-   - Visit [IBM's registration page](https://www.ibm.com/docs/en/ibmid?topic=introduction)
-   - You only need an email address to register
+1. **Create an IBMid** (if you don't already have one)  
+   Visit [IBM's registration page](https://www.ibm.com/docs/en/ibmid?topic=introduction).  
+   You only need an email address to register.  
 
-2. **Create an OpenAD Account**
-   - Go to [https://open.accelerate.science/](https://open.accelerate.science/)
-   - Log in with your IBMid
-   - You'll see: _"Your account is pending to be added to a group"_
+2. **Create an OpenAD Account**  
+   Go to [https://open.accelerate.science/](https://open.accelerate.science/).  
+   Log in with your IBMid.  
+   You'll see, _"Your account is pending to be added to a group"_.  
 
-   ![OpenAD Portal](</assets/proxy/openad-portal.png> "OpenAD Portal")
+   <img src="/assets/proxy/openad-portal.png" width="600" title="/assets/proxy/openad-portal.png" alt="OpenAD Portal"/>
 
-3. **Request Group Assignment**
-   - Log out and contact your group administrator
-   - If you don't have a group admin, email [openad.toolkit@ibm.com](mailto:openad.toolkit@ibm.com)
-   - A system administrator will add you to an appropriate group
+3. **Request Group Assignment**  
+   Log out and contact your group administrator.  
+   If you don't have a group admin, email [openad.toolkit@ibm.com](mailto:openad.toolkit@ibm.com).  
+   A system administrator will add you to an appropriate group.  
 
-4. **Verify Account Setup**
-   - Log in again after receiving confirmation
-   - Verify your _group_ and _role_ are displayed
-   - This confirms you have an active OpenAD account
+4. **Verify Account Setup**  
+   Log in again after receiving confirmation.  
+   Verify your _group_ and _role_ are displayed.  
+   This confirms you have an active OpenAD account.  
 
 > **Need Help?** Contact [openad.toolkit@ibm.com](mailto:openad.toolkit@ibm.com) for account or access issues.
 
 ### Step 2: Generate an Access Token
 
-1. Log in to the OpenAD portal
-2. Navigate to the **Access Token** tab
-3. If you see _"You do not have a token yet"_, click **Generate Token**
-4. Click anywhere on the token to copy it
+1. Log in to the OpenAD portal.
+2. Navigate to the **Access Token** tab.
+3. If you see _"You do not have a token yet"_, click **Generate Token**.
+4. Click anywhere on the token to copy it.
 
 > **Security Warning**: Treat this token like a password. It grants full access to the system under your credentials.
 
