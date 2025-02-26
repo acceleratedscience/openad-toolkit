@@ -4,16 +4,16 @@
 
 The OpenAD model inference API provides **inference as a service (IaaS)**, allowing you to run machine learning models without the technical overhead. It offers:
 
-- **Public models**: Available to anyone with an API key
-- **Private models**: Host your own models on the service
+- **Public models**: Available to anyone with an API key.
+- **Private models**: Host your own models on the service.
 - **Simplified workflow**: No need for local Python packages or model checkpoint downloads
 
 ### Key Benefits  
 
-   ✅ Run inference in the cloud instead of locally  
-   ✅ Deploy ML models as services with minimal setup  
-   ✅ Seamless integration with OpenAD Toolkit CLI and notebooks  
-   ✅ Focus on using models, not managing infrastructure  
+   ✅ Run inference in the cloud instead of locally.  
+   ✅ Deploy ML models as services with minimal setup.  
+   ✅ Seamless integration with OpenAD Toolkit CLI and notebooks.  
+   ✅ Focus on using models, not managing infrastructure.  
 
 ## Getting Started: Step-by-Step Guide
 
