@@ -30,10 +30,10 @@ https://open.accelerate.science/
 
     The first time you login it will say, _Your account is pending to be added to a
     group._  
-    
+
     <img src="/assets/proxy/openad-portal.png" width="600" title="/assets/proxy/openad-portal.png" alt="OpenAD Portal"/>
 
-3. Logout and email your group admin (if you have one),
+3. To be added to a group, logout and email your group admin (if you have one),
 or email us at  
 [openad.toolkit@ibm.com](mailto:openad.toolkit@ibm.com). A system administrator
 will add you to a group.
@@ -59,7 +59,7 @@ It grants the same access to the system._
 
 ### 3. Connect The Model
 
-*IMPORATANT: Default inference url to our gateway is `https://open.accelerate.science/proxy`*
+*IMPORTANT: Default inference url to our gateway is `https://open.accelerate.science/proxy`*
 
 #### Example connecting to the `molformer` model:
 
