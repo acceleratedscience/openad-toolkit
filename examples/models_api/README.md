@@ -138,17 +138,17 @@ OC12COC3=NCC1C23  molformer_classification  [1]
 
 ## Troubleshooting
 
-- **Connection Issues**: Verify your token has not expired and the inference URL is correct
-- **Authentication Errors**: Regenerate your token if necessary
-- **Model Not Available**: Check your dashboard for available model subscriptions
-- **Command Syntax Errors**: Use the `?` command to verify proper syntax
+- **Connection Issues**: Verify your token has not expired and the inference URL is correct.
+- **Authentication Errors**: Regenerate your token if necessary.
+- **Model Not Available**: Check your dashboard for available model subscriptions.
+- **Command Syntax Errors**: Use the `?` command to verify proper syntax.
 
 ## Best Practices
 
-- Store important results using the `save_as` parameter in commands
-- Use descriptive service names when connecting to models
-- Organize multiple models and authentication groups logically
-- Back up your access token securely
+- Store important results using the `save_as` parameter in commands.
+- Use descriptive service names when connecting to models.
+- Organize multiple models and authentication groups logically.
+- Back up your access token securely.
 
 ---
 
