@@ -10,10 +10,10 @@ The OpenAD model inference API provides **inference as a service (IaaS)**, allow
 
 ### Key Benefits  
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Run inference in the cloud instead of locally.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Deploy ML models as services with minimal setup.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Seamless integration with OpenAD Toolkit CLI and notebooks.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Focus on using models, not managing infrastructure. 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Run inference in the cloud instead of locally.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Deploy ML models as services with minimal setup.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Seamless integration with OpenAD Toolkit CLI and notebooks.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ Focus on using models, not managing infrastructure. 
 
 ## Getting Started: Step-by-Step Guide
 
