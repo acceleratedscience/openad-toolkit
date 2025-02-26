@@ -2,7 +2,7 @@
 
 ## What is OpenAD Model Service?
 
-The OpenAD model inference API provides **inference as a service (IaaS)**, allowing you to run machine learning models without the technical overhead. It offers:
+The OpenAD model inference API provides **infrastructure as a service (IaaS)**, allowing you to run machine learning models without the technical overhead. It offers:
 
 - **Public models**: Available to anyone with an API key.
 - **Private models**: Host your own models on the service.
