@@ -1,6 +1,6 @@
 # Beginners Guide to using OpenAD model inference API
 
-## What does OpenAD model service do?
+## What Does OpenAD Model Service Do?
 
 OpenAD model inference API enables you to run model inference as a service
 (IaaS). Public models are available to anyone by connecting to OpenAD model
@@ -15,7 +15,7 @@ In short, OpenAD model service gives you these benefits:
 - Integrate an ML model so you can use it directly in the OpenAD Toolkit CLI and notebooks.
 - Don't worry about infrastructure; just focus on making and using models.
 
-## Getting Started with OpenAD model service
+## Getting Started With OpenAD Model Service
 
 To run inference with OpenAD model service, you need to create an account and
 generate an access token. First you need an IBMid.
@@ -46,7 +46,7 @@ portal.
 _[Email us](mailto:openad.toolkit@ibm.com) again if you have any problems or
 concerns about your account or access to the portal._
 
-### 2. Generate access token
+### 2. Generate Access Token
 
 Once you are logged in to OpenAD portal, select the **Access Token** tab.
 
@@ -57,17 +57,16 @@ To copy the token, click anywhere on it. Then paste it wherever you need to
 enter the token. _Guard this token like you would guard your username/password.
 It grants the same access to the system._
 
-### 3. Connect the Inference Model to OpenAD Toolkit
+### 3. Connect The Model
+
+*IMPORATANT: Default inference url to our gateway is `https://open.accelerate.science/proxy`*
 
 #### Example connecting to the `molformer` model:
 
-Install OpenAD Toolkit
+Install OpenAD Toolkit, if not already installed, then run it.
 ```shell
 pip install openad
-```
 
-Start up OpenAD Toolkit.
-```shell
 openad
 ```
 
@@ -78,7 +77,7 @@ Add your token as a resuable authentication group.
 
 Add the inference model using your authentication group.
 ```shell
->> catalog model service from remote 'https://open.accelerate.science' as 'molformer' USING (auth_group=default Inference-Service=molformer)
+>> catalog model service from remote 'https://open.accelerate.science/proxy' as 'molformer' USING (auth_group=default Inference-Service=molformer)
 ```
 
 ### Lets break this command down
@@ -87,7 +86,7 @@ Add the inference model using your authentication group.
 #### `catalog model service from remote`
 Connect to model from url
 
-#### `'https://open.accelerate.science'`
+#### `'https://open.accelerate.science/proxy'`
 Endpoint for model inference
 
 #### `'molformer'`
@@ -105,9 +104,9 @@ The service should show as Connected
 ```shell
 >>  model service status
 
-Service    Status     Endpoint                          Host    Token Expires
----------  ---------  --------------------------------  ------  ----------------
-molformer  Connected  https://open.accelerate.science   remote  Wed Sep  11, 2030
+Service    Status     Endpoint                               Host    Token Expires
+---------  ---------  -------------------------------------  ------  -----------------
+molformer  Connected  https://open.accelerate.science/proxy  remote  Wed Sep  11, 2030
 ```
 
 Get more information about this model.
@@ -120,7 +119,7 @@ Commands starting with "molformer"
 - molformer get molecule property molformer_regression for [<list of SMILES>] | <SMILES>   USING (<parameter>=<value> <parameter>=<value>) (save_as '<filename.csv>')
 ```
 
-### Run Inference on Model
+### 4. Run Inference
 
 Run the following command to get a classification result
 ```shell
