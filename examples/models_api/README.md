@@ -6,7 +6,7 @@ The OpenAD model inference API provides **inference as a service (IaaS)**, allow
 
 - **Public models**: Available to anyone with an API key.
 - **Private models**: Host your own models on the service.
-- **Simplified workflow**: No need for local Python packages or model checkpoint downloads
+- **Simplified workflow**: No need for local Python packages or model checkpoint downloads.
 
 ### Key Benefits  
 
