@@ -47,7 +47,8 @@ The OpenAD model inference API provides **inference as a service (IaaS)**, allow
 1. Log in to the OpenAD portal.
 2. Navigate to the **Access Token** tab.
 3. If you see _"You do not have a token yet"_, click **Generate Token**.
-4. Click anywhere on the token to copy it.
+4. Click anywhere on the token to copy it.  
+  _Use it to replace `YOUR_ACCESS_TOKEN` in **Configure Authentication**._
 
 > **Security Warning**: Treat this token like a password. It grants full access to the system under your credentials.
 
@@ -68,7 +69,7 @@ openad
 #### Configure Authentication
 
 ```shell
-# Add your token as a reusable authentication group
+# Replace YOUR_ACCESS_TOKEN with your actual access token
 >> model auth add group default with 'YOUR_ACCESS_TOKEN'
 ```
 
