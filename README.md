@@ -16,17 +16,17 @@ OpenAD is an intuitive toolkit that simplifies access to a variety of AI models 
 OpenAD is designed to integrate into your existing workflows via Jupyter Notebook, CLI or API, using a low-code approach to accelerate your research.
 <!-- /description -->
 
-[![image](assets/home.svg)](http://openad.accelerate.science)
-[![image](assets/docs.svg)](http://openad.accelerate.science/documentation/getting-started)
-[![image](assets/tutorials.svg)](http://openad.accelerate.science/blog/category/tutorials)
-<!-- [![image](assets/install.svg)](http://openad.accelerate.science/documentation/installation) -->
+[![image](assets/home.svg)](https://openad.accelerate.science)
+[![image](assets/docs.svg)](https://openad.accelerate.science/documentation/getting-started)
+[![image](assets/tutorials.svg)](https://openad.accelerate.science/blog/category/tutorials)
+<!-- [![image](assets/install.svg)](https://openad.accelerate.science/documentation/installation) -->
 <br><br>
 
 
 ## Quick Install
 
 > [!TIP]
-> To install OpenAD inside a virtual environment, please consult the [Installation](http://openad.accelerate.science/documentation/installation) guide.
+> To install OpenAD inside a virtual environment, please consult the [Installation](https://openad.accelerate.science/documentation/installation) guide.
 
     pip install openad
     openad

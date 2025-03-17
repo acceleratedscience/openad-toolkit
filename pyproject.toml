@@ -2,18 +2,18 @@
 name = "openad"
 version = "0.7.5"
 
-description = "Open Accelerated Discovery Client"
+description = "Open Accelerated Discovery"
 authors = ["Phil Downey <phil.downey1@ibm.com>"]
-readme = "README/README_pypi.md"
+readme = "README.md"
 license = "MIT"
 homepage = "https://www.accelerate.science/"
 documentation = "https://acceleratedscience.github.io/openad-docs/"
 repository = "https://github.com/acceleratedscience/open-ad-toolkit"
 
-keywords= ["deepsearch", "rxn","jupyter","magic commands","accelerated Discovery","science","retrosynthesis"]
+keywords= ["deepsearch","rxn","jupyter","magic commands","accelerated Discovery","science","retrosynthesis"]
 classifiers = [
     "Operating System :: OS Independent",
-   'Development Status :: 4 - Beta',
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Typing :: Typed",
