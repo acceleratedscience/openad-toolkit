@@ -40,6 +40,15 @@ Dispatcher = ModelService(location=DISPATCHER_SERVICE_PATH, update_status=True, 
 # with Dispatcher() as service:
 #     print(service.list())
 
+# Repeated clauses
+CLAUSE_QUOTES_SERVICE = (
+    "Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character."
+)
+CLAUSE_QUOTES_AUTHGROUP = (
+    "Single quotes are optional in case <cmd>auth_group</cmd> contains a space or special character."
+)
+CLAUSE_QUOTES_SERVICE_AUTHGROUP = "Single quotes are optional for both <cmd><service_name></cmd> and <cmd><auth_group></cmd> in case they contain a space or special character."
+
 
 def get_namespaces():
     list_of_namespaces = [
@@ -693,7 +702,7 @@ def service_catalog_grammar(statements: list, help: list):
             name="model auth list",
             category="Model",
             command="model auth list",
-            description="show authentication group mapping",
+            description="List authentication groups that have been added.",
         )
     )
 
@@ -706,8 +715,23 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model auth add group",
             category="Model",
-            command="model auth add group '<auth_group>'|<auth_group> with '<api_key>'",
-            description="add an authentication group for model services to use",
+            command="model auth add group <auth_group> with '<auth_token>'",
+            description="""Add an authentication group for model services to use.
+
+Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
+
+Authorization is required to connect to IBM-hosted models (IBM partners only). Using an auth group allows you to authorize multiple models at once, and is the recommended authorization method.
+
+Example:
+1. Copy your authentication token from <link>http://open.accelerate.science</link> (or your custom URL if your company us running its own instance).
+2. Create an auth group, e.g. 'default':
+   <cmd>model auth add group default with '<auth_token>'</cmd>
+3. Catalog your services with the auth_group provided:
+   <cmd>model service catalog from remote 'https://open.accelerate.science/proxy' as gen using (inference-service=generation auth_group=default)</cmd>
+
+You can also add a cataloged model to a group after you've created it:
+<cmd>model auth add service gen to group default</cmd>
+""",
         )
     )
 
@@ -716,8 +740,15 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model auth remove group",
             category="Model",
-            command="model auth remove group '<auth_group>' | <auth_group>",
-            description="remove an authentication group",
+            command="model auth remove group <auth_group>",
+            description=f"""Remove an authentication group.
+
+{CLAUSE_QUOTES_AUTHGROUP}
+
+Examples:
+<cmd>model auth remove group default</cmd>
+<cmd>model auth remove group 'my group'</cmd>
+""",
         )
     )
 
@@ -730,8 +761,15 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model auth add service",
             category="Model",
-            command="model auth add service '<service_name>'|,service_name> to group '<auth_group>'|<auth_group>",
-            description="Attach an authentication group to a model service",
+            command="model auth add service <service_name> to group <auth_group>",
+            description=f"""Ad a model service to an authentication group.
+
+{CLAUSE_QUOTES_SERVICE_AUTHGROUP}
+
+Examples:
+- <cmd>model auth add service molf to group default<cmd>
+- <cmd>model auth add service 'my molf' to group 'my group'<cmd>
+""",
         )
     )
 
@@ -743,7 +781,13 @@ def service_catalog_grammar(statements: list, help: list):
             name="model auth remove service",
             category="Model",
             command="model auth remove service '<service_name>'|<service_name>",
-            description="Detatch an authentication group from a model service",
+            description=f"""Detach a model service from an authentication group.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>model auth remove service molf</cmd>
+- <cmd>model auth remove service 'my molf'</cmd>""",
         )
     )
 
@@ -753,7 +797,7 @@ def service_catalog_grammar(statements: list, help: list):
             name="model service status",
             category="Model",
             command="model service status",
-            description="Get the status of currently cataloged services",
+            description="Get the status of your currently cataloged services.",
         )
     )
 
@@ -762,8 +806,15 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model service describe",
             category="Model",
-            command="model service describe '<service_name>'|<service_name>",
-            description="get the configuration of a service",
+            command="model service describe <service_name>",
+            description=f"""Get the configuration of a service.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>model service describe gen</cmd>
+- <cmd>model service describe 'my gen'</cmd>
+""",
         )
     )
 
@@ -773,7 +824,7 @@ def service_catalog_grammar(statements: list, help: list):
             name="model catalog list",
             category="Model",
             command="model catalog list",
-            description="get the list of currently cataloged services",
+            description="List your currently cataloged services.",
         )
     )
 
@@ -782,8 +833,15 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="uncatalog model service",
             category="Model",
-            command="uncatalog model service '<service_name>'|<service_name>",
-            description="uncatalog a model service \n\n Example: \n<cmd>uncatalog model service 'gen'</cmd>",
+            command="uncatalog model service <service_name>",
+            description=f"""Uncatalog a model service.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>uncatalog model service 'gen'</cmd>
+- <cmd>uncatalog model service 'my gen'</cmd>
+""",
         )
     )
 
@@ -802,44 +860,59 @@ def service_catalog_grammar(statements: list, help: list):
     )
     help.append(
         help_dict_create(
-            name="catalog Model service",
+            name="catalog model service",
             category="Model",
-            command="catalog model service from (remote) '<path> or <github> or <service_url>' as  '<service_name>'|<service_name>   USING (<parameter>=<value> <parameter>=<value>)",
-            description="""catalog a model service from a path or github or remotely from an existing OpenAD service.
-(USING) optional headers parameters for communication with service backend.
-If you are cataloging a service using a model defined in a directory, provide the absolute <cmd> <path> </cmd> of that directory in quotes.
+            command="model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)",
+            description="""Catalog a model service from a local path, from GitHub or from an hosted service URL.
 
-The following options require the <cmd>remote</cmd> option be declared.
+            
+<h1>Parameters</h1>
 
-If you are cataloging a service using a model defined in github repository, provide the absolute <cmd> <github> </cmd> of that github directory quotes.
+<cmd><path>|<github>|<service_url></cmd>
+    The location of the model service, to be provided in single quotes.
+    This can be a local path, a GitHub SSH URI, or a URL for an existing remote service:
+    <soft>...</soft><cmd>from '/path/to/service'</cmd>
+    <soft>...</soft><cmd>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
+    <soft>...</soft><cmd>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
 
-If you are cataloging a remote service on a ip address and port provide the remote services ipaddress and port in quoted string e.g. <cmd>'0.0.0.0:8080'</cmd>
+<cmd><service_name></cmd>
+    How you will be refering to the service when using it. Keep it short, e.g. <cmd>prop</cmd> for a service that calculates properties.
+    Single quotes are optional in case you want to used a space or special character.
 
-<cmd>service_name</cmd>: this is the name of the service as you will define it for your usage. e.g <cmd>prop</cmd> short for properties. 
+    
+<h1>The USING Clause</h1>
 
-USING Parameters:
+The parameters below are only needed when connecting to an IBM-hosted service (IBM partners only).
 
-If using a hosted service the following parameters must be supplied:
--<cmd>Inference-Service</cmd>: this is the name of the inference service that is hosted, it is a required parameter if cataloging a remote service.
-An authorization parameter is always required if cataloging a hosted service, either Auhtorisation group (<cmd>auth_group</cmd>) or Authorisation bearer_token/api_key (<cmd>Authorization</cmd>):
--<cmd>auth_group</cmd>: this is the name of an authorization group which contains the api_key linked to the service access. This can only be used if <cmd>Authorization</cmd> is not also defined.
-OR
--<cmd>Authorization</cmd>: this parameter is designed to be used when a <cmd>auth_group</cmd> is not defined.
+<cmd>inference-service=<string></cmd> (required)
+    The name of the inference service you want to connect to, eg. generation ot molformer.
+Authorization:
+    To authorize to an IBM-hosted service (IBM partners only), you have two options:
+    1. <cmd>authorization='<auth_token>'</cmd>
+        Provide your authorzation token directly.
+        Note: to use this option, <cmd>auth_group</cmd> can not be defined.
+    2. <cmd>auth_group=<auth_group_name></cmd>
+        The name of an authorization group which contains your <cmd>auth_token</cmd>.
+        This is recommended if you will be using more than one model service.
+        For instructions on how to set up an auth group, run <cmd>model auth add group ?</cmd>
+        Note: to use this option, <cmd>authorization</cmd> can not be defined.
 
-Example:
 
-Skypilot Deployment
--<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as 'gen'</cmd>
+<h1>Examples</h1>
 
-Service using a authentication group 
--<cmd>catalog model service from remote '<service_url>' as  molf  USING (Inference-Service=molformer  )</cmd>
-<cmd> model auth add service 'molf' to group 'default'</cmd>
+- Catalog a model using SkyPilot deployment
+<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen</cmd>
 
-Single Authorisation Service
--<cmd>openad catalog model service from remote '<service_URL>' as 'gen' USING (Inference-Service=generation Authorization='<api_key>')</cmd>
+- Catalog a model using a authentication group
+<cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf
+    USING (inference-service=molformer auth_group=default)</cmd>
 
-Catalog a remote service shared with you:
--<cmd>catalog model service from remote 'http://54.235.3.243:30001' as gen</cmd>""",
+- Catalog a model using an authorization token
+<cmd>openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen
+    USING (inference-service=generation authorization='<auth_token>')</cmd>
+
+- Catalog a remote service that was shared with you:
+<cmd>catalog model service from remote 'http://54.235.3.243:3001' as gen</cmd>""",
         )
     )
 
@@ -852,16 +925,17 @@ Catalog a remote service shared with you:
         help_dict_create(
             name="Model up",
             category="Model",
-            command="model service up '<service_name>'|<service_name> [no_gpu]}",
-            description="""launches a cataloged model service when it was cataloged as a self managed service from a directory or github repository.
-If you do not want to launch a service with GPU you should specify <cmd>no_gpu</cmd> at the end of the command.
+            command="model service up <service_name> [ no_gpu ]",
+            description=f"""Launch a model service, after it was cataloged using <cmd>model service catalog</cmd>.
+
+{CLAUSE_QUOTES_SERVICE}
+
+If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause.
+
 Examples:
-
--<cmd>model service up gen</cmd>
-
--<cmd>model service up 'gen'</cmd>
-
--<cmd>model service up gen no_gpu</cmd>""",
+- <cmd>model service up gen</cmd>
+- <cmd>model service up 'my gen'</cmd>
+- <cmd>model service up gen no_gpu</cmd>""",
         )
     )
 
@@ -879,13 +953,15 @@ Examples:
         help_dict_create(
             name="Model local up",
             category="Model",
-            command="model service local up '<service_name>'|<service_name> ",
-            description="""Launches a model service locally.
+            command="model service local up <service_name> ",
+            description=f"""Launch a model service locally.
 
-            Example:
-              <cmd> model service local up gen</cmd>
+{CLAUSE_QUOTES_SERVICE}
 
-             """,
+Example:
+- <cmd> model service local up gen</cmd>
+- <cmd> model service local up 'my gen'</cmd>
+""",
         )
     )
 
@@ -894,8 +970,15 @@ Examples:
         help_dict_create(
             name="Model down",
             category="Model",
-            command="model service down '<service_name>'|<service_name>",
-            description="Bring down a model service  \n Examples: \n\n<cmd>model service down gen</cmd> \n\n<cmd>model service down 'gen'</cmd> ",
+            command="model service down <service_name>",
+            description=f"""Deactivate a model service.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>model service down gen</cmd>
+- <cmd>model service down 'my gen'</cmd>
+""",
         )
     )
 
@@ -911,9 +994,16 @@ Examples:
     )
     help.append(
         help_dict_create(
-            name="Get Model Service Result",
+            name="get model service sesult",
             category="Model",
-            command="get model service '<service_name>'|<service_name> result '<result_id>' ",
-            description="retrieves a result from a model service  \n Examples: \n\n<cmd>get model service myservier result 'wergergerg'  ",
+            command="get model service <service_name> result '<result_id>'",
+            description=f"""Retrieve a result from a model service.
+            
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>get model service gen result 'xyz'
+- <cmd>get model service 'my gen' result 'xyz'
+""",
         )
     )

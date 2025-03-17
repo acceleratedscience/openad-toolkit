@@ -1,9 +1,3 @@
----
-title: Commands
-layout: default
-nav_order: 5
----
-
 <!--
 
 DO NOT EDIT
@@ -18,12 +12,11 @@ https://github.com/acceleratedscience/open-ad-toolkit/tree/main/docs
 
 This is the full list of available commands.
 
-> <div class='alert-icn-wrap' style='color:#8250df'><svg class="alert-icon" width="16" height="16" viewBox="0 0 16 16" fill="#8250df" xmlns="http://www.w3.org/2000/svg"><path d="M8 1C6.61553 1 5.26216 1.41054 4.11101 2.17971C2.95987 2.94888 2.06266 4.04213 1.53285 5.32122C1.00303 6.6003 0.86441 8.00776 1.13451 9.36563C1.4046 10.7235 2.07129 11.9708 3.05026 12.9497C4.02922 13.9287 5.2765 14.5954 6.63437 14.8655C7.99224 15.1356 9.3997 14.997 10.6788 14.4672C11.9579 13.9373 13.0511 13.0401 13.8203 11.889C14.5895 10.7378 15 9.38447 15 8C15 6.14348 14.2625 4.36301 12.9497 3.05025C11.637 1.7375 9.85652 1 8 1ZM8 14C6.81332 14 5.65328 13.6481 4.66658 12.9888C3.67989 12.3295 2.91085 11.3925 2.45673 10.2961C2.0026 9.19974 1.88378 7.99334 2.11529 6.82946C2.3468 5.66557 2.91825 4.59647 3.75736 3.75736C4.59648 2.91824 5.66558 2.3468 6.82946 2.11529C7.99335 1.88378 9.19975 2.0026 10.2961 2.45672C11.3925 2.91085 12.3295 3.67988 12.9888 4.66658C13.6481 5.65327 14 6.81331 14 8C14 9.5913 13.3679 11.1174 12.2426 12.2426C11.1174 13.3679 9.5913 14 8 14Z"/><path d="M8.5 4H7.5V9.5H8.5V4Z"/><path d="M8 11C7.85167 11 7.70666 11.044 7.58333 11.1264C7.45999 11.2088 7.36386 11.3259 7.30709 11.463C7.25033 11.6 7.23547 11.7508 7.26441 11.8963C7.29335 12.0418 7.36478 12.1754 7.46967 12.2803C7.57456 12.3852 7.7082 12.4567 7.85369 12.4856C7.99917 12.5145 8.14997 12.4997 8.28701 12.4429C8.42406 12.3861 8.54119 12.29 8.6236 12.1667C8.70602 12.0433 8.75 11.8983 8.75 11.75C8.75 11.5511 8.67098 11.3603 8.53033 11.2197C8.38968 11.079 8.19892 11 8 11Z"/></svg> IMPORTANT</div><span style='color: #8250df'>When running commands from Jupyter, prepend them with `%openad`</span>
-
-<br>
+!!! info
+    
+    To run a commands in Jupyter Notebook, prepend it with `%openad` - more [information here](getting-started.md#getting-started-jupyter).
 
 ## Table of Contents
-- [Main Commands](#main-commands)
   - [Macromolecules](#macromolecules)
   - [General](#general)
   - [Workspaces](#workspaces)
@@ -35,791 +28,522 @@ This is the full list of available commands.
   - [File System](#file-system)
   - [Help](#help)
   - [Model](#model)
-- [DS4SD](#ds4sd)
-  - [Search Molecules](#search-molecules)
-  - [Search Collections](#search-collections)
-  - [Collections](#collections)
-- [RXN](#rxn)
-  - [General](#general)
-  - [Retrosynthesis](#retrosynthesis)
-  - [Prediction](#prediction)
 
 
-<br><br>
+<br>
 
-## Main Commands
+[Expand all commands](#){ .md-button .md-button--primary onclick="Array.from(document.getElementsByTagName('details')).forEach(elm => elm.setAttribute('open', true)); return false" }
 
 ### Macromolecules
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`show mmol|protein <fasta> | '<pdb_id>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+show mmol|protein <fasta> | '<pdb_id>'
 </summary>
-Launch the molecule viewer to visualize your macromolecule and inspect its properties. <br> 
+Launch the molecule viewer to visualize your macromolecule and inspect its properties.
 
-Examples: <br> 
-- Show a protein by its PDBe ID: <br> 
-  `show mmol '2g64'` <br> 
+#### Examples { .disable-anchor }
 
-- Show a protein by its FASTA string: <br> 
-  `show protein MAKWVCKICGYIYDEDAGDPDNGISPGTKFEELPDDWVCPICGAPKSEFEKLED` <br>
+Show a protein by its PDBe ID:
+```shell
+show mmol '2g64'
+```
+
+Show a protein by its FASTA string:
+```shell
+show protein MAKWVCKICGYIYDEDAGDPDNGISPGTKFEELPDDWVCPICGAPKSEFEKLED
+```
 </details>
 
 ### General
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`openad`{: .cmd }
+<details markdown code>
+<summary markdown>
+openad
 </summary>
-Display the openad splash screen. <br>
+Display the openad splash screen.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`get status`{: .cmd }
+<details markdown code>
+<summary markdown>
+get status
 </summary>
-Display the currently selected workspace and toolkit. <br>
+Display the currently selected workspace and toolkit.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display history`{: .cmd }
+<details markdown code>
+<summary markdown>
+display history
 </summary>
-Display the last 30 commands run in your current workspace. <br>
+Display the last 30 commands run in your current workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`clear sessions`{: .cmd }
+<details markdown code>
+<summary markdown>
+clear sessions
 </summary>
-Clear any other sessions that may be running. <br>
+Clear any other sessions that may be running.
 </details>
 
 ### Workspaces
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`set workspace <workspace_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+set workspace <workspace_name>
 </summary>
-Change the current workspace. <br>
+Change the current workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`get workspace [ <workspace_name> ]`{: .cmd }
+<details markdown code>
+<summary markdown>
+get workspace [ <workspace_name> ]
 </summary>
-Display details a workspace. When no workspace name is passed, details of your current workspace are displayed. <br>
+Display details a workspace. When no workspace name is passed, details of your current workspace are displayed.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`create workspace <workspace_name> [ description('<description>') on path '<path>' ]`{: .cmd }
+<details markdown code>
+<summary markdown>
+create workspace <workspace_name> [ description('<description>') on path '<path>' ]
 </summary>
-Create a new workspace with an optional description and path. <br>
+Create a new workspace with an optional description and path.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`remove workspace <workspace_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+remove workspace <workspace_name>
 </summary>
-Remove a workspace from your registry. Note that this doesn't remove the workspace's directory. <br>
+Remove a workspace from your registry. Note that this doesn't remove the workspace's directory.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`list workspaces`{: .cmd }
+<details markdown code>
+<summary markdown>
+list workspaces
 </summary>
-Lists all your workspaces. <br>
+Lists all your workspaces.
 </details>
 
 ### Toolkits
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`set context <toolkit_name> [ reset ]`{: .cmd }
+<details markdown code>
+<summary markdown>
+set context <toolkit_name> [ reset ]
 </summary>
-Set your context to the chosen toolkit. By setting the context, the selected toolkit functions become available to you. The optional parameter `reset` can be used to reset your login information. <br>
+Set your context to the chosen toolkit. By setting the context, the selected toolkit functions become available to you. The optional parameter <cmd>reset</cmd> can be used to reset your login information.
 </details>
 
 ### Runs
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`create run`{: .cmd }
+<details markdown code>
+<summary markdown>
+create run
 </summary>
-Start recording a run. <br>
+Start recording a run.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`remove run <run_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+remove run <run_name>
 </summary>
-remove a run. <br>
+remove a run.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`save run as <run_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+save run as <run_name>
 </summary>
-Stop recording a run and save it. <br>
+Stop recording a run and save it.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`run <run_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+run <run_name>
 </summary>
-Execute a previously recorded run. This will execute every command and continue regardless of any failures. <br>
+Execute a previously recorded run. This will execute every command and continue regardless of any failures.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`list runs`{: .cmd }
+<details markdown code>
+<summary markdown>
+list runs
 </summary>
-List all runs saved in the current workspace. <br>
+List all runs saved in the current workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display run <run_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+display run <run_name>
 </summary>
-Display the commands stored in a certain run. <br>
+Display the commands stored in a certain run.
 </details>
 
 ### Utility
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display data '<filename.csv>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+display data '<filename.csv>'
 </summary>
-Display data from a csv file. <br>
+Display data from a csv file.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`result save [as '<filename.csv>']`{: .cmd }
+<details markdown code>
+<summary markdown>
+result save [as '<filename.csv>']
 </summary>
-Save table data to csv file. <br>
+Save table data to csv file.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`result open`{: .cmd }
+<details markdown code>
+<summary markdown>
+result open
 </summary>
-Explore table data in the browser. <br> 
-        if you append `-d` to the end of the command `result open -d` display will result to data viewer. <br>
+Explore table data in the browser.
+        
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`result edit`{: .cmd }
+<details markdown code>
+<summary markdown>
+result edit
 </summary>
-Edit table data in the browser. <br> 
-        if you append `-d` to the end of the command `result open -d` display will result to data viewer. <br>
+Edit table data in the browser.
+        
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`result copy`{: .cmd }
+<details markdown code>
+<summary markdown>
+result copy
 </summary>
-Copy table data to clipboard, formatted for spreadheet. <br>
+Copy table data to clipboard, formatted for spreadheet.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`result display`{: .cmd }
+<details markdown code>
+<summary markdown>
+result display
 </summary>
-Display the result in the CLI. <br> 
-
-        if you append `-d` to the end of the command `result open -d` display will result to data viewer. <br>
+Display the result in the CLI.
+      
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`result as dataframe`{: .cmd }
+<details markdown code>
+<summary markdown>
+result as dataframe
 </summary>
-Return the result as dataframe (only for Jupyter Notebook) <br>
+Return the result as dataframe (only for Jupyter Notebook)
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`edit config '<json_config_file>' [ schema '<schema_file>']`{: .cmd }
+<details markdown code>
+<summary markdown>
+edit config '<json_config_file>' [ schema '<schema_file>']
 </summary>
-Edit any JSON file in your workspace directly from the CLI. If a schema is specified, it will be used for validation and documentation. <br>
+Edit any JSON file in your workspace directly from the CLI. If a schema is specified, it will be used for validation and documentation.
 </details>
 
 ### GUI
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`install gui`{: .cmd }
+<details markdown code>
+<summary markdown>
+install gui
 </summary>
-Install the OpenAD GUI (graphical user interface). <br> 
+Install the OpenAD GUI (graphical user interface).
 
-The graphical user interface allows you to browse your workspace and visualize your datasets and molecules. <br>
+The graphical user interface allows you to browse your workspace and visualize your datasets and molecules.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`launch gui`{: .cmd }
+<details markdown code>
+<summary markdown>
+launch gui
 </summary>
-Launch the OpenAD GUI (graphical user interface). <br>
+Launch the OpenAD GUI (graphical user interface).
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`restart gui`{: .cmd }
+<details markdown code>
+<summary markdown>
+restart gui
 </summary>
-Terminate and then restart the GUI server. <br>
+Terminate and then restart the GUI server.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`quit gui`{: .cmd }
+<details markdown code>
+<summary markdown>
+quit gui
 </summary>
-Terminate the GUI server. <br>
+Terminate the GUI server.
 </details>
 
 ### LLM
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`tell me <how to do xyz>`{: .cmd }
+<details markdown code>
+<summary markdown>
+tell me <how to do xyz>
 </summary>
-Ask your AI assistant how to do anything in OpenAD. <br>
+Ask your AI assistant how to do anything in OpenAD.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`set llm  <language_model_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+set llm  <language_model_name>
 </summary>
-Set the target language model name for the `tell me` command. <br>
+Set the target language model name for the <cmd>tell me</cmd> command.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`clear llm auth`{: .cmd }
+<details markdown code>
+<summary markdown>
+clear llm auth
 </summary>
-Clear the language model's authentication file. <br>
+Clear the language model's authentication file.
 </details>
 
 ### File System
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`list files [ path ]`{: .cmd }
+<details markdown code>
+<summary markdown>
+list files [ path ]
 </summary>
-List al directories and files in your current workspace. <br>
+List al directories and files in your current workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`import from '<external_source_file>' to '<workspace_file>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+import from '<external_source_file>' to '<workspace_file>'
 </summary>
-Import a file from outside OpenAD into your current workspace. <br>
+Import a file from outside OpenAD into your current workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`export from '<workspace_file>' to '<external_file>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+export from '<workspace_file>' to '<external_file>'
 </summary>
-Export a file from your current workspace to anywhere on your hard drive. <br>
+Export a file from your current workspace to anywhere on your hard drive.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`copy file '<workspace_file>' to '<other_workspace_name>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+copy file '<workspace_file>' to '<other_workspace_name>'
 </summary>
-Export a file from your current workspace to another workspace. <br>
+Export a file from your current workspace to another workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`remove '<filename>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+remove '<filename>'
 </summary>
-Remove a file from your current workspace. <br>
+Remove a file from your current workspace.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`open '<filename>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+open '<filename>'
 </summary>
-Open a file or dataframe in an iframe  <br> 
+Open a file or dataframe in the graphical user interface.
 
-Examples: <br> 
-- `open 'base_molecules.sdf'` <br> 
-- `open my_dataframe` <br>
+#### Examples { .disable-anchor }
+
+```shell
+open 'base_molecules.sdf'
+```
+```shell
+open my_dataframe
+```
 </details>
 
 ### Help
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`intro`{: .cmd }
+<details markdown code>
+<summary markdown>
+intro
 </summary>
-Display an introduction to the OpenAD CLI. <br>
+Display an introduction to the OpenAD CLI.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`docs`{: .cmd }
+<details markdown code>
+<summary markdown>
+docs
 </summary>
-Open the documentation webpage. <br>
+Open the documentation webpage.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`?`{: .cmd }
+<details markdown code>
+<summary markdown>
+?
 </summary>
-List all available commands. <br>
+List all available commands.
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`? ...<soft>   --> List all commands containing "..."</soft>`{: .cmd }
+<details markdown code>
+<summary markdown>
+? ...<soft>
 </summary>
-
+List all commands containing "..."</soft>
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`... ?<soft>   --> List all commands starting with "..."</soft>`{: .cmd }
+<details markdown code>
+<summary markdown>
+... ?<soft>
 </summary>
-
+List all commands starting with "..."</soft>
 </details>
 
 ### Model
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model auth list`{: .cmd }
+<details markdown code>
+<summary markdown>
+model auth list
 </summary>
-show authentication group mapping <br>
+show authentication group mapping
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model auth add group '<auth_group>'|<auth_group> with '<api_key>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+model auth add group '<auth_group>'|<auth_group> with '<api_key>'
 </summary>
-add an authentication group for model services to use <br>
+add an authentication group for model services to use
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model auth remove group '<auth_group>' | <auth_group>`{: .cmd }
+<details markdown code>
+<summary markdown>
+model auth remove group '<auth_group>' | <auth_group>
 </summary>
-remove an authentication group <br>
+remove an authentication group
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model auth add service '<service_name>'|,service_name> to group '<auth_group>'|<auth_group>`{: .cmd }
+<details markdown code>
+<summary markdown>
+model auth add service '<service_name>'|,service_name> to group '<auth_group>'|<auth_group>
 </summary>
-Attach an authentication group to a model service <br>
+Attach an authentication group to a model service
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model auth remove service '<service_name>'|<service_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+model auth remove service '<service_name>'|<service_name>
 </summary>
-Detatch an authentication group from a model service <br>
+Detatch an authentication group from a model service
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model service status`{: .cmd }
+<details markdown code>
+<summary markdown>
+model service status
 </summary>
-Get the status of currently cataloged services <br>
+Get the status of currently cataloged services
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model service describe '<service_name>'|<service_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+model service describe '<service_name>'|<service_name>
 </summary>
-get the configuration of a service <br>
+get the configuration of a service
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model catalog list`{: .cmd }
+<details markdown code>
+<summary markdown>
+model catalog list
 </summary>
-get the list of currently cataloged services <br>
+get the list of currently cataloged services
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`uncatalog model service '<service_name>'|<service_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+uncatalog model service '<service_name>'|<service_name>
 </summary>
-uncatalog a model service  <br> 
+uncatalog a model service 
 
- Example:  <br> 
-`uncatalog model service 'gen'` <br>
+ Example: 
+<cmd>uncatalog model service 'gen'</cmd>
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`catalog model service from (remote) '<path> or <github> or <service_url>' as  '<service_name>'|<service_name>   USING (<parameter>=<value> <parameter>=<value>)`{: .cmd }
+<details markdown code>
+<summary markdown>
+catalog model service from (remote) '<path> or <github> or <service_url>' as  '<service_name>'|<service_name>   USING (<parameter>=<value> <parameter>=<value>)
 </summary>
-catalog a model service from a path or github or remotely from an existing OpenAD service. <br> 
-(USING) optional headers parameters for communication with service backend. <br> 
-If you are cataloging a service using a model defined in a directory, provide the absolute ` <path> ` of that directory in quotes. <br> 
+catalog a model service from a path or github or remotely from an existing OpenAD service.
+(USING) optional headers parameters for communication with service backend.
+If you are cataloging a service using a model defined in a directory, provide the absolute <cmd> <path> </cmd> of that directory in quotes.
 
-The following options require the `remote` option be declared. <br> 
+The following options require the <cmd>remote</cmd> option be declared.
 
-If you are cataloging a service using a model defined in github repository, provide the absolute ` <github> ` of that github directory quotes. <br> 
+If you are cataloging a service using a model defined in github repository, provide the absolute <cmd> <github> </cmd> of that github directory quotes.
 
-If you are cataloging a remote service on a ip address and port provide the remote services ipaddress and port in quoted string e.g. `'0.0.0.0:8080'` <br> 
+If you are cataloging a remote service on a ip address and port provide the remote services ipaddress and port in quoted string e.g. <cmd>'0.0.0.0:8080'</cmd>
 
-`service_name`: this is the name of the service as you will define it for your usage. e.g `prop` short for properties.  <br> 
+<cmd>service_name</cmd>: this is the name of the service as you will define it for your usage. e.g <cmd>prop</cmd> short for properties. 
 
-USING Parameters: <br> 
+USING Parameters:
 
-If using a hosted service the following parameters must be supplied: <br> 
--`Inference-Service`: this is the name of the inference service that is hosted, it is a required parameter if cataloging a remote service. <br> 
-An authorization parameter is always required if cataloging a hosted service, either Auhtorisation group (`auth_group`) or Authorisation bearer_token/api_key (`Authorization`): <br> 
--`auth_group`: this is the name of an authorization group which contains the api_key linked to the service access. This can only be used if `Authorization` is not also defined. <br> 
-OR <br> 
--`Authorization`: this parameter is designed to be used when a `auth_group` is not defined. <br> 
+If using a hosted service the following parameters must be supplied:
+-<cmd>Inference-Service</cmd>: this is the name of the inference service that is hosted, it is a required parameter if cataloging a remote service.
+An authorization parameter is always required if cataloging a hosted service, either Auhtorisation group (<cmd>auth_group</cmd>) or Authorisation bearer_token/api_key (<cmd>Authorization</cmd>):
+-<cmd>auth_group</cmd>: this is the name of an authorization group which contains the api_key linked to the service access. This can only be used if <cmd>Authorization</cmd> is not also defined.
+OR
+-<cmd>Authorization</cmd>: this parameter is designed to be used when a <cmd>auth_group</cmd> is not defined.
 
-Example: <br> 
+Example:
 
-Skypilot Deployment <br> 
--`catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as 'gen'` <br> 
+Skypilot Deployment
+-<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as 'gen'</cmd>
 
-Service using a authentication group  <br> 
--`catalog model service from remote '<service_url>' as  molf  USING (Inference-Service=molformer  )` <br> 
-` model auth add service 'molf' to group 'default'` <br> 
+Service using a authentication group 
+-<cmd>catalog model service from remote '<service_url>' as  molf  USING (Inference-Service=molformer  )</cmd>
+<cmd> model auth add service 'molf' to group 'default'</cmd>
 
-Single Authorisation Service <br> 
--`openad catalog model service from remote '<service_URL>' as 'gen' USING (Inference-Service=generation Authorization='<api_key>')` <br> 
+Single Authorisation Service
+-<cmd>openad catalog model service from remote '<service_URL>' as 'gen' USING (Inference-Service=generation Authorization='<api_key>')</cmd>
 
-Catalog a remote service shared with you: <br> 
--`catalog model service from remote 'http://54.235.3.243:30001' as gen` <br>
+Catalog a remote service shared with you:
+-<cmd>catalog model service from remote 'http://54.235.3.243:30001' as gen</cmd>
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model service up '<service_name>'|<service_name> [no_gpu]}`{: .cmd }
+<details markdown code>
+<summary markdown>
+model service up '<service_name>'|<service_name> [no_gpu]}
 </summary>
-launches a cataloged model service when it was cataloged as a self managed service from a directory or github repository. <br> 
-If you do not want to launch a service with GPU you should specify `no_gpu` at the end of the command. <br> 
-Examples: <br> 
+launches a cataloged model service when it was cataloged as a self managed service from a directory or github repository.
+If you do not want to launch a service with GPU you should specify <cmd>no_gpu</cmd> at the end of the command.
+#### Examples { .disable-anchor }
 
--`model service up gen` <br> 
 
--`model service up 'gen'` <br> 
+-<cmd>model service up gen</cmd>
 
--`model service up gen no_gpu` <br>
+-<cmd>model service up 'gen'</cmd>
+
+-<cmd>model service up gen no_gpu</cmd>
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model service local up '<service_name>'|<service_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+model service local up '<service_name>'|<service_name>
 </summary>
-Launches a model service locally. <br> 
+Launches a model service locally.
 
-            Example: <br> 
-              ` model service local up gen` <br>
+            Example:
+              <cmd> model service local up gen</cmd>
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`model service down '<service_name>'|<service_name>`{: .cmd }
+<details markdown code>
+<summary markdown>
+model service down '<service_name>'|<service_name>
 </summary>
-Bring down a model service   <br> 
- Examples:  <br> 
+Bring down a model service  
+ #### Examples { .disable-anchor }
 
-`model service down gen`  <br> 
 
-`model service down 'gen'`  <br>
+```shell
+model service down gen
+```
+
+```shell
+model service down 'gen'
+```
 </details>
 
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`get model service '<service_name>'|<service_name> result '<result_id>'`{: .cmd }
+<details markdown code>
+<summary markdown>
+get model service '<service_name>'|<service_name> result '<result_id>'
 </summary>
-retrieves a result from a model service   <br> 
- Examples:  <br> 
+retrieves a result from a model service  
+ #### Examples { .disable-anchor }
 
-<cmd>get model service myservier result 'wergergerg'   <br>
-</details>
 
-<br><br>
-
-## DS4SD
-
-
-### Search Molecules
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`search for similar molecules to '<smiles>' [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Search for molecules that are similar to the provided molecule or molecule substructure as provided in the `<smiles_string>`. <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br> 
-
-Example: <br> 
-`search for similar molecules to 'C1(C(=C)C([O-])C1C)=O'` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`search for molecules in patents from list ['<patent1>', '<patent2>', ...] | dataframe <dataframe_name> | file '<filename.csv>' [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Search for molecules mentioned in a defined list of patents. When sourcing patents from a CSV or DataFrame, there must be column named "PATENT ID" or "patent id". <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br> 
-
-Example: <br> 
-`search for molecules in patents from list ['CN108473493B','US20190023713A1']` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`search for patents containing molecule '<smiles>' | '<inchi>' | '<inchikey>' [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Search for mentions of a specified molecules in registered patents. The queried molecule can be described as a SMILES string, InChI or InChiKey. <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br> 
-
-Example: <br> 
-`search for patents containing molecule 'CC(C)(c1ccccn1)C(CC(=O)O)Nc1nc(-c2c[nH]c3ncc(Cl)cc23)c(C#N)cc1F'` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`search for substructure instances of '<smiles>' [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Search for molecules by substructure, as defined by the `<smiles_string>`. <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br> 
-
-Example: <br> 
-`search for substructure instances of 'C1(C(=C)C([O-])C1C)=O' save as 'my_mol'` <br>
-</details>
-
-### Search Collections
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`search collection '<collection_name_or_key>' for '<search_string>' [ using (page_size=<int> system_id=<system_id> edit_distance=<integer> display_first=<integer>) ] show (data | docs) [ estimate only | return as data | save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Performs a document search of the Deep Search repository based on a given collection. The required `using` clause specifies the collection to search. Use `estimate only` to return only the potential number of hits. <br> 
-
-Parameters: <br> 
-- `<collection_name_or_key>` The name or index key for a collection. Use the command `display all collections` to list available collections. <br> 
-- `<search_string>` The search string for the search. <br> 
-
-The `<search_string>` supports elastic search string query syntax: <br> 
-- `+` Signifies AND operation. <br> 
-- `|` Signifies OR operation. <br> 
-- `-` Negates a single token. <br> 
-- `\"` Wraps a number of tokens to signify a phrase for searching. <br> 
-- `*` At the end of a term -> signifies a prefix query <br> 
-- `(` & `)` Signifies precedence <br> 
-- `~N` After a word -> signifies edit distance (fuzziness) <br> 
-- `~N` After a phrase -> signifies slop amount <br> 
-
-Options for the `using` clause: <br> 
-  > **Note:** The `using` clause requires all enclosed parameters to be defined in the same order as listed below. <br> 
-
-- `page_size=<integer>` Result pagination, the default is None. <br> 
-- `system_id=<system_id>` System cluster id, the default is 'default'. <br> 
-- `edit_distance=<integer>` (0-5) Sets the search word span criteria for key words for document searches, the default is 5. When set to 0, no snippets will be be returned. <br> 
-- `display_first=<integer>` When set, the displayed result set will be truncated at the given number. <br> 
-
-Clauses: <br> 
-- `show (data | docs)`: <br> 
-    - `data` Display structured data from within the documents. <br> 
-    - `docs` Display document context and preview snippet. <br> 
-    Both can be combined in a single command, e.g. `show (data docs)` <br> 
-- `estimate only` Determine the potential number of hits. <br> 
-- `return as data` For Notebook or API mode. Removes all styling from the Pandas DataFrame, ready for further processing. <br> 
-
-Examples: <br> 
-- Look for documents that contain discussions on power conversion efficiency: <br> 
-`search collection 'arxiv-abstract' for 'ide(\"power conversion efficiency\" OR PCE) AND organ*' using ( edit_distance=20 system_id=default) show (docs)` <br> 
-
-- Search the PubChem archive for 'Ibuprofen' and display related molecules' data: <br> 
-`search collection 'pubchem' for 'Ibuprofen' show (data)` <br> 
-
-- Search for patents which mention a specific smiles molecule: <br> 
-`search collection 'patent-uspto' for '\"smiles#ccc(coc(=o)cs)(c(=o)c(=o)cs)c(=o)c(=o)cs\"' show (data)` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display collection matches for '<search_string>' [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Search all collections for documents that contain a given Deep Search `<search_string>`. This is useful when narrowing down document collection(s) for subsequent search. You can use the `<index_key>` from the returned table in your next search. <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br> 
-
-Example: <br> 
-`display collection matches for 'Ibuprofen'` <br>
-</details>
-
-### Collections
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display collections in domains from list <list_of_domains> [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Display collections that belong to the listed domains. <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br> 
-
-Use the command `display all collections` to find available domains. <br> 
-
-Example: <br> 
-`display collections in domains from list ['Scientific Literature']` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display all collections [ save as '<filename.csv>' ]`{: .cmd }
-</summary>
-Display all available collections in Deep Search. <br> 
-
-Use the `save as` clause to save the results as a csv file in your current workspace. <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display collections for domain '<domain_name>'`{: .cmd }
-</summary>
-Display the available collections in a given Deep Search domain. <br> 
-
-Use the command `display all collections` to find available domains. <br> 
-
-Example: <br> 
-`display collections for domain 'Business Insights'` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`display collection details '<collection_name_or_key>'`{: .cmd }
-</summary>
-Display the details for a specified collection. You can specify a collection by its name or key. <br> 
-
-Use the command `display all collections` to list available collections. <br> 
-
-Example: <br> 
-`display collection details 'Patents from USPTO'` <br>
-</details>
-
-<br><br>
-
-## RXN
-
-
-### General
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`interpret recipe '<recipe_paragraph>' | '<txt_filename>'`{: .cmd }
-</summary>
-Build a ordered list of actions interpreted from a provided text-based recipe. The recipe can be provided as a string or as a text file from your current workspace. <br> 
-
-Examples: <br> 
-- `interpret recipe 'my_recipe.txt'` <br> 
-- `interpret recipe 'A solution of ((1S,2S)-1-{[(methoxymethyl-biphenyl-4-yl)-(2-pyridin-2-yl-cyclopropanecarbonyl)-amino]-methyl}-2-methyl-butyl)-carbamic acid tert-butyl ester (25 mg, 0.045 mmol) and dichloromethane (4 mL) was treated with a solution of HCl in dioxane (4 N, 0.5 mL) and the resulting reaction mixture was maintained at room temperature for 12 h. The reaction was then concentrated to dryness to afford (1R,2R)-2-pyridin-2-yl-cyclopropanecarboxylic acid ((2S,3S)-2-amino-3-methylpentyl)-(methoxymethyl-biphenyl-4-yl)-amide (18 mg, 95% yield) as a white solid.'` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`list rxn models`{: .cmd }
-</summary>
-Lists all RXN AI models currently available. <br>
-</details>
-
-### Retrosynthesis
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`predict retrosynthesis '<smiles>' [ using (<parameter>=<value> <parameter>=<value>) ]`{: .cmd }
-</summary>
-Perform a retrosynthesis route prediction on a molecule. <br> 
-
-RXN was trained on more than 3 million chemical reactions, derived from publicly available patents. Since then, the Molecular Transformer has outperformed all data-driven models, achieving more than 90% accuracy on forward chemical reaction predictions (reactants + reagents to products) <br> 
-
-  > **Note:** The `using` clause requires all enclosed parameters to be defined in the same order as listed below. <br> 
-
-Optional Parameters that can be specified in the `using` clause: <br> 
-- `availability_pricing_threshold=<int>` Maximum price in USD per g/ml of compounds. Default: no threshold. <br> 
-- `available_smiles='<smiles>.<smiles>.<smiles>'` List of molecules available as precursors, delimited with a period. <br> 
-- `exclude_smiles='<smiles>.<smiles>.<smiles>'` List of molecules to exclude from the set of precursors, delimited with a period. <br> 
-- `exclude_substructures='<smiles>.<smiles>.<smiles>'` List of substructures to exclude from the set of precursors, delimited with a period. <br> 
-- `exclude_target_molecule=<boolean>` Excluded target molecule. The default is True <br> 
-- `fap=<float>` Every retrosynthetic step is evaluated with the FAP, and is only retained when forward confidence is greater than the FAP value. The default is 0.6. <br> 
-- `max_steps=<int>` The maximum number steps in the results. The default is 3. <br> 
-- `nbeams=<int>` The maximum number of beams exploring the hypertree. The default is 10. <br> 
-- `pruning_steps=<int>` The number of steps to prune a hypertree. The default is 2. <br> 
-- `ai_model='<model_name>'` What model to use. Use the command `list rxn models` to list all available models. The default is '2020-07-01'. <br> 
-
-There are different models available for use with this command including: '12class-tokens-2021-05-14', '2019-09-12', '2020-04-24', '2020-07-01', '2020-07-31', 'aizynth-2020-06-11', 'disconnection-aware-2022-06-24', 'enzymatic-2021-04-16', 'enzymatic-2022-05-31', 'sulfonium-2020-10-27' <br> 
-
-Examples: <br> 
-`predict retrosynthesis 'BrCCc1cccc2c(Br)c3ccccc3cc12' using (max_steps=3)` <br> 
-
-`predict retrosynthesis  'BrCCc1cccc2c(Br)c3ccccc3cc12' using (max_steps=6 ai_model='12class-tokens-2021-05-14' ) ` <br>
-</details>
-
-### Prediction
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`predict reaction in batch from dataframe <dataframe_name> | file '<filename.csv>' | list ['<smiles>.<smiles>','<smiles>.<smiles>'] [ using (ai_model='<ai_model>') ] [ use_saved ]`{: .cmd }
-</summary>
-Run a batch of reaction predictions. The provided list of reactions can be specified as a DataFrame, a CSV file from your current workspace or a list of strings. When proving a DataFrame or CSV file, we will look for the "reactions" column. <br> 
-
-Reactions are defined by combining two SMILES strings delimited by a period. For example: `'BrBr.c1ccc2cc3ccccc3cc2c1'` <br> 
-
-Optional Parameters that can be specified in the `using` clause: <br> 
-- `ai_model='<model_name>'` What model to use. Use the command `list rxn models` to list all available models. The default is '2020-07-01'. <br> 
-
-You can reuse previously generated results by appending the optional `use_saved` clause. This will reuse the results of a previously run command with the same parameters, if available. <br> 
-
-Examples: <br> 
-- `predict reaction in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1']` <br> 
-- `predict reaction in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1'] use_saved` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`predict reaction '<smiles>.<smiles>' [ using (ai_model='<ai_model>') ] [ use_saved ]`{: .cmd }
-</summary>
-Predict the reaction between two molecules. <br> 
-
-Reactions are defined by combining two SMILES strings delimited by a period. For example: `'BrBr.c1ccc2cc3ccccc3cc2c1'` <br> 
-
-Optional Parameters that can be specified in the `using` clause: <br> 
-- `ai_model='<model_name>'` What model to use. Use the command `list rxn models` to list all available models. The default is '2020-07-01'. <br> 
-
-You can reuse previously generated results by appending the optional `use_saved` clause. This will reuse the results of a previously run command with the same parameters, if available. <br> 
-
-Examples: <br> 
-- `predict reaction 'BrBr.c1ccc2cc3ccccc3cc2c1CCO'` <br> 
-- `predict reaction 'BrBr.c1ccc2cc3ccccc3cc2c1CCO' use_saved` <br>
-</details>
-
-<details markdown="block" class="cmd-wrap">
-<summary markdown="block">
-`predict reaction topn in batch from dataframe <dataframe_name> | file '<filename.csv>' | list ['<smiles>.<smiles>','<smiles>.<smiles>'] [ using (topn=<integer> ai_model='<ai_model>') ] [ use_saved ]`{: .cmd }
-</summary>
-Run a batch of reaction predictions for topn. The provided list of reactions can be specified as a DataFrame, a CSV file from your current workspace or a list of strings. When proving a DataFrame or CSV file, we will look for the "reactions" column. <br> 
-
-Reactions are defined by combining two SMILES strings delimited by a period. For example: `'BrBr.c1ccc2cc3ccccc3cc2c1'` <br> 
-
-Optional Parameters that can be specified in the `using` clause: <br> 
-- `ai_model='<model_name>'` What model to use. Use the command `list rxn models` to list all available models. The default is '2020-07-01'. <br> 
-- `topn=<integer>` Defined the number of results being returned. The default value is 3. <br> 
-
-You can reuse previously generated results by appending the optional `use_saved` clause. This will reuse the results of a previously run command with the same parameters, if available. <br> 
-
-Examples: <br> 
-- `predict reaction topn in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1']` <br> 
-- `predict reaction topn in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1'] using (topn=6)` <br> 
-- `predict reaction topn in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1'] use_saved ` <br>
+<cmd>get model service myservier result 'wergergerg'
 </details>
 
