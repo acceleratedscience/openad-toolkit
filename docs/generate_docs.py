@@ -292,6 +292,9 @@ def _parse_section(cmds_organized):
                 cmd_str = split[0]
                 cmd_description = split[1]
 
+            # Replace < and > with &lt; and &gt; so they don't get parsed as HTML tags
+            cmd_str = cmd_str.replace("<", "&lt;").replace(">", "&gt;")
+
             # Compile markdown
             cmd_output = "\n".join(
                 [
@@ -321,6 +324,15 @@ def _parse_description(description):
     description = split[0]
     examples = split[1] if len(split) > 1 else None
 
+    # Format description:
+    lines = description.splitlines()
+    lines_formatted = []
+    for line in lines:
+        # Replace <h1> with ####
+        line = re.sub(r"^<h1>(.+?)</h1>$", r"#### \1", line)
+        lines_formatted.append(line)
+    description = "\n".join(lines_formatted)
+
     # Format examples:
     if examples:
         lines = examples.splitlines()
@@ -331,6 +343,9 @@ def _parse_description(description):
             line = re.sub(r"^- ", "", line)
             # Wrap commands in code block
             line = re.sub(r"^<cmd>(.+?)</cmd>$", r"```shell\n\1\n```", line)
+            # Replace < and > with &lt; and &gt; so they don't get parsed as HTML tags
+            if "```shell" not in line:
+                line = line.replace("<", "&lt;").replace(">", "&gt;")
             lines_formatted.append(line)
         examples = "\n".join(lines_formatted)
 

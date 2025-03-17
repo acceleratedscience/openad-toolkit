@@ -38,10 +38,9 @@ This is the full list of available commands.
 
 <details markdown code>
 <summary markdown>
-show mmol|protein <fasta> | '<pdb_id>'
+show mmol|protein &lt;fasta&gt; | '&lt;pdb_id&gt;'
 </summary>
 Launch the molecule viewer to visualize your macromolecule and inspect its properties.
-
 #### Examples { .disable-anchor }
 
 Show a protein by its PDBe ID:
@@ -89,28 +88,28 @@ Clear any other sessions that may be running.
 
 <details markdown code>
 <summary markdown>
-set workspace <workspace_name>
+set workspace &lt;workspace_name&gt;
 </summary>
 Change the current workspace.
 </details>
 
 <details markdown code>
 <summary markdown>
-get workspace [ <workspace_name> ]
+get workspace [ &lt;workspace_name&gt; ]
 </summary>
 Display details a workspace. When no workspace name is passed, details of your current workspace are displayed.
 </details>
 
 <details markdown code>
 <summary markdown>
-create workspace <workspace_name> [ description('<description>') on path '<path>' ]
+create workspace &lt;workspace_name&gt; [ description('&lt;description&gt;') on path '&lt;path&gt;' ]
 </summary>
 Create a new workspace with an optional description and path.
 </details>
 
 <details markdown code>
 <summary markdown>
-remove workspace <workspace_name>
+remove workspace &lt;workspace_name&gt;
 </summary>
 Remove a workspace from your registry. Note that this doesn't remove the workspace's directory.
 </details>
@@ -126,7 +125,7 @@ Lists all your workspaces.
 
 <details markdown code>
 <summary markdown>
-set context <toolkit_name> [ reset ]
+set context &lt;toolkit_name&gt; [ reset ]
 </summary>
 Set your context to the chosen toolkit. By setting the context, the selected toolkit functions become available to you. The optional parameter <cmd>reset</cmd> can be used to reset your login information.
 </details>
@@ -142,21 +141,21 @@ Start recording a run.
 
 <details markdown code>
 <summary markdown>
-remove run <run_name>
+remove run &lt;run_name&gt;
 </summary>
 remove a run.
 </details>
 
 <details markdown code>
 <summary markdown>
-save run as <run_name>
+save run as &lt;run_name&gt;
 </summary>
 Stop recording a run and save it.
 </details>
 
 <details markdown code>
 <summary markdown>
-run <run_name>
+run &lt;run_name&gt;
 </summary>
 Execute a previously recorded run. This will execute every command and continue regardless of any failures.
 </details>
@@ -170,7 +169,7 @@ List all runs saved in the current workspace.
 
 <details markdown code>
 <summary markdown>
-display run <run_name>
+display run &lt;run_name&gt;
 </summary>
 Display the commands stored in a certain run.
 </details>
@@ -179,14 +178,14 @@ Display the commands stored in a certain run.
 
 <details markdown code>
 <summary markdown>
-display data '<filename.csv>'
+display data '&lt;filename.csv&gt;'
 </summary>
 Display data from a csv file.
 </details>
 
 <details markdown code>
 <summary markdown>
-result save [as '<filename.csv>']
+result save [as '&lt;filename.csv&gt;']
 </summary>
 Save table data to csv file.
 </details>
@@ -234,21 +233,12 @@ Return the result as dataframe (only for Jupyter Notebook)
 
 <details markdown code>
 <summary markdown>
-edit config '<json_config_file>' [ schema '<schema_file>']
+edit config '&lt;json_config_file&gt;' [ schema '&lt;schema_file&gt;']
 </summary>
 Edit any JSON file in your workspace directly from the CLI. If a schema is specified, it will be used for validation and documentation.
 </details>
 
 ### GUI
-
-<details markdown code>
-<summary markdown>
-install gui
-</summary>
-Install the OpenAD GUI (graphical user interface).
-
-The graphical user interface allows you to browse your workspace and visualize your datasets and molecules.
-</details>
 
 <details markdown code>
 <summary markdown>
@@ -275,14 +265,14 @@ Terminate the GUI server.
 
 <details markdown code>
 <summary markdown>
-tell me <how to do xyz>
+tell me &lt;how to do xyz&gt;
 </summary>
 Ask your AI assistant how to do anything in OpenAD.
 </details>
 
 <details markdown code>
 <summary markdown>
-set llm  <language_model_name>
+set llm  &lt;language_model_name&gt;
 </summary>
 Set the target language model name for the <cmd>tell me</cmd> command.
 </details>
@@ -305,38 +295,37 @@ List al directories and files in your current workspace.
 
 <details markdown code>
 <summary markdown>
-import from '<external_source_file>' to '<workspace_file>'
+import from '&lt;external_source_file&gt;' to '&lt;workspace_file&gt;'
 </summary>
 Import a file from outside OpenAD into your current workspace.
 </details>
 
 <details markdown code>
 <summary markdown>
-export from '<workspace_file>' to '<external_file>'
+export from '&lt;workspace_file&gt;' to '&lt;external_file&gt;'
 </summary>
 Export a file from your current workspace to anywhere on your hard drive.
 </details>
 
 <details markdown code>
 <summary markdown>
-copy file '<workspace_file>' to '<other_workspace_name>'
+copy file '&lt;workspace_file&gt;' to '&lt;other_workspace_name&gt;'
 </summary>
 Export a file from your current workspace to another workspace.
 </details>
 
 <details markdown code>
 <summary markdown>
-remove '<filename>'
+remove '&lt;filename&gt;'
 </summary>
 Remove a file from your current workspace.
 </details>
 
 <details markdown code>
 <summary markdown>
-open '<filename>'
+open '&lt;filename&gt;'
 </summary>
 Open a file or dataframe in the graphical user interface.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -372,14 +361,14 @@ List all available commands.
 
 <details markdown code>
 <summary markdown>
-? ...<soft>
+? ...&lt;soft&gt;
 </summary>
 List all commands containing "..."</soft>
 </details>
 
 <details markdown code>
 <summary markdown>
-... ?<soft>
+... ?&lt;soft&gt;
 </summary>
 List all commands starting with "..."</soft>
 </details>
@@ -390,22 +379,21 @@ List all commands starting with "..."</soft>
 <summary markdown>
 model auth list
 </summary>
-List authentication groups that have been added.
+List authentication groups that have been created.
 </details>
 
 <details markdown code>
 <summary markdown>
-model auth add group <auth_group> with '<auth_token>'
+model auth create group &lt;auth_group&gt; with '&lt;auth_token&gt;'
 </summary>
-Add an authentication group for model services to use.
+Create a new authentication group for model services to use.
 
 Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
 
 Authorization is required to connect to IBM-hosted models (IBM partners only). Using an auth group allows you to authorize multiple models at once, and is the recommended authorization method.
-
 #### Examples { .disable-anchor }
 
-1. Copy your authentication token from <link>http://open.accelerate.science</link> (or your custom URL if your company us running its own instance).
+1. Copy your authentication token from &lt;link&gt;http://open.accelerate.science&lt;/link&gt; (or your custom URL if your company us running its own instance).
 2. Create an auth group, e.g. 'default':
 ```shell
 model auth add group default with '<auth_token>'
@@ -423,12 +411,11 @@ model auth add service gen to group default
 
 <details markdown code>
 <summary markdown>
-model auth remove group <auth_group>
+model auth remove group &lt;auth_group&gt;
 </summary>
 Remove an authentication group.
 
 Single quotes are optional in case <cmd>auth_group</cmd> contains a space or special character.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -441,26 +428,28 @@ model auth remove group 'my group'
 
 <details markdown code>
 <summary markdown>
-model auth add service <service_name> to group <auth_group>
+model auth add service &lt;service_name&gt; to group &lt;auth_group&gt;
 </summary>
 Ad a model service to an authentication group.
 
 Single quotes are optional for both <cmd><service_name></cmd> and <cmd><auth_group></cmd> in case they contain a space or special character.
-
 #### Examples { .disable-anchor }
 
-<cmd>model auth add service molf to group default<cmd>
-<cmd>model auth add service 'my molf' to group 'my group'<cmd>
+```shell
+model auth add service molf to group default
+```
+```shell
+model auth add service 'my molf' to group 'my group'
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-model auth remove service <service_name>
+model auth remove service &lt;service_name&gt;
 </summary>
 Detach a model service from an authentication group.
 
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -480,12 +469,11 @@ Get the status of your currently cataloged services.
 
 <details markdown code>
 <summary markdown>
-model service describe <service_name>
+model service describe &lt;service_name&gt;
 </summary>
 Get a service's configuration details.
 
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -505,12 +493,11 @@ List your currently cataloged services.
 
 <details markdown code>
 <summary markdown>
-model service uncatalog <service_name>
+model service uncatalog &lt;service_name&gt;
 </summary>
 Uncatalog a model service.
 
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -523,12 +510,12 @@ uncatalog model service 'my gen'
 
 <details markdown code>
 <summary markdown>
-model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)
+model service catalog from [ remote ] '&lt;path&gt;|&lt;github&gt;|&lt;service_url&gt;' as &lt;service_name&gt; USING (&lt;parameter&gt;=&lt;value&gt; &lt;parameter&gt;=&lt;value&gt;)
 </summary>
 Catalog a model service from a local path, from GitHub or from an hosted service URL.
 
             
-<h1>Parameters</h1>
+#### Parameters
 
 <cmd><path>|<github>|<service_url></cmd>
     The location of the model service, to be provided in single quotes.
@@ -542,7 +529,7 @@ Catalog a model service from a local path, from GitHub or from an hosted service
     Single quotes are optional in case you want to used a space or special character.
 
     
-<h1>The USING Clause</h1>
+#### The USING Clause
 
 The parameters below are only needed when connecting to an IBM-hosted service (IBM partners only).
 
@@ -559,7 +546,6 @@ Authorization:
         For instructions on how to set up an auth group, run <cmd>model auth add group ?</cmd>
         Note: to use this option, <cmd>authorization</cmd> can not be defined.
 
-
 #### Examples { .disable-anchor }
 
 
@@ -569,12 +555,12 @@ catalog model service from 'git@github.com:acceleratedscience/generation_inferen
 ```
 
 Catalog a model using a authentication group
-<cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf
-USING (inference-service=molformer auth_group=default)</cmd>
+&lt;cmd&gt;catalog model service from remote 'https://open.accelerate.science/proxy' as molf
+USING (inference-service=molformer auth_group=default)&lt;/cmd&gt;
 
 Catalog a model using an authorization token
-<cmd>openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen
-USING (inference-service=generation authorization='<auth_token>')</cmd>
+&lt;cmd&gt;openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen
+USING (inference-service=generation authorization='&lt;auth_token&gt;')&lt;/cmd&gt;
 
 Catalog a remote service that was shared with you:
 ```shell
@@ -584,14 +570,13 @@ catalog model service from remote 'http://54.235.3.243:3001' as gen
 
 <details markdown code>
 <summary markdown>
-model service up <service_name> [ no_gpu ]
+model service up &lt;service_name&gt; [ no_gpu ]
 </summary>
 Launch a model service, after it was cataloged using <cmd>model service catalog</cmd>.
 
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
 
 If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -607,14 +592,13 @@ model service up gen no_gpu
 
 <details markdown code>
 <summary markdown>
-model service local up <service_name> [ no_gpu ]
+model service local up &lt;service_name&gt; [ no_gpu ]
 </summary>
 Launch a model service locally.
 
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
 
 If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -630,12 +614,11 @@ If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> c
 
 <details markdown code>
 <summary markdown>
-model service down <service_name>
+model service down &lt;service_name&gt;
 </summary>
 Deactivate a model service.
 
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
-
 #### Examples { .disable-anchor }
 
 ```shell
@@ -648,15 +631,20 @@ model service down 'my gen'
 
 <details markdown code>
 <summary markdown>
-model service get result <service_name> '<result_id>'
+model service get result &lt;service_name&gt; '&lt;result_id&gt;'
 </summary>
 Retrieve a result from a model service.
+
+This is for async inference, which will return a <cmd><result_id></cmd> instead of a result.
             
 Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
-
 #### Examples { .disable-anchor }
 
-<cmd>get model service gen result 'xyz'
-<cmd>get model service 'my gen' result 'xyz'
+```shell
+get model service gen result 'xyz'
+```
+```shell
+get model service 'my gen' result 'xyz'
+```
 </details>
 

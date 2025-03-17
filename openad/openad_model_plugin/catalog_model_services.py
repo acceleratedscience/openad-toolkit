@@ -783,8 +783,8 @@ Examples:
 {CLAUSE_QUOTES_SERVICE_AUTHGROUP}
 
 Examples:
-- <cmd>model auth add service molf to group default<cmd>
-- <cmd>model auth add service 'my molf' to group 'my group'<cmd>
+- <cmd>model auth add service molf to group default</cmd>
+- <cmd>model auth add service 'my molf' to group 'my group'</cmd>
 """,
         )
     )
@@ -1066,12 +1066,14 @@ Examples:
             category="Model",
             command="model service get result <service_name> '<result_id>'",
             description=f"""Retrieve a result from a model service.
+
+This is for async inference, which will return a <cmd><result_id></cmd> instead of a result.
             
 {CLAUSE_QUOTES_SERVICE}
 
 Examples:
-- <cmd>get model service gen result 'xyz'
-- <cmd>get model service 'my gen' result 'xyz'
+- <cmd>get model service gen result 'xyz'</cmd>
+- <cmd>get model service 'my gen' result 'xyz'</cmd>
 """,
         )
     )
