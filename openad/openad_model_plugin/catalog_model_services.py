@@ -48,6 +48,7 @@ CLAUSE_QUOTES_AUTHGROUP = (
     "Single quotes are optional in case <cmd>auth_group</cmd> contains a space or special character."
 )
 CLAUSE_QUOTES_SERVICE_AUTHGROUP = "Single quotes are optional for both <cmd><service_name></cmd> and <cmd><auth_group></cmd> in case they contain a space or special character."
+CLAUSE_GPU = "If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause."
 
 
 def get_namespaces():
@@ -696,6 +697,8 @@ def service_catalog_grammar(statements: list, help: list):
         using_keyword + py.Suppress("(") + py.Optional(py.OneOrMore(param_value_pair))("params") + py.Suppress(")")
     )
 
+    # ---
+    # Model auth list
     statements.append(py.Forward(model + auth + _list)("list_auth_services"))
     help.append(
         help_dict_create(
@@ -706,6 +709,8 @@ def service_catalog_grammar(statements: list, help: list):
         )
     )
 
+    # ---
+    # Model auth add group
     statements.append(
         py.Forward(model + auth + add + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
             "add_service_auth_group"
@@ -735,6 +740,8 @@ You can also add a cataloged model to a group after you've created it:
         )
     )
 
+    # ---
+    # Model auth remove group
     statements.append(py.Forward(model + auth + remove + group + auth_group("auth_group"))("remove_service_auth_group"))
     help.append(
         help_dict_create(
@@ -752,6 +759,8 @@ Examples:
         )
     )
 
+    # ---
+    # Model auth add service to group
     statements.append(
         py.Forward(model + auth + add + service + service_name("service_name") + to + group + auth_group("auth_group"))(
             "attach_service_auth_group"
@@ -773,6 +782,8 @@ Examples:
         )
     )
 
+    # ---
+    # Model auth remove
     statements.append(
         py.Forward(model + auth + remove + service + service_name("service_name"))("detach_service_auth_group")
     )
@@ -780,7 +791,7 @@ Examples:
         help_dict_create(
             name="model auth remove service",
             category="Model",
-            command="model auth remove service '<service_name>'|<service_name>",
+            command="model auth remove service <service_name>",
             description=f"""Detach a model service from an authentication group.
 
 {CLAUSE_QUOTES_SERVICE}
@@ -791,6 +802,8 @@ Examples:
         )
     )
 
+    # ---
+    # Model service status
     statements.append(py.Forward(model + service + status)("model_service_status"))
     help.append(
         help_dict_create(
@@ -801,13 +814,15 @@ Examples:
         )
     )
 
+    # ---
+    # Model service describe
     statements.append(py.Forward(model + service + describe + (service_name)("service_name"))("model_service_config"))
     help.append(
         help_dict_create(
             name="model service describe",
             category="Model",
             command="model service describe <service_name>",
-            description=f"""Get the configuration of a service.
+            description=f"""Get a service's configuration details.
 
 {CLAUSE_QUOTES_SERVICE}
 
@@ -818,22 +833,30 @@ Examples:
         )
     )
 
+    # ---
+    # Model catalog list
     statements.append(py.Forward(model + catalog + _list)("get_catalog_namespaces"))
+    # Backward compatibility: model catalog list
+    statements.append(py.Forward(model + service + _list)("get_catalog_namespaces"))
     help.append(
         help_dict_create(
-            name="model catalog list",
+            name="model service list",
             category="Model",
-            command="model catalog list",
+            command="model service list",
             description="List your currently cataloged services.",
         )
     )
 
+    # ---
+    # Model service uncatalog
+    statements.append(py.Forward(model + service + uncatalog + service_name("service_name"))("uncatalog_model_service"))
+    # Backward compatibility: uncatalog model service ...
     statements.append(py.Forward(uncatalog + model + service + service_name("service_name"))("uncatalog_model_service"))
     help.append(
         help_dict_create(
-            name="uncatalog model service",
+            name="model service uncatalog",
             category="Model",
-            command="uncatalog model service <service_name>",
+            command="model service uncatalog <service_name>",
             description=f"""Uncatalog a model service.
 
 {CLAUSE_QUOTES_SERVICE}
@@ -845,6 +868,22 @@ Examples:
         )
     )
 
+    # ---
+    # Model service catalog
+    statements.append(
+        py.Forward(
+            model
+            + service
+            + catalog
+            + fr_om
+            + py.Optional(remote("remote"))
+            + quoted_string("path")
+            + a_s
+            + (quoted_string | py.Word(py.alphanums + "_"))("service_name")
+            + using_clause
+        )("catalog_add_model_service")
+    )
+    # Backward compatibility: catalog model service from ...
     statements.append(
         py.Forward(
             catalog
@@ -916,6 +955,8 @@ Authorization:
         )
     )
 
+    # ---
+    # Model service up
     statements.append(
         py.Forward(
             model + service + up + service_name("service_name") + py.Optional(py.CaselessKeyword("NO_GPU")("no_gpu"))
@@ -930,7 +971,7 @@ Authorization:
 
 {CLAUSE_QUOTES_SERVICE}
 
-If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause.
+{CLAUSE_GPU}
 
 Examples:
 - <cmd>model service up gen</cmd>
@@ -939,6 +980,8 @@ Examples:
         )
     )
 
+    # ---
+    # Model service local up
     statements.append(
         py.Forward(
             model
@@ -953,22 +996,27 @@ Examples:
         help_dict_create(
             name="Model local up",
             category="Model",
-            command="model service local up <service_name> ",
+            command="model service local up <service_name> [ no_gpu ]",
             description=f"""Launch a model service locally.
 
 {CLAUSE_QUOTES_SERVICE}
 
+{CLAUSE_GPU}
+
 Example:
 - <cmd> model service local up gen</cmd>
 - <cmd> model service local up 'my gen'</cmd>
+- <cmd> model service local up gen no_gpu</cmd>
 """,
         )
     )
 
+    # ---
+    # Model service down
     statements.append(py.Forward(model + service + down + service_name("service_name"))("service_down"))
     help.append(
         help_dict_create(
-            name="Model down",
+            name="model down",
             category="Model",
             command="model service down <service_name>",
             description=f"""Deactivate a model service.
@@ -982,11 +1030,24 @@ Examples:
         )
     )
 
+    # ---
+    # Model service get result
+    statements.append(
+        py.Forward(
+            model
+            + service
+            + py.CaselessKeyword("get")
+            + py.CaselessKeyword("result")
+            + service_name("service_name")
+            + quoted_string("request_id")
+        )("get_model_service_result")
+    )
+    # Backward compatibilty: get model service <service_name> result '<result_id>'
     statements.append(
         py.Forward(
             py.CaselessKeyword("get")
             + model
-            + py.CaselessKeyword("service")
+            + service
             + service_name("service_name")
             + py.CaselessKeyword("result")
             + quoted_string("request_id")
@@ -994,9 +1055,9 @@ Examples:
     )
     help.append(
         help_dict_create(
-            name="get model service sesult",
+            name="model service result",
             category="Model",
-            command="get model service <service_name> result '<result_id>'",
+            command="model service get result <service_name> '<result_id>'",
             description=f"""Retrieve a result from a model service.
             
 {CLAUSE_QUOTES_SERVICE}
