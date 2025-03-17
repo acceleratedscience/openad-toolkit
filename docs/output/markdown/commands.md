@@ -390,160 +390,273 @@ List all commands starting with "..."</soft>
 <summary markdown>
 model auth list
 </summary>
-show authentication group mapping
+List authentication groups that have been added.
 </details>
 
 <details markdown code>
 <summary markdown>
-model auth add group '<auth_group>'|<auth_group> with '<api_key>'
+model auth add group <auth_group> with '<auth_token>'
 </summary>
-add an authentication group for model services to use
+Add an authentication group for model services to use.
+
+Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
+
+Authorization is required to connect to IBM-hosted models (IBM partners only). Using an auth group allows you to authorize multiple models at once, and is the recommended authorization method.
+
+#### Examples { .disable-anchor }
+
+1. Copy your authentication token from <link>http://open.accelerate.science</link> (or your custom URL if your company us running its own instance).
+2. Create an auth group, e.g. 'default':
+```shell
+model auth add group default with '<auth_token>'
+```
+3. Catalog your services with the auth_group provided:
+```shell
+model service catalog from remote 'https://open.accelerate.science/proxy' as gen using (inference-service=generation auth_group=default)
+```
+
+You can also add a cataloged model to a group after you've created it:
+```shell
+model auth add service gen to group default
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-model auth remove group '<auth_group>' | <auth_group>
+model auth remove group <auth_group>
 </summary>
-remove an authentication group
+Remove an authentication group.
+
+Single quotes are optional in case <cmd>auth_group</cmd> contains a space or special character.
+
+#### Examples { .disable-anchor }
+
+```shell
+model auth remove group default
+```
+```shell
+model auth remove group 'my group'
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-model auth add service '<service_name>'|,service_name> to group '<auth_group>'|<auth_group>
+model auth add service <service_name> to group <auth_group>
 </summary>
-Attach an authentication group to a model service
+Ad a model service to an authentication group.
+
+Single quotes are optional for both <cmd><service_name></cmd> and <cmd><auth_group></cmd> in case they contain a space or special character.
+
+#### Examples { .disable-anchor }
+
+<cmd>model auth add service molf to group default<cmd>
+<cmd>model auth add service 'my molf' to group 'my group'<cmd>
 </details>
 
 <details markdown code>
 <summary markdown>
-model auth remove service '<service_name>'|<service_name>
+model auth remove service <service_name>
 </summary>
-Detatch an authentication group from a model service
+Detach a model service from an authentication group.
+
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
+
+#### Examples { .disable-anchor }
+
+```shell
+model auth remove service molf
+```
+```shell
+model auth remove service 'my molf'
+```
 </details>
 
 <details markdown code>
 <summary markdown>
 model service status
 </summary>
-Get the status of currently cataloged services
+Get the status of your currently cataloged services.
 </details>
 
 <details markdown code>
 <summary markdown>
-model service describe '<service_name>'|<service_name>
+model service describe <service_name>
 </summary>
-get the configuration of a service
+Get a service's configuration details.
+
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
+
+#### Examples { .disable-anchor }
+
+```shell
+model service describe gen
+```
+```shell
+model service describe 'my gen'
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-model catalog list
+model service list
 </summary>
-get the list of currently cataloged services
+List your currently cataloged services.
 </details>
 
 <details markdown code>
 <summary markdown>
-uncatalog model service '<service_name>'|<service_name>
+model service uncatalog <service_name>
 </summary>
-uncatalog a model service 
+Uncatalog a model service.
 
- Example: 
-<cmd>uncatalog model service 'gen'</cmd>
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
+
+#### Examples { .disable-anchor }
+
+```shell
+uncatalog model service 'gen'
+```
+```shell
+uncatalog model service 'my gen'
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-catalog model service from (remote) '<path> or <github> or <service_url>' as  '<service_name>'|<service_name>   USING (<parameter>=<value> <parameter>=<value>)
+model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)
 </summary>
-catalog a model service from a path or github or remotely from an existing OpenAD service.
-(USING) optional headers parameters for communication with service backend.
-If you are cataloging a service using a model defined in a directory, provide the absolute <cmd> <path> </cmd> of that directory in quotes.
+Catalog a model service from a local path, from GitHub or from an hosted service URL.
 
-The following options require the <cmd>remote</cmd> option be declared.
+            
+<h1>Parameters</h1>
 
-If you are cataloging a service using a model defined in github repository, provide the absolute <cmd> <github> </cmd> of that github directory quotes.
+<cmd><path>|<github>|<service_url></cmd>
+    The location of the model service, to be provided in single quotes.
+    This can be a local path, a GitHub SSH URI, or a URL for an existing remote service:
+    <soft>...</soft><cmd>from '/path/to/service'</cmd>
+    <soft>...</soft><cmd>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
+    <soft>...</soft><cmd>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
 
-If you are cataloging a remote service on a ip address and port provide the remote services ipaddress and port in quoted string e.g. <cmd>'0.0.0.0:8080'</cmd>
+<cmd><service_name></cmd>
+    How you will be refering to the service when using it. Keep it short, e.g. <cmd>prop</cmd> for a service that calculates properties.
+    Single quotes are optional in case you want to used a space or special character.
 
-<cmd>service_name</cmd>: this is the name of the service as you will define it for your usage. e.g <cmd>prop</cmd> short for properties. 
+    
+<h1>The USING Clause</h1>
 
-USING Parameters:
+The parameters below are only needed when connecting to an IBM-hosted service (IBM partners only).
 
-If using a hosted service the following parameters must be supplied:
--<cmd>Inference-Service</cmd>: this is the name of the inference service that is hosted, it is a required parameter if cataloging a remote service.
-An authorization parameter is always required if cataloging a hosted service, either Auhtorisation group (<cmd>auth_group</cmd>) or Authorisation bearer_token/api_key (<cmd>Authorization</cmd>):
--<cmd>auth_group</cmd>: this is the name of an authorization group which contains the api_key linked to the service access. This can only be used if <cmd>Authorization</cmd> is not also defined.
-OR
--<cmd>Authorization</cmd>: this parameter is designed to be used when a <cmd>auth_group</cmd> is not defined.
+<cmd>inference-service=<string></cmd> (required)
+    The name of the inference service you want to connect to, eg. generation ot molformer.
+Authorization:
+    To authorize to an IBM-hosted service (IBM partners only), you have two options:
+    1. <cmd>authorization='<auth_token>'</cmd>
+        Provide your authorzation token directly.
+        Note: to use this option, <cmd>auth_group</cmd> can not be defined.
+    2. <cmd>auth_group=<auth_group_name></cmd>
+        The name of an authorization group which contains your <cmd>auth_token</cmd>.
+        This is recommended if you will be using more than one model service.
+        For instructions on how to set up an auth group, run <cmd>model auth add group ?</cmd>
+        Note: to use this option, <cmd>authorization</cmd> can not be defined.
 
-Example:
 
-Skypilot Deployment
--<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as 'gen'</cmd>
-
-Service using a authentication group 
--<cmd>catalog model service from remote '<service_url>' as  molf  USING (Inference-Service=molformer  )</cmd>
-<cmd> model auth add service 'molf' to group 'default'</cmd>
-
-Single Authorisation Service
--<cmd>openad catalog model service from remote '<service_URL>' as 'gen' USING (Inference-Service=generation Authorization='<api_key>')</cmd>
-
-Catalog a remote service shared with you:
--<cmd>catalog model service from remote 'http://54.235.3.243:30001' as gen</cmd>
-</details>
-
-<details markdown code>
-<summary markdown>
-model service up '<service_name>'|<service_name> [no_gpu]}
-</summary>
-launches a cataloged model service when it was cataloged as a self managed service from a directory or github repository.
-If you do not want to launch a service with GPU you should specify <cmd>no_gpu</cmd> at the end of the command.
 #### Examples { .disable-anchor }
 
 
--<cmd>model service up gen</cmd>
+Catalog a model using SkyPilot deployment
+```shell
+catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen
+```
 
--<cmd>model service up 'gen'</cmd>
+Catalog a model using a authentication group
+<cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf
+USING (inference-service=molformer auth_group=default)</cmd>
 
--<cmd>model service up gen no_gpu</cmd>
+Catalog a model using an authorization token
+<cmd>openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen
+USING (inference-service=generation authorization='<auth_token>')</cmd>
+
+Catalog a remote service that was shared with you:
+```shell
+catalog model service from remote 'http://54.235.3.243:3001' as gen
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-model service local up '<service_name>'|<service_name>
+model service up <service_name> [ no_gpu ]
 </summary>
-Launches a model service locally.
+Launch a model service, after it was cataloged using <cmd>model service catalog</cmd>.
 
-            Example:
-              <cmd> model service local up gen</cmd>
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
+
+If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause.
+
+#### Examples { .disable-anchor }
+
+```shell
+model service up gen
+```
+```shell
+model service up 'my gen'
+```
+```shell
+model service up gen no_gpu
+```
 </details>
 
 <details markdown code>
 <summary markdown>
-model service down '<service_name>'|<service_name>
+model service local up <service_name> [ no_gpu ]
 </summary>
-Bring down a model service  
- #### Examples { .disable-anchor }
+Launch a model service locally.
 
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
+
+If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause.
+
+#### Examples { .disable-anchor }
+
+```shell
+ model service local up gen
+```
+```shell
+ model service local up 'my gen'
+```
+```shell
+ model service local up gen no_gpu
+```
+</details>
+
+<details markdown code>
+<summary markdown>
+model service down <service_name>
+</summary>
+Deactivate a model service.
+
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
+
+#### Examples { .disable-anchor }
 
 ```shell
 model service down gen
 ```
-
 ```shell
-model service down 'gen'
+model service down 'my gen'
 ```
 </details>
 
 <details markdown code>
 <summary markdown>
-get model service '<service_name>'|<service_name> result '<result_id>'
+model service get result <service_name> '<result_id>'
 </summary>
-retrieves a result from a model service  
- #### Examples { .disable-anchor }
+Retrieve a result from a model service.
+            
+Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character.
 
+#### Examples { .disable-anchor }
 
-<cmd>get model service myservier result 'wergergerg'
+<cmd>get model service gen result 'xyz'
+<cmd>get model service 'my gen' result 'xyz'
 </details>
 

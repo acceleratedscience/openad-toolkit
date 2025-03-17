@@ -673,16 +673,17 @@ if not is_notebook_mode():
 # region - GUI
 ##########################################################################
 
-# Install gui
-statements.append(Forward(install + gui)("install_gui"))
-grammar_help.append(
-    help_dict_create(
-        name="install gui",
-        category="GUI",
-        command="install gui",
-        description="Install the OpenAD GUI (graphical user interface).\n\nThe graphical user interface allows you to browse your workspace and visualize your datasets and molecules.",  # Partly repeated. Move to msgs()",
-    )
-)
+# Installation of GUI is a future feature, currently a build of the GUI is included into the repo.
+# # Install gui
+# statements.append(Forward(install + gui)("install_gui"))
+# grammar_help.append(
+#     help_dict_create(
+#         name="install gui",
+#         category="GUI",
+#         command="install gui",
+#         description="Install the OpenAD GUI (graphical user interface).\n\nThe graphical user interface allows you to browse your workspace and visualize your datasets and molecules.",  # Partly repeated. Move to msgs()",
+#     )
+# )
 
 # Launch gui
 statements.append(Forward(launch + gui)("launch_gui"))

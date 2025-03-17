@@ -684,6 +684,7 @@ def service_catalog_grammar(statements: list, help: list):
     group = py.CaselessKeyword("group")
     _with = py.CaselessKeyword("with")
     add = py.CaselessKeyword("add")
+    create = py.CaselessKeyword("create")
     remove = py.CaselessKeyword("remove")
     to = py.CaselessKeyword("to")
 
@@ -705,12 +706,18 @@ def service_catalog_grammar(statements: list, help: list):
             name="model auth list",
             category="Model",
             command="model auth list",
-            description="List authentication groups that have been added.",
+            description="List authentication groups that have been created.",
         )
     )
 
     # ---
-    # Model auth add group
+    # Model auth create group
+    statements.append(
+        py.Forward(model + auth + create + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
+            "add_service_auth_group"
+        )
+    )
+    # Backward compatibility: model auth add group
     statements.append(
         py.Forward(model + auth + add + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
             "add_service_auth_group"
@@ -718,10 +725,10 @@ def service_catalog_grammar(statements: list, help: list):
     )
     help.append(
         help_dict_create(
-            name="model auth add group",
+            name="model auth create group",
             category="Model",
-            command="model auth add group <auth_group> with '<auth_token>'",
-            description="""Add an authentication group for model services to use.
+            command="model auth create group <auth_group> with '<auth_token>'",
+            description="""Create a new authentication group for model services to use.
 
 Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
 
