@@ -321,17 +321,19 @@ def _parse_description(description):
         split = description.split("Examples:")
     if len(split) == 1:
         split = description.split("Example:")
-    description = split[0]
+    description_only = split[0]
     examples = split[1] if len(split) > 1 else None
 
     # Format description:
-    lines = description.splitlines()
+    lines = description_only.splitlines()
     lines_formatted = []
     for line in lines:
-        # Replace <h1> with ####
-        line = re.sub(r"^<h1>(.+?)</h1>$", r"#### \1", line)
+        # Replace <h1> with fake #### h4 so it doesn't show up in the TOC
+        line = re.sub(r"^<h1>(.+?)</h1>$", r"**\1**{.fake-h4}", line)
+        # Replace style tags
+        line = _tags_to_markdown(line)
         lines_formatted.append(line)
-    description = "\n".join(lines_formatted)
+    description_only = "\n".join(lines_formatted)
 
     # Format examples:
     if examples:
@@ -342,7 +344,11 @@ def _parse_description(description):
             # Remove leading dash
             line = re.sub(r"^- ", "", line)
             # Wrap commands in code block
+            print("*\n", f"--{line}--")
             line = re.sub(r"^<cmd>(.+?)</cmd>$", r"```shell\n\1\n```", line)
+            print("*\n", f"--{line}--")
+            # Replace style tags
+            line = _tags_to_markdown(line)
             # Replace < and > with &lt; and &gt; so they don't get parsed as HTML tags
             if "```shell" not in line:
                 line = line.replace("<", "&lt;").replace(">", "&gt;")
@@ -350,7 +356,11 @@ def _parse_description(description):
         examples = "\n".join(lines_formatted)
 
         # Add title
-        description = f"{description}#### Examples {{ .disable-anchor }}\n{examples}"
+        # Fake #### h4 so it doesn't show up in the TOC
+        description = f"{description_only}\n**Examples**{{ .fake-h4 }}\n{examples}"
+
+    # Format total
+    description = _tags_to_markdown(description)
 
     # Convert to markdown
     # description = tags_to_markdown(description)
@@ -379,6 +389,35 @@ def _parse_description(description):
 def _toc_link(title, level=0):
     dash = "  " * level + "- "
     return f"{dash}[{title}](#{title.replace(' ', '-').lower()})"
+
+
+def _tags_to_markdown(text):
+    """
+    Convert XML tags to markdown.
+
+    This is forked from style parser, which was designed for Jupyter output
+    and has some nuances that interfer with our usecase for MkDocs.
+    We'll need to revisit the style parser at some point to be able to handle
+    proper HTML output for a GUI terminal, after which this function can be replaced.
+    """
+    text = re.sub(r"<h1>(.*?)<\/h1>", r"## \1", text)
+    text = re.sub(r"<h2>(.*?)<\/h2>", r"### \1", text)
+    text = re.sub(r"<link>(.*?)<\/link>", r"[\1](\1)", text)  # Diff
+    text = re.sub(r"<bold>(.*?)<\/bold>", r"**\1**", text)
+    text = re.sub(r"<cmd>(.*?)<\/cmd>", r"`\1`", text)
+    text = re.sub(r"<red>(.*?)<\/red>", r'<span style="color: #d00">\1</span>', text)
+    text = re.sub(r"<green>(.*?)<\/green>", r'<span style="color: #090">\1</span>', text)
+    text = re.sub(r"<yellow>(.*?)<\/yellow>", r'<span style="color: #dc0">\1</span>', text)
+    text = re.sub(r"<blue>(.*?)<\/blue>", r'<span style="color: #00d">\1</span>', text)
+    text = re.sub(r"<magenta>(.*?)<\/magenta>", r'<span style="color: #d07">\1</span>', text)
+    text = re.sub(r"<cyan>(.*?)<\/cyan>", r'<span style="color: #0cc">\1</span>', text)
+    text = re.sub(r"<on_red>(.*?)<\/on_red>", r'<span style="background: #d00; color: #fff">\1</span>', text)
+    text = re.sub(r"<on_green>(.*?)<\/on_green>", r'<span style="background: #090; color: #fff">\1</span>', text)
+    text = re.sub(r"<on_yellow>(.*?)<\/on_yellow>", r'<span style="background: #dc0; color: #fff">\1</span>', text)
+    text = re.sub(r"<on_blue>(.*?)<\/on_blue>", r'<span style="background: #00d; color: #fff">\1</span>', text)
+    text = re.sub(r"<on_magenta>(.*?)<\/on_magenta>", r'<span style="background: #d07; color: #fff">\1</span>', text)
+    text = re.sub(r"<on_cyan>(.*?)<\/on_cyan>", r'<span style="background: #0cc; color: #fff">\1</span>', text)
+    return text
 
 
 # endregion

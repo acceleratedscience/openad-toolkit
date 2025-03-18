@@ -712,12 +712,13 @@ def service_catalog_grammar(statements: list, help: list):
 
     # ---
     # Model auth create group
-    statements.append(
-        py.Forward(model + auth + create + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
-            "add_service_auth_group"
-        )
-    )
-    # Backward compatibility: model auth add group
+    # Consistent command - to be swapped:
+    # statements.append(
+    #     py.Forward(model + auth + create + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
+    #         "add_service_auth_group"
+    #     )
+    # )
+    # Inconsistent comand:
     statements.append(
         py.Forward(model + auth + add + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
             "add_service_auth_group"
@@ -727,7 +728,8 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model auth create group",
             category="Model",
-            command="model auth create group <auth_group> with '<auth_token>'",
+            # command="model auth create group <auth_group> with '<auth_token>'", # Consistent - to be swapped
+            command="model auth add group <auth_group> with '<auth_token>'",  # Inconsistent
             description="""Create a new authentication group for model services to use.
 
 Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
@@ -810,13 +812,17 @@ Examples:
     )
 
     # ---
-    # Model service status
+    # Model catalog status
+    # Consistent command - to be swapped:
+    # statements.append(py.Forward(model + catalog + status)("model_service_status"))
+    # Inconsistent command:
     statements.append(py.Forward(model + service + status)("model_service_status"))
     help.append(
         help_dict_create(
             name="model service status",
             category="Model",
-            command="model service status",
+            # command="model catalog status", # Consistent - to be swapped
+            command="model service status",  # Inconsistent
             description="Get the status of your currently cataloged services.",
         )
     )
@@ -843,27 +849,27 @@ Examples:
     # ---
     # Model catalog list
     statements.append(py.Forward(model + catalog + _list)("get_catalog_namespaces"))
-    # Backward compatibility: model catalog list
-    statements.append(py.Forward(model + service + _list)("get_catalog_namespaces"))
     help.append(
         help_dict_create(
-            name="model service list",
+            name="model catalog list",
             category="Model",
-            command="model service list",
+            command="model catalog list",
             description="List your currently cataloged services.",
         )
     )
 
     # ---
     # Model service uncatalog
-    statements.append(py.Forward(model + service + uncatalog + service_name("service_name"))("uncatalog_model_service"))
-    # Backward compatibility: uncatalog model service ...
+    # Consistent command - to be swapped:
+    # statements.append(py.Forward(model + service + uncatalog + service_name("service_name"))("uncatalog_model_service"))
+    # Iconsistent command:
     statements.append(py.Forward(uncatalog + model + service + service_name("service_name"))("uncatalog_model_service"))
     help.append(
         help_dict_create(
             name="model service uncatalog",
             category="Model",
-            command="model service uncatalog <service_name>",
+            # command="model service uncatalog <service_name>", # Consistent - to be swapped
+            command="uncatalog model service <service_name>",  # Inconsistent
             description=f"""Uncatalog a model service.
 
 {CLAUSE_QUOTES_SERVICE}
@@ -877,20 +883,21 @@ Examples:
 
     # ---
     # Model service catalog
-    statements.append(
-        py.Forward(
-            model
-            + service
-            + catalog
-            + fr_om
-            + py.Optional(remote("remote"))
-            + quoted_string("path")
-            + a_s
-            + (quoted_string | py.Word(py.alphanums + "_"))("service_name")
-            + using_clause
-        )("catalog_add_model_service")
-    )
-    # Backward compatibility: catalog model service from ...
+    # Consistent command - to be swapped:
+    # statements.append(
+    #     py.Forward(
+    #         model
+    #         + service
+    #         + catalog
+    #         + fr_om
+    #         + py.Optional(remote("remote"))
+    #         + quoted_string("path")
+    #         + a_s
+    #         + (quoted_string | py.Word(py.alphanums + "_"))("service_name")
+    #         + using_clause
+    #     )("catalog_add_model_service")
+    # )
+    # Inconsistent command:
     statements.append(
         py.Forward(
             catalog
@@ -908,8 +915,11 @@ Examples:
         help_dict_create(
             name="catalog model service",
             category="Model",
-            command="model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)",
+            # command="model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)", # Consistent - to be swapped
+            command="catalog model service from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)",  # Inconsistent
             description="""Catalog a model service from a local path, from GitHub or from an hosted service URL.
+
+Use the <cmd>remote</cmd> clause when cataloging from a hosted service URL.
 
             
 <h1>Parameters</h1>
@@ -917,9 +927,9 @@ Examples:
 <cmd><path>|<github>|<service_url></cmd>
     The location of the model service, to be provided in single quotes.
     This can be a local path, a GitHub SSH URI, or a URL for an existing remote service:
-    <soft>...</soft><cmd>from '/path/to/service'</cmd>
-    <soft>...</soft><cmd>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
-    <soft>...</soft><cmd>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
+    <cmd><soft>...</soft>from '/path/to/service'</cmd>
+    <cmd><soft>...</soft>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
+    <cmd><soft>...</soft>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
 
 <cmd><service_name></cmd>
     How you will be refering to the service when using it. Keep it short, e.g. <cmd>prop</cmd> for a service that calculates properties.
@@ -950,12 +960,10 @@ Authorization:
 <cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen</cmd>
 
 - Catalog a model using a authentication group
-<cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf
-    USING (inference-service=molformer auth_group=default)</cmd>
+<cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf USING (inference-service=molformer auth_group=default)</cmd>
 
 - Catalog a model using an authorization token
-<cmd>openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen
-    USING (inference-service=generation authorization='<auth_token>')</cmd>
+<cmd>openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen USING (inference-service=generation authorization='<auth_token>')</cmd>
 
 - Catalog a remote service that was shared with you:
 <cmd>catalog model service from remote 'http://54.235.3.243:3001' as gen</cmd>""",
@@ -1039,17 +1047,18 @@ Examples:
 
     # ---
     # Model service get result
-    statements.append(
-        py.Forward(
-            model
-            + service
-            + py.CaselessKeyword("get")
-            + py.CaselessKeyword("result")
-            + service_name("service_name")
-            + quoted_string("request_id")
-        )("get_model_service_result")
-    )
-    # Backward compatibilty: get model service <service_name> result '<result_id>'
+    # Consistent command - to be swapped:
+    # statements.append(
+    #     py.Forward(
+    #         model
+    #         + service
+    #         + py.CaselessKeyword("get")
+    #         + py.CaselessKeyword("result")
+    #         + service_name("service_name")
+    #         + quoted_string("request_id")
+    #     )("get_model_service_result")
+    # )
+    # Inconsistent command:
     statements.append(
         py.Forward(
             py.CaselessKeyword("get")
@@ -1064,7 +1073,8 @@ Examples:
         help_dict_create(
             name="model service result",
             category="Model",
-            command="model service get result <service_name> '<result_id>'",
+            # command="model service get result <service_name> '<result_id>'", # Consistent - to be swapped
+            command="get model service <service_name> result '<result_id>'",  # Inconsistent
             description=f"""Retrieve a result from a model service.
 
 This is for async inference, which will return a <cmd><result_id></cmd> instead of a result.
