@@ -311,12 +311,12 @@ def _open_browser(host, port, path, query, hash, silent=False):
             # Render iframe & buttons
 
             iframe_html = f'{style}{btn_wrap}<iframe src="{url}" crossorigin="anonymous" width="{width}" height="{height}" style="border:solid 1px #ddd;box-sizing:border-box;{jl_padding_correction}"></iframe>'
-            import os
 
             if os.getenv("COLAB_RELEASE_TAG"):
+                print("here")
                 from google.colab.output import serve_kernel_port_as_iframe
 
-                serve_kernel_port_as_iframe(port=port, path=colab_url, width="{width}", height="{height}")
+                serve_kernel_port_as_iframe(port=port, path=colab_url, width=width, height=height)
             else:
 
                 display(HTML(iframe_html))
