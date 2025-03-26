@@ -525,6 +525,7 @@ def show_mol(cmd_pointer, inp):
 
     molecule_identifier = inp.as_dict()["molecule_identifier"]
     path = "smol/" + urllib.parse.quote(molecule_identifier, safe="")
+    print("initialising gui")
     gui_init(cmd_pointer, path)
     return True
 

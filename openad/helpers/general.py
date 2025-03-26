@@ -374,9 +374,7 @@ def style_bool(value):
     return (
         style(f"<success>{value}</success>")
         if value is True
-        else style(f"<error>{value}</error>")
-        if value is False
-        else value
+        else style(f"<error>{value}</error>") if value is False else value
     )
 
 
@@ -428,7 +426,7 @@ def get_case_insensitive_key(dictionary, key_lowercase):
 
 
 def get_platform():
-    platforms = {"linux1": "Linux", "linux2": "Linux", "darwin": "OS X", "win32": "Windows"}
+    platforms = {"linux": "Linux", "linux1": "Linux", "linux2": "Linux", "darwin": "OS X", "win32": "Windows"}
     if sys.platform not in platforms:
         return sys.platform
     return platforms[sys.platform]
