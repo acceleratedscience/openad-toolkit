@@ -316,7 +316,7 @@ def _open_browser(host, port, path, query, hash, silent=False):
             if os.getenv("COLAB_RELEASE_TAG"):
                 from google.colab.output import serve_kernel_port_as_iframe
 
-                serve_kernel_port_as_iframe(port=port, path=colab_url,width="{width}" height="{height}")
+                serve_kernel_port_as_iframe(port=port, path=colab_url, width="{width}", height="{height}")
             else:
 
                 display(HTML(iframe_html))
