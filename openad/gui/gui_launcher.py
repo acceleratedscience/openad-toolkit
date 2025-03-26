@@ -95,6 +95,7 @@ def _launch(routes={}, path=None, query="", hash="", silent=False):
 
     global GUI_SERVER
 
+    print("launching")
     # If the server is already running, don't launch it again.
     if GUI_SERVER and GUI_SERVER.is_running():
         _open_browser(GUI_SERVER.host, GUI_SERVER.port, path, query, hash, silent)
