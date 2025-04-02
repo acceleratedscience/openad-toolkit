@@ -277,11 +277,11 @@ This command gets (generate/predict) crystal properties
 service_command_description[
     "get_protein_property"
 ] = """
-This command gets (generate/predict) a proteins property for one or protiens specified with a FASTA string in the <cmd>FOR</cmd> clause.
-FASTA strings can be provided as a single  string or multiple FASTA strings in a comma seperated list in square brackets 
+This command gets (generates/predicts) a protein property for one or proteins specified with a FASTA string in the <cmd>FOR</cmd> clause.
+FASTA strings can be provided as a single string or multiple FASTA strings in a comma separated list in square brackets 
 e.g. <cmd> FOR ['NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC','NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC' ]</cmd>.
 FASTA strings must be provided in single quotes.
-This command gets (generate/predict) the following properties:\n<cmd><property_list></cmd>\n
+This command gets (generates/predicts) the following properties:\n<cmd><property_list></cmd>\n
 """
 service_command_description[
     "generate_data"
