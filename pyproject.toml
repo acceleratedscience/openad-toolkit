@@ -8,7 +8,7 @@ readme = "README.md"
 license = "MIT"
 homepage = "https://openad.accelerate.science"
 documentation = "https://openad.accelerate.science/docs"
-repository = "https://github.com/acceleratedscience/open-ad-toolkit"
+repository = "https://github.com/acceleratedscience/openad-toolkit"
 
 keywords= ["deepsearch","rxn","jupyter","magic commands","accelerated Discovery","science","retrosynthesis"]
 classifiers = [

@@ -1,0 +1,1 @@
+Plugins provide drastically simplified access to a series of advanced tools, and make it easy for your own Python applications to interface with OpenAD.
