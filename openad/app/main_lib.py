@@ -454,7 +454,7 @@ def initialise():
 # Open documentation webpage.
 def docs(cmd_pointer, parser):  # pylint: disable=unused-argument # generic pass through used or unused
     """points to online documentation"""
-    url = "https://acceleratedscience.github.io/openad-docs/commands.html"
+    url = "https://openad.accelerate.science/docs"
     webbrowser.open_new(url)
 
 

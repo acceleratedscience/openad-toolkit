@@ -17,16 +17,16 @@ OpenAD is designed to integrate into your existing workflows via Jupyter Noteboo
 <!-- /description -->
 
 [![image](assets/home.svg)](https://openad.accelerate.science)
-[![image](assets/docs.svg)](https://openad.accelerate.science/documentation/getting-started)
+[![image](assets/docs.svg)](https://openad.accelerate.science/docs/getting-started)
 [![image](assets/tutorials.svg)](https://openad.accelerate.science/blog/category/tutorials)
-<!-- [![image](assets/install.svg)](https://openad.accelerate.science/documentation/installation) -->
+<!-- [![image](assets/install.svg)](https://openad.accelerate.science/docs/installation) -->
 <br><br>
 
 
 ## Quick Install
 
 > [!TIP]
-> To install OpenAD inside a virtual environment, please consult the [Installation](https://openad.accelerate.science/documentation/installation) guide.
+> To install OpenAD inside a virtual environment, please consult the [Installation](https://openad.accelerate.science/docs/installation) guide.
 
     pip install openad
     openad

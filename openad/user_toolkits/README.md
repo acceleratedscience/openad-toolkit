@@ -9,7 +9,7 @@
 - @future We should have a command update toolkit
 - @future archiving of a toolkit should happen on the moment of `remove toolkit` instead of at moment of `add toolkit`.
 -->
-> **WARNING:** This documentation page is still under construction. It is incomplete and may have incorrect information.
+> **WARNING:** Toolkits are deprecated. Please refer to the [plugin documentation](https://openad.accelerate.science/documentation/plugins) instead.
 
 ---
 
@@ -352,4 +352,4 @@ This file contains a very brief description of the toolkit, using only 4-5 words
 
 ### Submitting
 
-Once your toolkit adheres to the specifications described on this page, [get in touch](https://acceleratedscience.github.io/openad-docs/about.html) so we can review and consider it for the list of publicly available OpenAD toolkits.
+Once your toolkit adheres to the specifications described on this page, [get in touch](https://openad.accelerate.science/about) so we can review and consider it for the list of publicly available OpenAD toolkits.
