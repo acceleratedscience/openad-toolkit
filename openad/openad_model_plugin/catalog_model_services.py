@@ -49,6 +49,10 @@ CLAUSE_QUOTES_AUTHGROUP = (
 )
 CLAUSE_QUOTES_SERVICE_AUTHGROUP = "Single quotes are optional for both <cmd><service_name></cmd> and <cmd><auth_group></cmd> in case they contain a space or special character."
 CLAUSE_GPU = "If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause."
+ATTENTION_PROXY_URL = """<on_yellow> ATTENTION </on_yellow>
+<yellow>The proxy URL used in the examples may be different for you:
+- open.accelerate.science/proxy --> for most users
+- <soft>xxxx</soft>.accelerate.science/proxy --> custom subdomain if your company runs its own instance</yellow>"""
 
 
 def get_namespaces():
@@ -730,14 +734,19 @@ def service_catalog_grammar(statements: list, help: list):
             category="Model",
             # command="model auth create group <auth_group> with '<auth_token>'", # Consistent - to be swapped
             command="model auth add group <auth_group> with '<auth_token>'",  # Inconsistent
-            description="""Create a new authentication group for model services to use.
+            description=f"""Create a new authentication group for model services to use.
 
 Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
 
 Authorization is required to connect to IBM-hosted models (IBM partners only). Using an auth group allows you to authorize multiple models at once, and is the recommended authorization method.
 
-Example:
-1. Copy your authentication token from <link>http://open.accelerate.science</link> (or your custom URL if your company us running its own instance).
+<h1>Example</h1>
+
+{ATTENTION_PROXY_URL}
+
+1. Copy your authentication token from the OpenAD portal:
+   - <link>open.accelerate.science</link> for most users
+   - <link><soft>xxxx</soft>.accelerate.science</link> custom subdomain if your company runs its own instance
 2. Create an auth group, e.g. 'default':
    <cmd>model auth add group default with '<auth_token>'</cmd>
 3. Catalog your services with the auth_group provided:
@@ -917,7 +926,7 @@ Examples:
             category="Model",
             # command="model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)", # Consistent - to be swapped
             command="catalog model service from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)",  # Inconsistent
-            description="""Catalog a model service from a local path, from GitHub or from an hosted service URL.
+            description=f"""Catalog a model service from a local path, from GitHub or from an hosted service URL.
 
 Use the <cmd>remote</cmd> clause when cataloging from a hosted service URL.
 
@@ -955,6 +964,8 @@ Authorization:
 
 
 <h1>Examples</h1>
+
+{ATTENTION_PROXY_URL}
 
 - Catalog a model using SkyPilot deployment
 <cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen</cmd>
