@@ -1,18 +1,17 @@
----
-title: Commands
-layout: default
-nav_order: 5
----
-
 {{DO_NOT_EDIT}}
 
 # OpenAD Commands
 
 This is the full list of available commands.
 
-> [!IMPORTANT]
-> When running commands from Jupyter, prepend them with `%openad`
+!!! info
+    
+    To run a commands in Jupyter Notebook, prepend it with `%openad` - more [information here](getting-started.md#getting-started-jupyter).
 
 {{TOC}}
+
+<br>
+
+[Expand all commands](#){ .md-button .md-button--primary onclick="Array.from(document.getElementsByTagName('details')).forEach(elm => elm.setAttribute('open', true)); return false" }
 
 {{COMMANDS}}

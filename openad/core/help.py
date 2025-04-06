@@ -1,4 +1,4 @@
-""" The help Module"""
+"""The help Module"""
 
 import re
 import os
@@ -448,7 +448,7 @@ def advanced_help():
     """Call advanced Help"""
 
     # @future: build interactive command help using blessed
-    webbrowser.open("https://acceleratedscience.github.io/openad-docs/commands.html")
+    webbrowser.open("https://openad.accelerate.science/docs")
 
 
 class OpenadHelp:

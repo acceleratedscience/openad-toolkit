@@ -19,7 +19,7 @@ The documentation generation script assures consistency by propagating the sourc
 1. Duplicate all the README markdown pages, prepare them for ***Just the Docs*** consumption, then copy them over to the documentation repository if it's available
 1. Generate two additional bespoke pages for the documentation website:
    - [Base Concepts](https://acceleratedscience.github.io/openad-docs/base-concepts.html)
-   - [Commands](https://acceleratedscience.github.io/openad-docs/commands.html)
+   - [Commands](https://openad.accelerate.science/docs/commands)
 2. Update the [llm_description.txt](/openad/user_toolkits/DS4SD/llm_description.txt) for each individual plugin with the correct commands, used for LLM training.
 
 <br>
