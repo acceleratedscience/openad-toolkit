@@ -1,0 +1,8 @@
+Name,Comment,Repository
+gen,GT4SD,https://github.com/acceleratedscience/generation_inference_service
+prop,GT4SD,https://github.com/acceleratedscience/property_inference_service
+moler,GT4SD,https://github.com/acceleratedscience/moler_inference_service
+molf,GT4SD,https://github.com/acceleratedscience/molformer_inference_service
+smi-ted,-,https://github.com/acceleratedscience/openad-model-smited
+bmfm-sm,-,https://github.com/acceleratedscience/bmfm-sm
+bmfm-pm,mammal,https://github.com/acceleratedscience/bmfm_mammal_inference
