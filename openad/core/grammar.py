@@ -573,8 +573,8 @@ grammar_help.append(
         category="Utility",
         command="result open",
         description="""Explore table data in the browser.
-        if you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
-        """,
+        
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.""",
         parent="display data",
     )
 )
@@ -589,8 +589,8 @@ grammar_help.append(
         category="Utility",
         command="result edit",
         description="""Edit table data in the browser.
-        if you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
-        """,
+        
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.""",
         parent="display data",
     )
 )
@@ -618,8 +618,7 @@ grammar_help.append(
         command="result display",
         description=f"""Display the result in {"Jupyter Notebook" if is_notebook_mode() else "the CLI"}.
       
-        if you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
-        """,
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.""",
         parent="display data",
     )
 )
@@ -674,16 +673,17 @@ if not is_notebook_mode():
 # region - GUI
 ##########################################################################
 
-# Install gui
-statements.append(Forward(install + gui)("install_gui"))
-grammar_help.append(
-    help_dict_create(
-        name="install gui",
-        category="GUI",
-        command="install gui",
-        description="Install the OpenAD GUI (graphical user interface).\n\nThe graphical user interface allows you to browse your workspace and visualize your datasets and molecules.",  # Partly repeated. Move to msgs()",
-    )
-)
+# Installation of GUI is a future feature, currently a build of the GUI is included into the repo.
+# # Install gui
+# statements.append(Forward(install + gui)("install_gui"))
+# grammar_help.append(
+#     help_dict_create(
+#         name="install gui",
+#         category="GUI",
+#         command="install gui",
+#         description="Install the OpenAD GUI (graphical user interface).\n\nThe graphical user interface allows you to browse your workspace and visualize your datasets and molecules.",  # Partly repeated. Move to msgs()",
+#     )
+# )
 
 # Launch gui
 statements.append(Forward(launch + gui)("launch_gui"))
@@ -883,7 +883,7 @@ grammar_help.append(
         name="open",
         category="File System",
         command="open '<filename>'",
-        description=f"""Open a file or dataframe { 'in your browser' if is_notebook_mode() else 'in an iframe' } 
+        description="""Open a file or dataframe in the graphical user interface.
 
 Examples:
 - <cmd>open 'base_molecules.sdf'</cmd>

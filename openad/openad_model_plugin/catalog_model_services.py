@@ -40,6 +40,20 @@ Dispatcher = ModelService(location=DISPATCHER_SERVICE_PATH, update_status=True, 
 # with Dispatcher() as service:
 #     print(service.list())
 
+# Repeated clauses
+CLAUSE_QUOTES_SERVICE = (
+    "Single quotes are optional in case <cmd>service_name</cmd> contains a space or special character."
+)
+CLAUSE_QUOTES_AUTHGROUP = (
+    "Single quotes are optional in case <cmd>auth_group</cmd> contains a space or special character."
+)
+CLAUSE_QUOTES_SERVICE_AUTHGROUP = "Single quotes are optional for both <cmd><service_name></cmd> and <cmd><auth_group></cmd> in case they contain a space or special character."
+CLAUSE_GPU = "If you don't want your service to use GPU you can append the <cmd>no_gpu</cmd> clause."
+ATTENTION_PROXY_URL = """<on_yellow> ATTENTION </on_yellow>
+<yellow>The proxy URL used in the examples may be different for you:
+- open.accelerate.science/proxy --> for most users
+- <soft>xxxx</soft>.accelerate.science/proxy --> custom subdomain if your company runs its own instance</yellow>"""
+
 
 def get_namespaces():
     list_of_namespaces = [
@@ -674,6 +688,7 @@ def service_catalog_grammar(statements: list, help: list):
     group = py.CaselessKeyword("group")
     _with = py.CaselessKeyword("with")
     add = py.CaselessKeyword("add")
+    create = py.CaselessKeyword("create")
     remove = py.CaselessKeyword("remove")
     to = py.CaselessKeyword("to")
 
@@ -687,16 +702,27 @@ def service_catalog_grammar(statements: list, help: list):
         using_keyword + py.Suppress("(") + py.Optional(py.OneOrMore(param_value_pair))("params") + py.Suppress(")")
     )
 
+    # ---
+    # Model auth list
     statements.append(py.Forward(model + auth + _list)("list_auth_services"))
     help.append(
         help_dict_create(
             name="model auth list",
             category="Model",
             command="model auth list",
-            description="show authentication group mapping",
+            description="List authentication groups that have been created.",
         )
     )
 
+    # ---
+    # Model auth create group
+    # Consistent command - to be swapped:
+    # statements.append(
+    #     py.Forward(model + auth + create + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
+    #         "add_service_auth_group"
+    #     )
+    # )
+    # Inconsistent comand:
     statements.append(
         py.Forward(model + auth + add + group + auth_group("auth_group") + _with + quoted_string("api_key"))(
             "add_service_auth_group"
@@ -704,23 +730,55 @@ def service_catalog_grammar(statements: list, help: list):
     )
     help.append(
         help_dict_create(
-            name="model auth add group",
+            name="model auth create group",
             category="Model",
-            command="model auth add group '<auth_group>'|<auth_group> with '<api_key>'",
-            description="add an authentication group for model services to use",
+            # command="model auth create group <auth_group> with '<auth_token>'", # Consistent - to be swapped
+            command="model auth add group <auth_group> with '<auth_token>'",  # Inconsistent
+            description=f"""Create a new authentication group for model services to use.
+
+Single quotes are required for your <cmd><auth_token></cmd> but optional for <cmd><auth_group></cmd> in case it contains a space or special character.
+
+Authorization is required to connect to IBM-hosted models (IBM partners only). Using an auth group allows you to authorize multiple models at once, and is the recommended authorization method.
+
+<h1>Example</h1>
+
+{ATTENTION_PROXY_URL}
+
+1. Copy your authentication token from the OpenAD portal:
+   - <link>open.accelerate.science</link> for most users
+   - <link><soft>xxxx</soft>.accelerate.science</link> custom subdomain if your company runs its own instance
+2. Create an auth group, e.g. 'default':
+   <cmd>model auth add group default with '<auth_token>'</cmd>
+3. Catalog your services with the auth_group provided:
+   <cmd>model service catalog from remote 'https://open.accelerate.science/proxy' as gen using (inference-service=generation auth_group=default)</cmd>
+
+You can also add a cataloged model to a group after you've created it:
+<cmd>model auth add service gen to group default</cmd>
+""",
         )
     )
 
+    # ---
+    # Model auth remove group
     statements.append(py.Forward(model + auth + remove + group + auth_group("auth_group"))("remove_service_auth_group"))
     help.append(
         help_dict_create(
             name="model auth remove group",
             category="Model",
-            command="model auth remove group '<auth_group>' | <auth_group>",
-            description="remove an authentication group",
+            command="model auth remove group <auth_group>",
+            description=f"""Remove an authentication group.
+
+{CLAUSE_QUOTES_AUTHGROUP}
+
+Examples:
+<cmd>model auth remove group default</cmd>
+<cmd>model auth remove group 'my group'</cmd>
+""",
         )
     )
 
+    # ---
+    # Model auth add service to group
     statements.append(
         py.Forward(model + auth + add + service + service_name("service_name") + to + group + auth_group("auth_group"))(
             "attach_service_auth_group"
@@ -730,11 +788,20 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model auth add service",
             category="Model",
-            command="model auth add service '<service_name>'|,service_name> to group '<auth_group>'|<auth_group>",
-            description="Attach an authentication group to a model service",
+            command="model auth add service <service_name> to group <auth_group>",
+            description=f"""Ad a model service to an authentication group.
+
+{CLAUSE_QUOTES_SERVICE_AUTHGROUP}
+
+Examples:
+- <cmd>model auth add service molf to group default</cmd>
+- <cmd>model auth add service 'my molf' to group 'my group'</cmd>
+""",
         )
     )
 
+    # ---
+    # Model auth remove
     statements.append(
         py.Forward(model + auth + remove + service + service_name("service_name"))("detach_service_auth_group")
     )
@@ -742,51 +809,104 @@ def service_catalog_grammar(statements: list, help: list):
         help_dict_create(
             name="model auth remove service",
             category="Model",
-            command="model auth remove service '<service_name>'|<service_name>",
-            description="Detatch an authentication group from a model service",
+            command="model auth remove service <service_name>",
+            description=f"""Detach a model service from an authentication group.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>model auth remove service molf</cmd>
+- <cmd>model auth remove service 'my molf'</cmd>""",
         )
     )
 
+    # ---
+    # Model catalog status
+    # Consistent command - to be swapped:
+    # statements.append(py.Forward(model + catalog + status)("model_service_status"))
+    # Inconsistent command:
     statements.append(py.Forward(model + service + status)("model_service_status"))
     help.append(
         help_dict_create(
             name="model service status",
             category="Model",
-            command="model service status",
-            description="Get the status of currently cataloged services",
+            # command="model catalog status", # Consistent - to be swapped
+            command="model service status",  # Inconsistent
+            description="Get the status of your currently cataloged services.",
         )
     )
 
+    # ---
+    # Model service describe
     statements.append(py.Forward(model + service + describe + (service_name)("service_name"))("model_service_config"))
     help.append(
         help_dict_create(
             name="model service describe",
             category="Model",
-            command="model service describe '<service_name>'|<service_name>",
-            description="get the configuration of a service",
+            command="model service describe <service_name>",
+            description=f"""Get a service's configuration details.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>model service describe gen</cmd>
+- <cmd>model service describe 'my gen'</cmd>
+""",
         )
     )
 
+    # ---
+    # Model catalog list
     statements.append(py.Forward(model + catalog + _list)("get_catalog_namespaces"))
     help.append(
         help_dict_create(
             name="model catalog list",
             category="Model",
             command="model catalog list",
-            description="get the list of currently cataloged services",
+            description="List your currently cataloged services.",
         )
     )
 
+    # ---
+    # Model service uncatalog
+    # Consistent command - to be swapped:
+    # statements.append(py.Forward(model + service + uncatalog + service_name("service_name"))("uncatalog_model_service"))
+    # Iconsistent command:
     statements.append(py.Forward(uncatalog + model + service + service_name("service_name"))("uncatalog_model_service"))
     help.append(
         help_dict_create(
-            name="uncatalog model service",
+            name="model service uncatalog",
             category="Model",
-            command="uncatalog model service '<service_name>'|<service_name>",
-            description="uncatalog a model service \n\n Example: \n<cmd>uncatalog model service 'gen'</cmd>",
+            # command="model service uncatalog <service_name>", # Consistent - to be swapped
+            command="uncatalog model service <service_name>",  # Inconsistent
+            description=f"""Uncatalog a model service.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>uncatalog model service 'gen'</cmd>
+- <cmd>uncatalog model service 'my gen'</cmd>
+""",
         )
     )
 
+    # ---
+    # Model service catalog
+    # Consistent command - to be swapped:
+    # statements.append(
+    #     py.Forward(
+    #         model
+    #         + service
+    #         + catalog
+    #         + fr_om
+    #         + py.Optional(remote("remote"))
+    #         + quoted_string("path")
+    #         + a_s
+    #         + (quoted_string | py.Word(py.alphanums + "_"))("service_name")
+    #         + using_clause
+    #     )("catalog_add_model_service")
+    # )
+    # Inconsistent command:
     statements.append(
         py.Forward(
             catalog
@@ -802,47 +922,67 @@ def service_catalog_grammar(statements: list, help: list):
     )
     help.append(
         help_dict_create(
-            name="catalog Model service",
+            name="catalog model service",
             category="Model",
-            command="catalog model service from (remote) '<path> or <github> or <service_url>' as  '<service_name>'|<service_name>   USING (<parameter>=<value> <parameter>=<value>)",
-            description="""catalog a model service from a path or github or remotely from an existing OpenAD service.
-(USING) optional headers parameters for communication with service backend.
-If you are cataloging a service using a model defined in a directory, provide the absolute <cmd> <path> </cmd> of that directory in quotes.
+            # command="model service catalog from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)", # Consistent - to be swapped
+            command="catalog model service from [ remote ] '<path>|<github>|<service_url>' as <service_name> USING (<parameter>=<value> <parameter>=<value>)",  # Inconsistent
+            description=f"""Catalog a model service from a local path, from GitHub or from an hosted service URL.
 
-The following options require the <cmd>remote</cmd> option be declared.
+Use the <cmd>remote</cmd> clause when cataloging from a hosted service URL.
 
-If you are cataloging a service using a model defined in github repository, provide the absolute <cmd> <github> </cmd> of that github directory quotes.
+            
+<h1>Parameters</h1>
 
-If you are cataloging a remote service on a ip address and port provide the remote services ipaddress and port in quoted string e.g. <cmd>'0.0.0.0:8080'</cmd>
+<cmd><path>|<github>|<service_url></cmd>
+    The location of the model service, to be provided in single quotes.
+    This can be a local path, a GitHub SSH URI, or a URL for an existing remote service:
+    <cmd><soft>...</soft>from '/path/to/service'</cmd>
+    <cmd><soft>...</soft>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
+    <cmd><soft>...</soft>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
 
-<cmd>service_name</cmd>: this is the name of the service as you will define it for your usage. e.g <cmd>prop</cmd> short for properties. 
+<cmd><service_name></cmd>
+    How you will be refering to the service when using it. Keep it short, e.g. <cmd>prop</cmd> for a service that calculates properties.
+    Single quotes are optional in case you want to used a space or special character.
 
-USING Parameters:
+    
+<h1>The USING Clause</h1>
 
-If using a hosted service the following parameters must be supplied:
--<cmd>Inference-Service</cmd>: this is the name of the inference service that is hosted, it is a required parameter if cataloging a remote service.
-An authorization parameter is always required if cataloging a hosted service, either Auhtorisation group (<cmd>auth_group</cmd>) or Authorisation bearer_token/api_key (<cmd>Authorization</cmd>):
--<cmd>auth_group</cmd>: this is the name of an authorization group which contains the api_key linked to the service access. This can only be used if <cmd>Authorization</cmd> is not also defined.
-OR
--<cmd>Authorization</cmd>: this parameter is designed to be used when a <cmd>auth_group</cmd> is not defined.
+The parameters below are only needed when connecting to an IBM-hosted service (IBM partners only).
 
-Example:
+<cmd>inference-service=<string></cmd> (required)
+    The name of the inference service you want to connect to, eg. generation ot molformer.
+Authorization:
+    To authorize to an IBM-hosted service (IBM partners only), you have two options:
+    1. <cmd>authorization='<auth_token>'</cmd>
+        Provide your authorzation token directly.
+        Note: to use this option, <cmd>auth_group</cmd> can not be defined.
+    2. <cmd>auth_group=<auth_group_name></cmd>
+        The name of an authorization group which contains your <cmd>auth_token</cmd>.
+        This is recommended if you will be using more than one model service.
+        For instructions on how to set up an auth group, run <cmd>model auth add group ?</cmd>
+        Note: to use this option, <cmd>authorization</cmd> can not be defined.
 
-Skypilot Deployment
--<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as 'gen'</cmd>
 
-Service using a authentication group 
--<cmd>catalog model service from remote '<service_url>' as  molf  USING (Inference-Service=molformer  )</cmd>
-<cmd> model auth add service 'molf' to group 'default'</cmd>
+<h1>Examples</h1>
 
-Single Authorisation Service
--<cmd>openad catalog model service from remote '<service_URL>' as 'gen' USING (Inference-Service=generation Authorization='<api_key>')</cmd>
+{ATTENTION_PROXY_URL}
 
-Catalog a remote service shared with you:
--<cmd>catalog model service from remote 'http://54.235.3.243:30001' as gen</cmd>""",
+- Catalog a model using SkyPilot deployment
+<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen</cmd>
+
+- Catalog a model using a authentication group
+<cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf USING (inference-service=molformer auth_group=default)</cmd>
+
+- Catalog a model using an authorization token
+<cmd>openad catalog model service from remote 'https://open.accelerate.science/proxy' as gen USING (inference-service=generation authorization='<auth_token>')</cmd>
+
+- Catalog a remote service that was shared with you:
+<cmd>catalog model service from remote 'http://54.235.3.243:3001' as gen</cmd>""",
         )
     )
 
+    # ---
+    # Model service up
     statements.append(
         py.Forward(
             model + service + up + service_name("service_name") + py.Optional(py.CaselessKeyword("NO_GPU")("no_gpu"))
@@ -852,19 +992,22 @@ Catalog a remote service shared with you:
         help_dict_create(
             name="Model up",
             category="Model",
-            command="model service up '<service_name>'|<service_name> [no_gpu]}",
-            description="""launches a cataloged model service when it was cataloged as a self managed service from a directory or github repository.
-If you do not want to launch a service with GPU you should specify <cmd>no_gpu</cmd> at the end of the command.
+            command="model service up <service_name> [ no_gpu ]",
+            description=f"""Launch a model service, after it was cataloged using <cmd>model service catalog</cmd>.
+
+{CLAUSE_QUOTES_SERVICE}
+
+{CLAUSE_GPU}
+
 Examples:
-
--<cmd>model service up gen</cmd>
-
--<cmd>model service up 'gen'</cmd>
-
--<cmd>model service up gen no_gpu</cmd>""",
+- <cmd>model service up gen</cmd>
+- <cmd>model service up 'my gen'</cmd>
+- <cmd>model service up gen no_gpu</cmd>""",
         )
     )
 
+    # ---
+    # Model service local up
     statements.append(
         py.Forward(
             model
@@ -879,31 +1022,59 @@ Examples:
         help_dict_create(
             name="Model local up",
             category="Model",
-            command="model service local up '<service_name>'|<service_name> ",
-            description="""Launches a model service locally.
+            command="model service local up <service_name> [ no_gpu ]",
+            description=f"""Launch a model service locally.
 
-            Example:
-              <cmd> model service local up gen</cmd>
+{CLAUSE_QUOTES_SERVICE}
 
-             """,
+{CLAUSE_GPU}
+
+Example:
+- <cmd> model service local up gen</cmd>
+- <cmd> model service local up 'my gen'</cmd>
+- <cmd> model service local up gen no_gpu</cmd>
+""",
         )
     )
 
+    # ---
+    # Model service down
     statements.append(py.Forward(model + service + down + service_name("service_name"))("service_down"))
     help.append(
         help_dict_create(
-            name="Model down",
+            name="model down",
             category="Model",
-            command="model service down '<service_name>'|<service_name>",
-            description="Bring down a model service  \n Examples: \n\n<cmd>model service down gen</cmd> \n\n<cmd>model service down 'gen'</cmd> ",
+            command="model service down <service_name>",
+            description=f"""Deactivate a model service.
+
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>model service down gen</cmd>
+- <cmd>model service down 'my gen'</cmd>
+""",
         )
     )
 
+    # ---
+    # Model service get result
+    # Consistent command - to be swapped:
+    # statements.append(
+    #     py.Forward(
+    #         model
+    #         + service
+    #         + py.CaselessKeyword("get")
+    #         + py.CaselessKeyword("result")
+    #         + service_name("service_name")
+    #         + quoted_string("request_id")
+    #     )("get_model_service_result")
+    # )
+    # Inconsistent command:
     statements.append(
         py.Forward(
             py.CaselessKeyword("get")
             + model
-            + py.CaselessKeyword("service")
+            + service
             + service_name("service_name")
             + py.CaselessKeyword("result")
             + quoted_string("request_id")
@@ -911,9 +1082,19 @@ Examples:
     )
     help.append(
         help_dict_create(
-            name="Get Model Service Result",
+            name="model service result",
             category="Model",
-            command="get model service '<service_name>'|<service_name> result '<result_id>' ",
-            description="retrieves a result from a model service  \n Examples: \n\n<cmd>get model service myservier result 'wergergerg'  ",
+            # command="model service get result <service_name> '<result_id>'", # Consistent - to be swapped
+            command="get model service <service_name> result '<result_id>'",  # Inconsistent
+            description=f"""Retrieve a result from a model service.
+
+This is for async inference, which will return a <cmd><result_id></cmd> instead of a result.
+            
+{CLAUSE_QUOTES_SERVICE}
+
+Examples:
+- <cmd>get model service gen result 'xyz'</cmd>
+- <cmd>get model service 'my gen' result 'xyz'</cmd>
+""",
         )
     )
