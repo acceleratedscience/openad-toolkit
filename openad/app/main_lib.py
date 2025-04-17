@@ -108,7 +108,7 @@ from openad.helpers.output import output_text, output_error, output_success, out
 from openad.helpers.output_msgs import msg
 from openad.helpers.general import refresh_prompt, user_input, validate_file_path, ensure_file_path
 from openad.helpers.splash import splash
-from openad.helpers.output_content import openad_intro
+from openad.helpers.concepts import openad_intro
 from openad.helpers.plugins import display_plugin_overview
 
 from openad.plugins import edit_json
