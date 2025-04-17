@@ -386,7 +386,7 @@ def lang_parse(cmd_pointer, parser):
 
     # Help commands
     elif parser.getName() == "intro":
-        return output_text(openad_intro, edge=True, pad=3)
+        return output_text(openad_intro, edge=True, width=60, pad=3)
     elif parser.getName() == "docs":
         return docs(cmd_pointer, parser)
 
