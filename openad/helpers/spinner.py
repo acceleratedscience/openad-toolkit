@@ -1,3 +1,5 @@
+# To be migrated to openad-tools
+
 """
 Universal spinner
 - - -

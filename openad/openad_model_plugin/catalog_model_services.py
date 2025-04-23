@@ -11,10 +11,11 @@ from typing import Dict, Tuple
 import pandas as pd
 
 import pyparsing as py
-from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.core.help import help_dict_create
+from openad.helpers.general import save_as_success
 from openad.helpers.output import output_error, output_success, output_table, output_text, output_warning
 from openad.helpers.spinner import spinner
+from openad.helpers.paths import parse_path
 from openad.openad_model_plugin.auth_services import (
     load_lookup_table,
     remove_auth_group,
@@ -635,14 +636,13 @@ def get_model_service_result(cmd_pointer, parser):
                     return output_warning(response_result["detail"])
 
             result = pd.DataFrame(response_result)
+
+            # TODO / Dead code: there is no "save_as" or "result_file" in the parser
             if "save_as" in parser:
-                results_file = str(parser["results_file"])
-                if not results_file.endswith(".csv"):
-                    results_file = results_file + ".csv"
-                result.to_csv(
-                    cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + results_file,
-                    index=False,
-                )
+                filename = str(parser["results_file"])
+                file_path = parse_path(cmd_pointer, filename, force_ext="csv")
+                result.to_csv(file_path, index=False)
+                save_as_success(filename, file_path, "Result")
 
         except Exception as e:
             print(e)

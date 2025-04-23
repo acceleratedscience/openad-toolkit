@@ -131,7 +131,7 @@ def fs_compile_filedir_obj(cmd_pointer, path):
             "_meta": {
                 "fileType": file_type,
                 "ext": ext,
-                "ext2": ext2,  # Secondary file extension, eg. foobar.mol.json --> mol
+                "ext2": ext2,  # Secondary file extension, eg. foobar.smol.json --> mol
                 "size": size,
                 "timeCreated": time_created,
                 "timeEdited": time_edited,
@@ -267,7 +267,8 @@ def _get_file_ext2(filename):
 
     Secondary file extensions are used to indicate subformats, eg:
     - foobar.json --> JSON file
-    - foobar.mol.json --> molecule JSON file
+    - foobar.smol.json --> small molecule JSON file
+    - foobar.mmol.json --> macromolecule JSON file
     - foobar.molset.json --> molecule set JSON file
     """
     has_ext2 = len(filename.split(".")) >= 3

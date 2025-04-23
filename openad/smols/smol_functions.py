@@ -25,6 +25,7 @@ from openad.helpers.general import confirm_prompt, pretty_date, is_numeric, merg
 from openad.helpers.spinner import spinner
 from openad.helpers.json_decimal_encoder import DecimalEncoder
 from openad.helpers.data_formats import OPENAD_SMOL_DICT
+from openad.helpers.paths import parse_path
 from openad.smols.smol_transformers import (
     molset2dataframe,
     write_dataframe2sdf,
@@ -790,9 +791,7 @@ def load_mols_from_file(cmd_pointer, file_path):
     - SMILES (.smi)
     """
 
-    workspace_path = cmd_pointer.workspace_path()
-    file_path_absolute = f"{workspace_path}/{file_path}"
-
+    file_path = parse_path(cmd_pointer, file_path)
     source_type = file_path.split(".")[-1] if "." in file_path else "unknown"
     molset = None
     error = None
@@ -802,7 +801,7 @@ def load_mols_from_file(cmd_pointer, file_path):
         # Read file and return the molset
         source_type = "molset"
         try:
-            with open(file_path_absolute, "r", encoding="utf-8") as file:
+            with open(file_path, "r", encoding="utf-8") as file:
                 molset = file.read()
             molset = json.loads(molset) if molset else None
         except Exception as err:  # pylint: disable=broad-except
@@ -811,58 +810,53 @@ def load_mols_from_file(cmd_pointer, file_path):
     # SDF
     elif file_path.endswith(".sdf"):
         source_type = "SDF"
-        molset, error = sdf_path2molset(file_path_absolute)
-
-        # try:
-        #     return normalize_mol_df(PandasTools.LoadSDF(SDFFile), batch=True)
-        # except BaseException as err:
-        #     output_error(msg("err_load_sdf", err), return_val=False)
-        #     return None
+        molset, error = sdf_path2molset(file_path)
 
     # CSV
     elif file_path.endswith(".csv"):
         source_type = "CSV"
-        molset, error = csv_path2molset(file_path_absolute)
-
-        # try:
-        #     mol_frame = pandas.read_csv(file_path_absolute, dtype="string")
-        #     return normalize_mol_df(mol_frame, batch=True)
-
-        # except BaseException as err:
-        #     output_error(msg("err_load_csv", err), return_val=False)
-        #     return None
+        molset, error = csv_path2molset(file_path)
 
     # SMILES
     elif file_path.endswith(".smi"):
         source_type = "SMILES"
-        molset, error = smiles_path2molset(file_path_absolute)
+        molset, error = smiles_path2molset(file_path)
+
+    # Unsupported file type
+    else:
+        output_error(
+            ["Unsupported file type", "Accepted file extensions are: .molset.json / .sdf / .csv / .smi"],
+            return_val=False,
+        )
+        return
 
     # Return
     if molset:
         return molset
-    if error:
+    else:
+        error = error if error else "Unknown error"
         output_error(msg("err_load", source_type, error), return_val=False)
         return None
 
 
-def save_molset_as_json(molset: list, path: str):
+def save_molset_as_json(molset: list, file_path: str):
     """
     Save a molset as a molset JSON file.
     """
 
     # Add/fix extension if missing
-    if path.endswith(".molset.json"):
+    if file_path.endswith(".molset.json"):
         pass
-    elif path.endswith(".json"):
-        path = path[:-4] + "molset.json"
+    elif file_path.endswith(".json"):
+        file_path = file_path[:-4] + "molset.json"
 
     # Remove any invalid extension
-    elif len(path.split(".")) > 1 and 2 < len(path.split(".")[-1]) < 5:
-        path = path[: -len(path.split(".")[-1])]
+    elif len(file_path.split(".")) > 1 and 2 < len(file_path.split(".")[-1]) < 5:
+        file_path = file_path[: -len(file_path.split(".")[-1])]
 
-    # Write json to disk.
+    # Write json to disk
     try:
-        with open(path, "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(molset, f, cls=DecimalEncoder, indent=4)
             return True, None
     except Exception as err:  # pylint: disable=broad-except

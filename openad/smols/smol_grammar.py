@@ -247,7 +247,7 @@ Examples:
             description=f"""Launch the molset viewer { 'in your browser ' if is_notebook_mode() else '' }to visualize the contents of a molecule set.
 
 Examples:
-- <cmd>show molset 'neurotransmitters.mol.json'</cmd>
+- <cmd>show molset 'neurotransmitters.smol.json'</cmd>
 - <cmd>show molset 'neurotransmitters.sdf'</cmd>
 - <cmd>show molset 'neurotransmitters.smi'</cmd>
 - <cmd>show molset my_dataframe</cmd>

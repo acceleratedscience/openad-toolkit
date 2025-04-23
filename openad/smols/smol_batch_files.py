@@ -1,4 +1,4 @@
-""" handles back load and unloading for molecule operations"""
+"""handles back load and unloading for molecule operations"""
 
 import pandas
 from rdkit import RDLogger
@@ -20,6 +20,7 @@ from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.helpers.output import output_error, output_warning, output_success, output_text
 from openad.helpers.output_msgs import msg
 from openad.helpers.spinner import Spinner
+from openad.helpers.paths import parse_path
 from openad.plugins.style_parser import style
 
 # Suppress RDKit errors
@@ -53,7 +54,7 @@ def merge_molecule_property_data(cmd_pointer, inp=None, dataframe=None):
 
         # Load from file (not yet implemented)
         else:
-            dataframe = load_mol_data(inp.as_dict()["moles_file"], cmd_pointer)
+            dataframe = load_mol_data(cmd_pointer, inp.as_dict()["moles_file"])
 
         if dataframe is None:
             output_error("Source not found ", return_val=False)
@@ -128,23 +129,28 @@ def merge_molecule_property_data(cmd_pointer, inp=None, dataframe=None):
     return True
 
 
-def load_mol_data(source_file, cmd_pointer):
+# Not implemented
+def load_mol_data(cmd_pointer, file_path):
     """loads molecule data from a file where Smiles, property and values are supplied in row format"""
 
+    file_path = parse_path(cmd_pointer, file_path)
+
     # SDF
-    if source_file.split(".")[-1].lower() == "sdf":
+    if file_path.split(".")[-1].lower() == "sdf":
         try:
-            name = source_file.split("/")[-1]
-            sdffile = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + name
-            mol_frame = PandasTools.LoadSDF(sdffile)
+            name = file_path.split("/")[-1]
+            # @@@
+            sdf_file = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + name
+            mol_frame = PandasTools.LoadSDF(sdf_file)
         except Exception as err:
             output_error(msg("err_load", "SDF", err), return_val=False)
             return None
 
     # CSV
-    elif source_file.split(".")[-1].lower() == "csv":
+    elif file_path.split(".")[-1].lower() == "csv":
         try:
-            name = source_file.split("/")[-1]
+            name = file_path.split("/")[-1]
+            # @@@
             name = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + name
             mol_frame = pandas.read_csv(name, dtype="string")
         except Exception as err:
@@ -186,7 +192,7 @@ def load_mols_to_mws(cmd_pointer, inp):
     elif file_path:
         molset = load_mols_from_file(cmd_pointer, file_path)
         if molset is None:
-            return output_error("Source not Found")
+            return
 
     # Add PubChem data
     if "enrich_pubchem" in inp.as_dict():
