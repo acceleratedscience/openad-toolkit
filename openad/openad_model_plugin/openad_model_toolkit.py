@@ -816,7 +816,7 @@ def openad_model_requestor(cmd_pointer, parser):
                 if file_path:
                     try:
                         result.to_csv(file_path, index=False)
-                        save_as_success(results_file, file_path, "Result")
+                        save_as_success(cmd_pointer, results_file, file_path, "Result")
                     except Exception as e:  # pylint: disable=broad-except
                         output_error(["Failed to saved CSV", e], return_val=False)
                 else:

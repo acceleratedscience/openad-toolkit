@@ -642,7 +642,7 @@ def get_model_service_result(cmd_pointer, parser):
                 filename = str(parser["results_file"])
                 file_path = parse_path(cmd_pointer, filename, force_ext="csv")
                 result.to_csv(file_path, index=False)
-                save_as_success(filename, file_path, "Result")
+                save_as_success(cmd_pointer, filename, file_path, "Result")
 
         except Exception as e:
             print(e)

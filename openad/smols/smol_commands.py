@@ -266,7 +266,7 @@ def export_molecule(cmd_pointer, inp):
         file_path = prepare_file_path(cmd_pointer, filename, force_ext="sdf")
         json_file = open(file_path, "w", encoding="utf-8")
         json.dump(smol, json_file)
-        save_as_success(filename, file_path, "Molecule")
+        save_as_success(cmd_pointer, filename, file_path, "Molecule")
     elif GLOBAL_SETTINGS["display"] in ["api", "notebook"]:
         return deepcopy(smol)
     return True
@@ -417,7 +417,7 @@ def export_mws(cmd_pointer, inp):
 
         # Success
         if success:
-            save_as_success(filename, file_path, "Result set")
+            save_as_success(cmd_pointer, filename, file_path, "Result set")
 
         # Error
         elif err:

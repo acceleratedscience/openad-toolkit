@@ -720,7 +720,7 @@ def display_data__save(cmd_pointer, parser):
     if file_path:
         try:
             data.to_csv(file_path, index=False)
-            save_as_success(filename, file_path, "Result")
+            save_as_success(cmd_pointer, filename, file_path, "Result")
         except Exception as e:  # pylint: disable=broad-except
             output_error(["Failed to save CSV", e], return_val=False)
             return
