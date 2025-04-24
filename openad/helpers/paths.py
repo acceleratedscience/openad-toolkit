@@ -69,7 +69,6 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
     # Detect path type
     is_absolute = path.startswith(("/", "\\"))
     is_cwd = path.startswith(("./", ".\\")) or path == "."
-    print(is_cwd, path)
 
     # Absolute path
     if is_absolute:

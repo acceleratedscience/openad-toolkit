@@ -471,4 +471,6 @@ def save_as_success(
     if filename.startswith(("/", "./", "\\", ".\\")):
         output_success(f"{subject} saved to <yellow>{file_path}</yellow>", return_val=False)
     else:
-        output_success(f"{subject} saved to workspace as <yellow>{file_path.split('/')[-1]}</yellow>", return_val=False)
+        # Make sure workspace path is displayed with the correct extension, as it may have been modified.
+        within_workspace_path = filename + file_path.split(filename)[1]
+        output_success(f"{subject} saved to workspace as <yellow>{within_workspace_path}</yellow>", return_val=False)
