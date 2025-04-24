@@ -12,10 +12,9 @@ import pandas as pd
 
 import pyparsing as py
 from openad.core.help import help_dict_create
-from openad.helpers.general import save_as_success
 from openad.helpers.output import output_error, output_success, output_table, output_text, output_warning
 from openad.helpers.spinner import spinner
-from openad.helpers.paths import parse_path
+from openad.helpers.paths import parse_path, save_as_success
 from openad.openad_model_plugin.auth_services import (
     load_lookup_table,
     remove_auth_group,

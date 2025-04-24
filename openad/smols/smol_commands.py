@@ -12,11 +12,10 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 # Helpers
-from openad.helpers.general import save_as_success
 from openad.helpers.output import output_text, output_table, output_warning, output_error, output_success
 from openad.helpers.output_msgs import msg
 from openad.helpers.pretty_data import list_columns, key_val_columns, key_val_full
-from openad.helpers.paths import prepare_file_path
+from openad.helpers.paths import prepare_file_path, save_as_success
 from openad.smols.smol_functions import get_best_available_identifier
 from openad.app.global_var_lib import GLOBAL_SETTINGS
 

@@ -12,8 +12,7 @@ import pandas as pd
 # from openad.core.help import help_dict_create
 import requests
 
-from openad.helpers.general import save_as_success
-from openad.helpers.paths import prepare_file_path
+from openad.helpers.paths import prepare_file_path, save_as_success
 from openad.helpers.output import output_error, output_success, output_text, output_warning
 from openad.helpers.spinner import Spinner
 from openad.openad_model_plugin.catalog_model_services import get_service_requester, help_dict_create
@@ -294,6 +293,7 @@ service_command_description[
 
 async_help_clause = "\n \n Note: If <cmd> async clause </cmd> is defined the user will be returned an id for the given job and will use the <cmd> `model service <service name> result '<job_id>' </cmd> command to retrieve it when it is ready. use this command to test for readiness."
 # fmt:on
+
 
 def service_grammar_add(statements: list, help: list, service_catalog: dict):
     """defines the grammar available for managing molecules"""
