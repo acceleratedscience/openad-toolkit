@@ -713,7 +713,7 @@ def display_data__save(cmd_pointer, parser):
     while not filename:
         filename = user_input(cmd_pointer, "Filename")
 
-    # Make sure destination is
+    # Make sure destination exists etc.
     file_path = prepare_file_path(cmd_pointer, filename, fallback_ext="csv")
 
     # Save data to file
