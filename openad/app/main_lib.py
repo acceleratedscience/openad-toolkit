@@ -63,10 +63,10 @@ import openad.app.login_manager as login_manager
 # Core
 from openad.core.lang_file_system import (
     import_file,
-    export_file,
+    copy_or_move_file,
+    copy_file_LEGACY,
     import_file_LEGACY,
     export_file_LEGACY,
-    copy_file,
     remove_file,
     open_file,
     list_files,
@@ -343,18 +343,20 @@ def lang_parse(cmd_pointer, parser):
         return list_files(cmd_pointer, parser)
     elif parser.getName() == "import_file":
         return import_file(cmd_pointer, parser)
-    elif parser.getName() == "export_file":
-        return export_file(cmd_pointer, parser)
-    elif parser.getName() == "import_file_LEGACY":
-        return import_file_LEGACY(cmd_pointer, parser)
-    elif parser.getName() == "export_file_LEGACY":
-        return export_file_LEGACY(cmd_pointer, parser)
-    elif parser.getName() == "copy_file":
-        return copy_file(cmd_pointer, parser)
+    elif parser.getName() == "copy_or_move_file":
+        return copy_or_move_file(cmd_pointer, parser)
     elif parser.getName() == "remove_file":
         return remove_file(cmd_pointer, parser)
     elif parser.getName() == "open_file":
         return open_file(cmd_pointer, parser)
+
+    # Legacy file system commands
+    elif parser.getName() == "import_file_LEGACY":
+        return import_file_LEGACY(cmd_pointer, parser)
+    elif parser.getName() == "export_file_LEGACY":
+        return export_file_LEGACY(cmd_pointer, parser)
+    elif parser.getName() == "copy_file_LEGACY":
+        return copy_file_LEGACY(cmd_pointer, parser)
 
     # General commands
     elif parser.getName() == "welcome":

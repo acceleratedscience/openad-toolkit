@@ -51,6 +51,7 @@ def help_dict_create(
 def help_dict_create_v2(
     category: str,
     command: str | list,
+    name: str = None,
     plugin_name: str = None,
     plugin_namespace: str = None,
     description_file: str = None,
@@ -89,10 +90,11 @@ def help_dict_create_v2(
     cmd_str_list = command if isinstance(command, list) else [command]
 
     return {
-        "plugin_name": plugin_name,
-        "plugin_namespace": plugin_namespace,
         "category": category,
         "commands": cmd_str_list,
+        "name": name,
+        "plugin_name": plugin_name,
+        "plugin_namespace": plugin_namespace,
         "description": description,
     }
 

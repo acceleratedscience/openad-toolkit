@@ -35,7 +35,7 @@ from pyparsing import (
 )
 
 # Main
-from openad.core.help import help_dict_create, organize_commands
+from openad.core.help import help_dict_create, help_dict_create_v2, organize_commands
 import openad.toolkit.toolkit_main as toolkit_main  # Not using "from" to avoid circular import.
 from openad.smols.smol_grammar import smol_grammar_add
 from openad.mmols.mmol_grammar import mmol_grammar_add
@@ -104,6 +104,13 @@ from openad.app.global_var_lib import _all_toolkits
     file display history data remove update result install launch restart quit gui filebrowser molviewer".split(),
 )
 STRING_VALUE = alphanums
+WORKING_WITH_PATHS = (
+    "<h1>Working with paths</h1>\n"
+    "<cmd>foobar.csv</cmd>              A file in your current workspace\n"
+    "<cmd>/Users/John/foobar.csv</cmd>  An absolute file path\n"
+    "<cmd>./foobar.csv</cmd>            A file on your current working directory\n"
+    "<cmd>~/Documents/foobar.csv</cmd>  A file in your home directory"
+)
 
 ##########################################################################
 
@@ -810,40 +817,53 @@ grammar_help.append(
     help_dict_create(
         name="import",
         category="File System",
-        command="import from '<external_source_file>' to '<workspace_file>'",
-        description="Import a file from outside OpenAD into your current workspace.",
+        command="import '<file_path>'",
+        description="Import a file into your current workspace.",
     )
 )
 
 # Export file
 statements.append(
-    Forward(CaselessKeyword("export") + desc("filename") + CaselessKeyword("to") + desc("destination"))("export_file")
+    Forward(
+        (CaselessKeyword("copy") | CaselessKeyword("move"))("action")
+        + desc("src_path")
+        + CaselessKeyword("to")
+        + desc("dest_path")
+        + Optional(CaselessKeyword("force"))("force")
+    )("copy_or_move_file")
 )
 # fmt: off
-# Legacy export - keep for backward compatibility
-statements.append(Forward(CaselessKeyword("export") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("export_file_LEGACY"))
+# Legacy export & copy - keep for backward compatibility
+statements.append(Forward(CaselessKeyword("export") + CaselessKeyword("from") + desc("filename") + CaselessKeyword("to") + desc("file_path"))("export_file_LEGACY"))
+statements.append(Forward(CaselessKeyword("copy") + CaselessKeyword("file") + desc("source") + CaselessKeyword("to") + desc("destination"))("copy_file_LEGACY"))
 # fmt: on
 grammar_help.append(
-    help_dict_create(
-        name="export",
+    help_dict_create_v2(
+        name="copy file",
         category="File System",
-        command="export from '<workspace_file>' to '<external_file>'",
-        description="Export a file from your current workspace to anywhere on your hard drive.",
-    )
-)
+        command=[
+            "move '<source_file>' to '<destination_path>' [ force ]",
+            "copy '<source_file>' to '<destination_path>' [ force ]",
+        ],
+        description=f"""Copy or move a file from one location to another.
 
-# Copy file
-statements.append(
-    Forward(
-        CaselessKeyword("copy") + CaselessKeyword("file") + desc("source") + CaselessKeyword("to") + desc("destination")
-    )("copy_file")
-)
-grammar_help.append(
-    help_dict_create(
-        name="copy",
-        category="File System",
-        command="copy file '<workspace_file>' to '<other_workspace_name>'",
-        description="Export a file from your current workspace to another workspace.",
+When the destination path includes a filename, you will be prompted to rename it.
+Use the <cmd>force</cmd> option to overwrite the file without prompting.
+
+
+{WORKING_WITH_PATHS}
+
+
+<h1>Examples</h1>
+Copy a file from your workspace to your home directory:
+<cmd>copy 'my_molecules.sdf' to '~/'</cmd>
+
+Move and rename a file within your workspace:
+<cmd>move 'my_data/dataset.csv' to 'other_data/dataset-new.csv'</cmd>
+
+Copy a file from the filesystem to your workspace while renaming the file:
+<cmd>move '/Users/John/Documents/dataset.csv' to 'dataset-new.csv'</cmd>
+""",
     )
 )
 

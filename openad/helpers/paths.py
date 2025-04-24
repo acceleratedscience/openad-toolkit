@@ -169,6 +169,15 @@ def next_available_filename(file_path) -> str:
     return f"{base}-{i}{ext}"
 
 
+def is_abs_path(file_path) -> bool:
+    """
+    Check if a path is absolute.
+    """
+    if file_path.startswith(("/", "./", "\\", ".\\")):
+        return True
+    return False
+
+
 def save_as_success(
     cmd_pointer,
     filename,  # Destination user input, eg. foo.csv or /home/foo.csv or ./foo.csv
@@ -178,8 +187,11 @@ def save_as_success(
     """
     Path-type aware success message for saving files.
     """
-    if filename.startswith(("/", "./", "\\", ".\\")):
+    # Absolute path
+    if is_abs_path(filename):
         output_success(f"{subject} saved to <yellow>{file_path}</yellow>", return_val=False)
+
+    # Workspace path
     else:
         # Filename may have been modifier with index and extension,
         # so we need to parse it from the file_path instead.

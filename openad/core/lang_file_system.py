@@ -17,7 +17,7 @@ from openad.workers.file_system import fs_get_workspace_files
 from openad.helpers.general import confirm_prompt
 from openad.helpers.output import output_text, output_error, output_success, output_table, strip_tags
 from openad.helpers.output_msgs import msg
-from openad.helpers.paths import parse_path, prepare_file_path
+from openad.helpers.paths import parse_path, prepare_file_path, save_as_success
 
 
 # Globals
@@ -74,7 +74,7 @@ def list_files(cmd_pointer, parser):
 
 # External path to workspace path
 def import_file(cmd_pointer, parser):
-    """Import a file from thefiles system external to Workspaces"""
+    """Import a file into your current workspace"""
 
     # Parse source
     file_path = parse_path(cmd_pointer, parser["file_path"])
@@ -90,16 +90,62 @@ def import_file(cmd_pointer, parser):
 
     # Success
     try:
-        shutil.copyfile(file_path, dest_path)
-        return output_success(f"Imported {filename} to your workspace")
+        if os.path.isfile(file_path):
+            shutil.copyfile(file_path, dest_path)
+        elif os.path.isdir(file_path):
+            shutil.copytree(file_path, dest_path)
+        else:
+            raise FileNotFoundError("No such file or directory")
+        return save_as_success(cmd_pointer, filename, dest_path)
 
     # Error
-    except Exception as err:
-        return output_error(["Import failed", err])
+    except Exception as err:  # pylint: disable=broad-except
+        return output_error(["Import failed", file_path, err])
 
 
-def export_file(cmd_pointer, parser):
-    pass
+def copy_or_move_file(cmd_pointer, parser):
+    """Copy or move a file from one place to another, possibly renaming it in the process."""
+
+    # Parse command
+    src_path = parse_path(cmd_pointer, parser["src_path"])
+    dest_path_input = parser["dest_path"]
+    action = parser["action"]  # "copy" or "move"
+    force = True if "force" in parser else False  # Skip confirmation when renaming
+
+    # Source file or directory does not exist
+    if not os.path.exists(src_path):
+        output_error(msg("err_file_doesnt_exist", src_path))
+        return
+
+    # Rename file if destination path includes filename
+    rename = os.path.splitext(os.path.basename(dest_path_input))[1] != ""
+    _name_from = os.path.basename(src_path)
+    _name_to = os.path.basename(dest_path_input)
+    if rename and (
+        force or (confirm_prompt(f"Rename file from <reset>{_name_from}</reset> to <reset>{_name_to}</reset>?"))
+    ):
+        # Parse destination, make sure dir exists etc.
+        dest_path = prepare_file_path(cmd_pointer, dest_path_input)
+    else:
+        filename = os.path.basename(src_path)
+        dest_path = prepare_file_path(cmd_pointer, os.path.join(dest_path_input, filename))
+
+    # Success
+    try:
+        if action == "move":
+            shutil.move(src_path, dest_path)
+        elif action == "copy":
+            if os.path.isfile(src_path):
+                shutil.copyfile(src_path, dest_path)
+            elif os.path.isdir(src_path):
+                shutil.copytree(src_path, dest_path)
+            else:
+                raise FileNotFoundError("No such file or directory")
+        return save_as_success(cmd_pointer, dest_path_input, dest_path)
+
+    # Error
+    except Exception as err:  # pylint: disable=broad-except
+        return output_error(["Import failed", src_path, err])
 
 
 # External path to workspace path
@@ -171,7 +217,7 @@ def export_file_LEGACY(cmd_pointer, parser):
 
 
 # Workspace path to workspace name
-def copy_file(cmd_pointer, parser):
+def copy_file_LEGACY(cmd_pointer, parser):
     """copy a file betqeen workspaces"""
     # Reset working directory as it can have changed.
     # os.chdir(_repo_dir)
