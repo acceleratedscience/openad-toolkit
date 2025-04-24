@@ -119,8 +119,7 @@ from openad.helpers.general import refresh_prompt, user_input
 from openad.helpers.splash import splash
 from openad.helpers.concepts import openad_intro
 from openad.helpers.plugins import display_plugin_overview
-from openad.helpers.paths import parse_path, prepare_file_path, block_absolute
-from openad.helpers.general import save_as_success
+from openad.helpers.paths import parse_path, prepare_file_path, block_absolute, save_as_success
 
 from openad.plugins import edit_json
 
