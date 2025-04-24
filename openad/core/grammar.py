@@ -801,15 +801,11 @@ grammar_help.append(
 )
 
 # Import file
-statements.append(
-    Forward(
-        CaselessKeyword("import")
-        + CaselessKeyword("from")
-        + desc("source")
-        + CaselessKeyword("to")
-        + desc("destination")
-    )("import_file")
-)
+statements.append(Forward(CaselessKeyword("import") + desc("file_path"))("import_file"))
+# Legacy import - keep for backward compatibility
+# fmt: off
+statements.append(Forward(CaselessKeyword("import") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("import_file_LEGACY"))
+# fmt: on
 grammar_help.append(
     help_dict_create(
         name="import",
@@ -821,14 +817,12 @@ grammar_help.append(
 
 # Export file
 statements.append(
-    Forward(
-        CaselessKeyword("export")
-        + CaselessKeyword("from")
-        + desc("source")
-        + CaselessKeyword("to")
-        + desc("destination")
-    )("export_file")
+    Forward(CaselessKeyword("export") + desc("filename") + CaselessKeyword("to") + desc("destination"))("export_file")
 )
+# fmt: off
+# Legacy export - keep for backward compatibility
+statements.append(Forward(CaselessKeyword("export") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("export_file_LEGACY"))
+# fmt: on
 grammar_help.append(
     help_dict_create(
         name="export",

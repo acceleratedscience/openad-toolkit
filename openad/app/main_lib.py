@@ -61,7 +61,16 @@ from openad.smols.smol_cache import enrich_mws_with_analysis, clear_analysis
 import openad.app.login_manager as login_manager
 
 # Core
-from openad.core.lang_file_system import import_file, export_file, copy_file, remove_file, open_file, list_files
+from openad.core.lang_file_system import (
+    import_file,
+    export_file,
+    import_file_LEGACY,
+    export_file_LEGACY,
+    copy_file,
+    remove_file,
+    open_file,
+    list_files,
+)
 from openad.core.lang_sessions_and_registry import (
     clear_sessions,
     write_registry,
@@ -337,6 +346,10 @@ def lang_parse(cmd_pointer, parser):
         return import_file(cmd_pointer, parser)
     elif parser.getName() == "export_file":
         return export_file(cmd_pointer, parser)
+    elif parser.getName() == "import_file_LEGACY":
+        return import_file_LEGACY(cmd_pointer, parser)
+    elif parser.getName() == "export_file_LEGACY":
+        return export_file_LEGACY(cmd_pointer, parser)
     elif parser.getName() == "copy_file":
         return copy_file(cmd_pointer, parser)
     elif parser.getName() == "remove_file":

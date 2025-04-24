@@ -17,7 +17,7 @@ from openad.workers.file_system import fs_get_workspace_files
 from openad.helpers.general import confirm_prompt
 from openad.helpers.output import output_text, output_error, output_success, output_table, strip_tags
 from openad.helpers.output_msgs import msg
-from openad.helpers.paths import parse_path
+from openad.helpers.paths import parse_path, prepare_file_path
 
 
 # Globals
@@ -75,6 +75,36 @@ def list_files(cmd_pointer, parser):
 # External path to workspace path
 def import_file(cmd_pointer, parser):
     """Import a file from thefiles system external to Workspaces"""
+
+    # Parse source
+    file_path = parse_path(cmd_pointer, parser["file_path"])
+
+    # File does not exist
+    if not os.path.exists(file_path):
+        output_error(msg("err_file_doesnt_exist", file_path))
+        return
+
+    # Parse destination, make sure dir exists etc.
+    filename = os.path.basename(file_path)
+    dest_path = prepare_file_path(cmd_pointer, filename)
+
+    # Success
+    try:
+        shutil.copyfile(file_path, dest_path)
+        return output_success(f"Imported {filename} to your workspace")
+
+    # Error
+    except Exception as err:
+        return output_error(["Import failed", err])
+
+
+def export_file(cmd_pointer, parser):
+    pass
+
+
+# External path to workspace path
+def import_file_LEGACY(cmd_pointer, parser):
+    """Import a file from thefiles system external to Workspaces"""
     # Reset working directory as it can have changed.
     # os.chdir(_repo_dir)
 
@@ -111,7 +141,7 @@ def import_file(cmd_pointer, parser):
 
 
 # Workspace path to external path
-def export_file(cmd_pointer, parser):
+def export_file_LEGACY(cmd_pointer, parser):
     """Exports a workspace file to the rechable filesystem"""
     # Reset working directory as it can have changed.
     # os.chdir(_repo_dir)
