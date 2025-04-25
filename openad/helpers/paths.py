@@ -85,7 +85,6 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
 
     # Current working directory path
     elif is_cwd:
-        path = "" if path == "." else path
         path = os.path.normpath(os.path.join(os.getcwd(), path, filename))
 
     # Default: workspace path
