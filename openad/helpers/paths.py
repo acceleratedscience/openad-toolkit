@@ -47,10 +47,10 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
 
     # Normalize the path string to use the appropriate
     # separator for the current system
-    path = os.path.normpath(file_path)
+    file_path = os.path.normpath(file_path)
 
     # Expand user path: ~/... --> /Users/my-username/...
-    path = os.path.expanduser(path)
+    file_path = os.path.expanduser(file_path)
 
     # Separate filename from path
     path = os.path.dirname(file_path)
@@ -66,7 +66,7 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
 
     # Fallback to default extension if none provided
     elif fallback_ext:
-        ext = os.path.splitext(file_path)[1]
+        ext = os.path.splitext(filename)[1]
         filename = filename if ext else filename + "." + fallback_ext
 
     # Detect path type
