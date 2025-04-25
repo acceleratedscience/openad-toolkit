@@ -77,16 +77,17 @@ def import_file(cmd_pointer, parser):
     """Import a file into your current workspace"""
 
     # Parse source
+    print(1)
     file_path = parse_path(cmd_pointer, parser["file_path"])
 
     # File does not exist
     if not os.path.exists(file_path):
-        output_error(msg("err_file_doesnt_exist", file_path))
-        return
+        return output_error(msg("err_file_doesnt_exist", file_path))
 
     # Parse destination, make sure dir exists etc.
     filename = os.path.basename(file_path)
     dest_path = prepare_file_path(cmd_pointer, filename)
+    print(2)
 
     # Success
     try:
@@ -114,18 +115,18 @@ def copy_or_move_file(cmd_pointer, parser):
 
     # Source file or directory does not exist
     if not os.path.exists(src_path):
-        output_error(msg("err_file_doesnt_exist", src_path))
-        return
+        return output_error(msg("err_file_doesnt_exist", src_path))
 
     # Rename file if destination path includes filename
     rename = os.path.splitext(os.path.basename(dest_path_input))[1] != ""
     _name_from = os.path.basename(src_path)
     _name_to = os.path.basename(dest_path_input)
-    if rename and (
-        force or (confirm_prompt(f"Rename file from <reset>{_name_from}</reset> to <reset>{_name_to}</reset>?"))
-    ):
-        # Parse destination, make sure dir exists etc.
-        dest_path = prepare_file_path(cmd_pointer, dest_path_input)
+    if rename:
+        if force or (confirm_prompt(f"Rename file from <reset>{_name_from}</reset> to <reset>{_name_to}</reset>?")):
+            dest_path = prepare_file_path(cmd_pointer, dest_path_input)
+        else:
+            return output_error(f"Aborted, no files were {'moved' if action == 'move' else 'copied'}")
+
     else:
         filename = os.path.basename(src_path)
         dest_path = prepare_file_path(cmd_pointer, os.path.join(dest_path_input, filename))

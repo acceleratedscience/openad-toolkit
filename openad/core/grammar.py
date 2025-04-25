@@ -834,7 +834,7 @@ statements.append(
 )
 # fmt: off
 # Legacy export & copy - keep for backward compatibility
-statements.append(Forward(CaselessKeyword("export") + CaselessKeyword("from") + desc("filename") + CaselessKeyword("to") + desc("file_path"))("export_file_LEGACY"))
+statements.append(Forward(CaselessKeyword("export") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("export_file_LEGACY"))
 statements.append(Forward(CaselessKeyword("copy") + CaselessKeyword("file") + desc("source") + CaselessKeyword("to") + desc("destination"))("copy_file_LEGACY"))
 # fmt: on
 grammar_help.append(
