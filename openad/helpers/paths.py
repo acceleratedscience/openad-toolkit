@@ -45,6 +45,10 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
     if not file_path:
         return None
 
+    # Detect path type
+    is_absolute = file_path.startswith(("/", "\\"))
+    is_cwd = file_path.startswith(("./", ".\\"))
+
     # Normalize the path string to use the appropriate
     # separator for the current system
     file_path = os.path.normpath(file_path)
@@ -68,10 +72,6 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
     elif fallback_ext:
         ext = os.path.splitext(filename)[1]
         filename = filename if ext else filename + "." + fallback_ext
-
-    # Detect path type
-    is_absolute = path.startswith(("/", "\\"))
-    is_cwd = path.startswith(("./", ".\\")) or path == "."
 
     # Absolute path
     if is_absolute:
