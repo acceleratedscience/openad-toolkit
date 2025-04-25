@@ -868,7 +868,7 @@ Copy a file from the filesystem to your workspace while renaming the file:
 )
 
 # Remove file
-statements.append(Forward(CaselessKeyword("remove") + desc("file"))("remove_file"))
+statements.append(Forward(CaselessKeyword("remove") + desc("filename"))("remove_file"))
 grammar_help.append(
     help_dict_create(
         name="remove",
@@ -900,7 +900,7 @@ grammar_help.append(
     help_dict_create(
         name="show data",
         category="File System",
-        command="show '<filename.csv>'",
+        command="show '<filename>'",
         description="""Open a file in the graphical user interface.
 
 Examples:

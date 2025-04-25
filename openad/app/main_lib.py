@@ -64,10 +64,11 @@ import openad.app.login_manager as login_manager
 from openad.core.lang_file_system import (
     import_file,
     copy_or_move_file,
+    remove_file,
     copy_file_LEGACY,
     import_file_LEGACY,
     export_file_LEGACY,
-    remove_file,
+    remove_file_LEGACY,
     open_file,
     list_files,
 )
@@ -119,7 +120,7 @@ from openad.helpers.general import refresh_prompt, user_input
 from openad.helpers.splash import splash
 from openad.helpers.concepts import openad_intro
 from openad.helpers.plugins import display_plugin_overview
-from openad.helpers.paths import parse_path, prepare_file_path, block_absolute, save_as_success
+from openad.helpers.paths import parse_path, prepare_file_path, block_absolute, fs_success
 
 from openad.plugins import edit_json
 
@@ -357,6 +358,8 @@ def lang_parse(cmd_pointer, parser):
         return export_file_LEGACY(cmd_pointer, parser)
     elif parser.getName() == "copy_file_LEGACY":
         return copy_file_LEGACY(cmd_pointer, parser)
+    elif parser.getName() == "remove_file_LEGACY":
+        return remove_file_LEGACY(cmd_pointer, parser)
 
     # General commands
     elif parser.getName() == "welcome":
@@ -734,7 +737,7 @@ def display_data__save(cmd_pointer, parser):
     if file_path:
         try:
             data.to_csv(file_path, index=False)
-            save_as_success(cmd_pointer, filename, file_path, "Result")
+            fs_success(cmd_pointer, filename, file_path, "Result")
         except Exception as e:  # pylint: disable=broad-except
             output_error(["Failed to save CSV", e], return_val=False)
             return

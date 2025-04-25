@@ -12,7 +12,7 @@ import pandas as pd
 # from openad.core.help import help_dict_create
 import requests
 
-from openad.helpers.paths import prepare_file_path, save_as_success
+from openad.helpers.paths import prepare_file_path, fs_success
 from openad.helpers.output import output_error, output_success, output_text, output_warning
 from openad.helpers.spinner import Spinner
 from openad.openad_model_plugin.catalog_model_services import get_service_requester, help_dict_create
@@ -817,7 +817,7 @@ def openad_model_requestor(cmd_pointer, parser):
                 if file_path:
                     try:
                         result.to_csv(file_path, index=False)
-                        save_as_success(cmd_pointer, results_file, file_path, "Result")
+                        fs_success(cmd_pointer, results_file, file_path, "Result")
                     except Exception as e:  # pylint: disable=broad-except
                         output_error(["Failed to saved CSV", e], return_val=False)
                 else:

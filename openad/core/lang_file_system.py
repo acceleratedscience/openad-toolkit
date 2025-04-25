@@ -15,9 +15,9 @@ from openad.workers.file_system import fs_get_workspace_files
 
 # Helpers
 from openad.helpers.general import confirm_prompt
-from openad.helpers.output import output_text, output_error, output_success, output_table, strip_tags
+from openad.helpers.output import output_text, output_error, output_success, output_table, output_warning
 from openad.helpers.output_msgs import msg
-from openad.helpers.paths import parse_path, prepare_file_path, save_as_success
+from openad.helpers.paths import parse_path, prepare_file_path, fs_success, is_abs_path
 
 
 # Globals
@@ -77,7 +77,6 @@ def import_file(cmd_pointer, parser):
     """Import a file into your current workspace"""
 
     # Parse source
-    print(1)
     file_path = parse_path(cmd_pointer, parser["file_path"])
 
     # File does not exist
@@ -87,7 +86,8 @@ def import_file(cmd_pointer, parser):
     # Parse destination, make sure dir exists etc.
     filename = os.path.basename(file_path)
     dest_path = prepare_file_path(cmd_pointer, filename)
-    print(2)
+    if not dest_path:
+        return output_error("Aborted, no files were imported")
 
     # Success
     try:
@@ -97,7 +97,7 @@ def import_file(cmd_pointer, parser):
             shutil.copytree(file_path, dest_path)
         else:
             raise FileNotFoundError("No such file or directory")
-        return save_as_success(cmd_pointer, filename, dest_path)
+        return fs_success(cmd_pointer, filename, dest_path)
 
     # Error
     except Exception as err:  # pylint: disable=broad-except
@@ -105,13 +105,15 @@ def import_file(cmd_pointer, parser):
 
 
 def copy_or_move_file(cmd_pointer, parser):
-    """Copy or move a file from one place to another, possibly renaming it in the process."""
+    """Copy or move a file (or dir) from one place to another, possibly renaming it in the process."""
 
     # Parse command
     src_path = parse_path(cmd_pointer, parser["src_path"])
     dest_path_input = parser["dest_path"]
     action = parser["action"]  # "copy" or "move"
     force = True if "force" in parser else False  # Skip confirmation when renaming
+
+    abort_msg = f"Aborted, no files were {'moved' if action == 'move' else 'copied'}"
 
     # Source file or directory does not exist
     if not os.path.exists(src_path):
@@ -125,11 +127,14 @@ def copy_or_move_file(cmd_pointer, parser):
         if force or (confirm_prompt(f"Rename file from <reset>{_name_from}</reset> to <reset>{_name_to}</reset>?")):
             dest_path = prepare_file_path(cmd_pointer, dest_path_input)
         else:
-            return output_error(f"Aborted, no files were {'moved' if action == 'move' else 'copied'}")
+            return output_error(abort_msg)
 
     else:
         filename = os.path.basename(src_path)
         dest_path = prepare_file_path(cmd_pointer, os.path.join(dest_path_input, filename))
+
+    if not dest_path:
+        return output_error(abort_msg)
 
     # Success
     try:
@@ -139,14 +144,56 @@ def copy_or_move_file(cmd_pointer, parser):
             if os.path.isfile(src_path):
                 shutil.copyfile(src_path, dest_path)
             elif os.path.isdir(src_path):
-                shutil.copytree(src_path, dest_path)
+                shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
             else:
                 raise FileNotFoundError("No such file or directory")
-        return save_as_success(cmd_pointer, dest_path_input, dest_path)
+        return fs_success(cmd_pointer, dest_path_input, dest_path)
 
     # Error
     except Exception as err:  # pylint: disable=broad-except
-        return output_error(["Import failed", src_path, err])
+        return output_error([f"Failed to {action}", src_path, err])
+
+
+# Workspace path
+def remove_file(cmd_pointer, parser):
+    """Remove a file"""
+
+    filename = parser["filename"]
+    is_absolute_path = is_abs_path(filename)
+    abort_msg = "Aborted, no files were removed"
+
+    file_path = parse_path(cmd_pointer, filename)
+    if not file_path:
+        return output_error(abort_msg)
+
+    path_type = "file" if os.path.isfile(file_path) else "directory"
+    subject = "File" if path_type == "file" else "Directory"
+
+    # Source does not exist
+    if not os.path.exists(file_path):
+        return output_error(msg("err_file_doesnt_exist", file_path))
+
+    # Confirm prompt
+    warning = (
+        f"⚠️  You're about to delete a {path_type} outside of your workspace"
+        if is_absolute_path
+        else f"Permanently deleting {path_type}"
+    )
+    output_warning([f"{warning}:", file_path], return_val=False)
+    if not confirm_prompt("Continue?"):
+        return output_error(abort_msg)
+
+    # Success
+    try:
+        if path_type == "file":
+            os.remove(file_path)
+        else:
+            shutil.rmtree(file_path)
+        fs_success(cmd_pointer, filename, file_path, subject=subject, action="removed")
+
+    # Failure
+    except Exception as err:  # pylint: disable=broad-except
+        return output_error(["Something went wrong deleting this file", err])
 
 
 # External path to workspace path
@@ -252,7 +299,7 @@ def copy_file_LEGACY(cmd_pointer, parser):
 
 
 # Workspace path
-def remove_file(cmd_pointer, parser):
+def remove_file_LEGACY(cmd_pointer, parser):
     """remove a file from a workspace"""
     workspace = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"])
     file_name = parser["file"]
