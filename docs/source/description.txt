@@ -1,3 +1,0 @@
-OpenAD is an intuitive toolkit that simplifies access to a variety of AI models and services for scientific discovery. Together with its convenient visualisation capabilities, OpenAD empowers scientists across industries to enhance their discovery process.
-
-OpenAD is designed to integrate into your existing workflows via Jupyter Notebook, CLI or API, using a low-code approach to accelerate your research.
