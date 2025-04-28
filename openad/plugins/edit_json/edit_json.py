@@ -734,9 +734,7 @@ class EditJson:
                 self.selected_help = (
                     f"<green>{type_str.upper()}{multiple_of_str}{range_str}</green><yellow/> {help_str}"
                     if type_str and help_str
-                    else f"<green>{type_str.upper()}</green>"
-                    if type_str
-                    else str(help_str)
+                    else f"<green>{type_str.upper()}</green>" if type_str else str(help_str)
                 )  # noqa
 
         if not self.active_screen or self.active_screen.keep_title:
@@ -778,7 +776,7 @@ class EditJson:
 
             # JSON file path
             if self.show_path:
-                path_output = style(f"\U0001F4C1 File path: <magenta>{self.json_path}</magenta>", nowrap=True)
+                path_output = style(f"\U0001f4c1 File path: <magenta>{self.json_path}</magenta>", nowrap=True)
                 if 1:
                     path_output += style(" / Type <cmd>:o</cmd> to open", nowrap=True)
                 display_append(path_output)
@@ -1087,9 +1085,7 @@ class EditJson:
             show_help_str = (
                 ""
                 if not self.selected_help
-                else style(" <yellow>▼</yellow>")
-                if self.show_help
-                else style(" <yellow>▶</yellow>")
+                else style(" <yellow>▼</yellow>") if self.show_help else style(" <yellow>▶</yellow>")
             )
             value_str = a_textwrap(str(value), width=right_col_width)
             lines = value_str.splitlines()

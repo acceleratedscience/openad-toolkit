@@ -1,4 +1,4 @@
-""" this library Automates the creation of a Langchain Chat object"""
+"""this library Automates the creation of a Langchain Chat object"""
 
 import os
 import glob
@@ -33,6 +33,7 @@ def len_func(text):
 ## Creds clas for Watson X disabled currently
 class my_creds:
     "Chat credentials Object"
+
     DEFAULT_API = "https://workbench-api.res.ibm.com/v1"
     api_key = None
     api_endpoint = None

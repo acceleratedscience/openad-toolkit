@@ -8,6 +8,15 @@ import os
 import shutil, re
 import openad.helpers.general as helpers_general
 import pandas as pd
+import time
+import traceback
+
+# support async to sync calls
+import asyncio
+import nest_asyncio
+
+nest_asyncio.apply()
+import aiohttp
 
 # from openad.core.help import help_dict_create
 import requests
@@ -19,6 +28,7 @@ from openad.openad_model_plugin.auth_services import get_service_api_key
 from openad.openad_model_plugin.catalog_model_services import Dispatcher
 from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.smols.smol_batch_files import merge_molecule_property_data
+from openad.openad_model_plugin.utils import LruCache, get_logger
 from pyparsing import (  # replaceWith,; Combine,; pyparsing_test,; ParseException,
     CaselessKeyword,
     CharsNotIn,
@@ -157,7 +167,8 @@ molecule_identifier = (
 )
 
 CLI_WIDTH = helpers_general.get_print_width(full=True)
-
+ASYNC_SERVICE_LIST = []
+logger = get_logger(__name__)
 input_object = QuotedString('"', end_quote_char='"', escQuote="\\")
 
 ####################################################################################
@@ -183,25 +194,25 @@ service_command_start["get_crystal_property"] = 'get + CaselessKeyword("crystal"
 service_command_start["get_protein_property"] = 'get + CaselessKeyword("protein") + CaselessKeyword("property")'
 service_command_start["generate_data"] = 'CaselessKeyword("generate") + CaselessKeyword("with")'
 
-service_command_merge[
-    "get_molecule_property"
-] = '+ Optional((CaselessKeyword("merge with mols")|CaselessKeyword("merge with molecules"))("merge_with_mws"))'
+service_command_merge["get_molecule_property"] = (
+    '+ Optional((CaselessKeyword("merge with mols")|CaselessKeyword("merge with molecules"))("merge_with_mws"))'
+)
 service_command_merge["get_crystal_property"] = ""
 service_command_merge["get_protein_property"] = ""
 service_command_merge["generate_data"] = ""
 
-service_command_subject[
-    "get_molecule_property"
-] = '+CaselessKeyword("for")+(mol_list("mol_list")|(Word("[")+delimitedList(molecule_identifier,delim=",")("molecules")+Word("]")|molecule_identifier("molecule")))'
-service_command_subject[
-    "get_protein_property"
-] = '+CaselessKeyword("for")+((Word("[")+ delimitedList(molecule_identifier,delim=",")("proteins")+Word("]")|molecule_identifier("protein")))'
-service_command_subject[
-    "get_crystal_property"
-] = '+CaselessKeyword("for")+((Word("[")+ delimitedList(desc,delim=",")("crystal_files")+Word("]")|desc("crystal_file")("crystal_PATH")))'
-service_command_subject[
-    "generate_data"
-] = '+CaselessKeyword("data")+<TARGET>Optional(CaselessKeyword("Sample")+Word(nums)("sample_size"))'
+service_command_subject["get_molecule_property"] = (
+    '+CaselessKeyword("for")+(mol_list("mol_list")|(Word("[")+delimitedList(molecule_identifier,delim=",")("molecules")+Word("]")|molecule_identifier("molecule")))'
+)
+service_command_subject["get_protein_property"] = (
+    '+CaselessKeyword("for")+((Word("[")+ delimitedList(molecule_identifier,delim=",")("proteins")+Word("]")|molecule_identifier("protein")))'
+)
+service_command_subject["get_crystal_property"] = (
+    '+CaselessKeyword("for")+((Word("[")+ delimitedList(desc,delim=",")("crystal_files")+Word("]")|desc("crystal_file")("crystal_PATH")))'
+)
+service_command_subject["generate_data"] = (
+    '+CaselessKeyword("data")+<TARGET>Optional(CaselessKeyword("Sample")+Word(nums)("sample_size"))'
+)
 
 ###################################################################
 # targets for generate Data
@@ -238,18 +249,18 @@ generation_targets = {
 #         sampling_wrapper={'fraction_to_mask': mask, 'property_goal': {'<esol>': 0.234}}"""
 
 
-service_command_help[
-    "get_molecule_property"
-] = "get molecule property <property> FOR @mols | [<list of SMILES>] | <SMILES>   USING (<parameter>=<value> <parameter>=<value>) (merge with mols|molecules)"
-service_command_help[
-    "get_crystal_property"
-] = "get crystal property <property> FOR <directory> USING (<parameter>=<value> <parameter>=<value>)"
-service_command_help[
-    "get_protein_property"
-] = "get protein property <property> FOR [<list of Proteins>] | <Protein> USING (<parameter>=<value> <parameter>=<value>)"
-service_command_help[
-    "generate_data"
-] = "generate with <property> data <TARGET> (sample <sample_size>) USING (<parameter>=<value> <parameter>=<value>) "
+service_command_help["get_molecule_property"] = (
+    "get molecule property <property> FOR @mols | [<list of SMILES>] | <SMILES>   USING (<parameter>=<value> <parameter>=<value>) (merge with mols|molecules)"
+)
+service_command_help["get_crystal_property"] = (
+    "get crystal property <property> FOR <directory> USING (<parameter>=<value> <parameter>=<value>)"
+)
+service_command_help["get_protein_property"] = (
+    "get protein property <property> FOR [<list of Proteins>] | <Protein> USING (<parameter>=<value> <parameter>=<value>)"
+)
+service_command_help["generate_data"] = (
+    "generate with <property> data <TARGET> (sample <sample_size>) USING (<parameter>=<value> <parameter>=<value>) "
+)
 
 service_command_description[
     "get_molecule_property"
@@ -277,11 +288,11 @@ This command gets (generate/predict) crystal properties
 service_command_description[
     "get_protein_property"
 ] = """
-This command gets (generates/predicts) a protein property for one or proteins specified with a FASTA string in the <cmd>FOR</cmd> clause.
-FASTA strings can be provided as a single string or multiple FASTA strings in a comma separated list in square brackets 
+This command gets (generate/predict) a proteins property for one or protiens specified with a FASTA string in the <cmd>FOR</cmd> clause.
+FASTA strings can be provided as a single  string or multiple FASTA strings in a comma seperated list in square brackets 
 e.g. <cmd> FOR ['NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC','NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC' ]</cmd>.
 FASTA strings must be provided in single quotes.
-This command gets (generates/predicts) the following properties:\n<cmd><property_list></cmd>\n
+This command gets (generate/predict) the following properties:\n<cmd><property_list></cmd>\n
 """
 service_command_description[
     "generate_data"
@@ -297,9 +308,12 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
     for service in service_catalog.keys():
         service_list = service_catalog[service]
         for schema in service_list:
+
             # Allow Async for command if supported
             if "async_allow" in schema and schema["async_allow"]:
                 async_allow = True
+                # compiling a list of services that support Async
+                ASYNC_SERVICE_LIST.append(service)
             else:
                 async_allow = False
 
@@ -343,7 +357,8 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                             generation_targets[schema["generator_type"]["algorithm_type"]][target_type],
                         )
                     except Exception as e:
-                        print(schema)
+                        logger.error(schema)
+                        logger.error("Exception " + str(e))
                         output_error(e)
                         continue
                 else:
@@ -352,19 +367,18 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                 cmd_subject = service_command_subject[schema["service_type"]]
 
             # below is simply for when debugging is required
-            """"
-            print(
-                "Forward( "
-                + command
-                + "+"
-                + valid_type
-                + cmd_subject
-                + expression
-                + ")"
-                + f'("{schema["service_name"]}@{schema["service_type"]}")'
-            )
-            print("--------------------------------------------------------------------")
-            """
+
+            # print(
+            #    "Forward( "
+            #    + command
+            #    + "+"
+            #    + valid_type
+            #    + cmd_subject
+            #    + expression
+            #    + ")"
+            #    + f'("{schema["service_name"]}@{schema["service_type"]}")'
+            # )
+            # print("--------------------------------------------------------------------")
 
             # Compile the pyparsing grammar for the statement
             try:
@@ -776,14 +790,24 @@ def openad_model_requestor(cmd_pointer, parser):
 
     with Dispatcher as servicer:
         service_status = servicer.get_short_status(service_name)
+
+    # adds ability for OpenAD to use async method for sync
+    # Added request flag saying it is coming in Interactively so that an update to Model wrapper could submit as a interactive priority in future
     try:
-        # response = Dispatcher.service_request(
-        #     name=service_name, method="POST", timeout=None, verify=not service_status.get("is_remote"), _json=a_request
-        # )
-        response = Dispatcher.service_request(
-            name=service_name, method="POST", timeout=None, verify=False, _json=a_request
-        )
-        # response = requests.post(Endpoint + "/service", json=a_request, headers=headers, verify=False)
+
+        if service_name in ASYNC_SERVICE_LIST and "async" not in a_request:
+            a_request["async"] = True
+            a_request["interactive"] = True
+            response = Dispatcher.service_request(
+                name=service_name, method="POST", timeout=None, verify=False, _json=a_request
+            )
+            job_id = response.json()
+            response = asyncio.run(get_async_request(service_name=service_name, job_id=job_id))
+        else:
+            response = Dispatcher.service_request(
+                name=service_name, method="POST", timeout=None, verify=False, _json=a_request
+            )
+
     except Exception as e:
         spinner.fail("Request Failed")
         spinner.stop()
@@ -795,6 +819,9 @@ def openad_model_requestor(cmd_pointer, parser):
     try:
         response_result = response.json()
         try:
+            # check to see if responses has been serialised as a string and change to dictionary
+            if isinstance(response_result, str):
+                response_result = json.loads(response_result)
             if isinstance(response_result, dict):
                 if "error" in response_result:
                     run_error = "Request Error:\n"
@@ -820,10 +847,11 @@ def openad_model_requestor(cmd_pointer, parser):
                 merge_molecule_property_data(cmd_pointer=cmd_pointer, dataframe=result)
             return result
 
-        except:
+        except Exception as e:
             result = response_result
 
         if isinstance(result, dict):
+
             if "error" in result:
                 run_error = "Request Error:\n"
                 for key, value in result["error"].items():
@@ -835,9 +863,45 @@ def openad_model_requestor(cmd_pointer, parser):
 
         spinner.fail("Request Failed")
         spinner.stop()
-        return output_error(run_error + "\n" + str(e))
+        logger.error(traceback.format_exc())
+        logger.error(response.encoding)
+        logger.error(response.text)
+        logger.error(response.status_code)
+        logger.error(response.headers)
+        return output_error(run_error + "\n" + str(e.with_traceback()))
 
     return result
+
+
+async def get_async_request(service_name, job_id):
+    "waits and returns an asynchronous result"
+    sleep_interval = 1
+    response = {"warning": ""}
+    a_request = {"url": job_id, "service_type": "get_result"}
+
+    async def result_ready(response):
+        if "warning" not in response:
+            return True
+        else:
+            return False
+
+    while not await result_ready(response):
+        await asyncio.sleep(sleep_interval)
+
+        try:
+            sys_response = Dispatcher.service_request(
+                name=service_name, method="POST", timeout=None, verify=False, _json=a_request
+            )
+            response = sys_response.json()
+
+        except Exception as e:
+            output_error(str(e))
+            return output_error("Error: \n Server not reachable ")
+
+        if sleep_interval < 3:
+            sleep_interval += 0.1
+
+    return sys_response
 
 
 def format_properties(props: list):

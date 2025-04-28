@@ -25,7 +25,7 @@ Usage:
 
         # Dynamic - simple string.
         "example_4": lambda first_name, last_name: f"Hello {first_name} {last_name}",
-        
+
         # Dynamic - multi-line string.
         "example_5": lambda fav_food: ("I love:", fav_food),
 
