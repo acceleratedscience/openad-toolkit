@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 """ASCII title generator."""
 
 # autopep8: off

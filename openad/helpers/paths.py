@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 import os
 import re
 from openad.helpers.output import output_error, output_warning, output_success

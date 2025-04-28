@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 """
 This library lets us print styled content in the CLI and Jupyter.
 Use this instead of print() which should always be avoided.

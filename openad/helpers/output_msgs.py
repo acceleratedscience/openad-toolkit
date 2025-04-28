@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 """
 This file contains all output messages displayed by OpenAD.
 
@@ -54,7 +52,6 @@ Usage:
     --> ["Something went wrong", "Error 400"]
 
 """
-
 
 # This file uses VSCode regions. Click this line and hit Cmd+(K, 2) to collapse all.
 _messages = {
