@@ -809,8 +809,8 @@ grammar_help.append(
 
 # Import file
 statements.append(Forward(CaselessKeyword("import") + desc("file_path"))("import_file"))
-# Legacy import - keep for backward compatibility
 # fmt: off
+# Legacy import - keep for backward compatibility
 statements.append(Forward(CaselessKeyword("import") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("import_file_LEGACY"))
 # fmt: on
 grammar_help.append(
