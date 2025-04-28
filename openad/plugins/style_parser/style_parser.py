@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 """
 Parse XML tags for easy styling of CLI text output.
 ---------------------------------------------------

@@ -695,7 +695,7 @@ def display_data(cmd_pointer, parser):
     # Open file
     try:
         if filename.split(".")[-1].lower() == "csv":
-            # From csv file
+            # From csv file.
             try:
                 df = pd.read_csv(file_path)
                 df = df.fillna("")  # Replace NaN with empty string
@@ -706,17 +706,17 @@ def display_data(cmd_pointer, parser):
                 # do not care what exception is, just returning failure
                 return output_error(msg("err_load", "CSV", err))
         else:
-            # Other file formats --> error
+            # Other file formats --> error.
             return output_error(msg("err_invalid_file_format", "csv"))
 
     except Exception as err:  # pylint: disable=broad-exception-caught
-        output_error(msg("err_unknown", err))
+        return output_error(msg("err_unknown", err))
 
 
 # --> Save data to a csv file.
 def display_data__save(cmd_pointer, parser):
     """saves data from viewer"""
-    # Preserve memory for further follow-up commands
+    # Preserve memory for further follow-up commands.
     MEMORY.preserve()
 
     data = MEMORY.get()
@@ -739,32 +739,32 @@ def display_data__save(cmd_pointer, parser):
             data.to_csv(file_path, index=False)
             fs_success(cmd_pointer, filename, file_path, "Result")
         except Exception as e:  # pylint: disable=broad-except
-            output_error(["Failed to save CSV", e], return_val=False)
-            return
+            return output_error(["Failed to save CSV", e])
+
     else:
-        output_error("No data was stored", return_val=False)
-        return
+        return output_error("No data was stored")
 
 
-# --> Open data in browser UI
+# --> Open data in browser UI.
 def display_data__open(
     cmd_pointer, parser, edit_mode=False
 ):  # pylint: disable=unused-argument # generic pass through used or unused
     """open display data"""
-    # Preserve memory for further follow-up commands
+    # Preserve memory for further follow-up commands.
     MEMORY.preserve()
 
     df = MEMORY.get()
     if df is None:
         return output_error(msg("memory_empty", "display"), pad=1)
 
-    # If there's molecules in the dataframe, open the result in the molset viewer
+    # If there's molecules in the dataframe, open the result in the molset viewer.
+
     if df_has_molecules(df) and "as_data" not in parser:
         gui_init(cmd_pointer, "result")
         return
 
-    # Once the dataviewer is integrated, this will all be handled by the results page,
-    # but until then, when no molecules are detected we spin up the legacy flask dataviewer
+    # Once the dataviewer is integrated, this will all be handled by the results page.
+    # but until then, when no molecules are detected we spin up the legacy flask dataviewer.
 
     # Load routes and launch browser UI.
     df = df.to_json(orient="records")
@@ -838,11 +838,11 @@ def show_data(cmd_pointer, parser):
     gui_init(cmd_pointer, "~/" + file_path)
 
 
-# Edit a JSON config file
+# Edit a JSON config file.
 def edit_config(cmd_pointer, parser):
     """Edits a json document in current workspace"""
 
-    # Abort in Jupyter
+    # Abort in Jupyter.
     if GLOBAL_SETTINGS["display"] == "notebook":
         print("Editing JSON files is only available from command line.")
         return True
@@ -850,7 +850,7 @@ def edit_config(cmd_pointer, parser):
     # Load schema
     schema_path = None
     if "schema" in parser.as_dict():
-        # From parameter
+        # From parameter.
         schema_path = parse_path(cmd_pointer, parser.as_dict()["schema"])
     else:
         # Scan for same filename with -schema suffix

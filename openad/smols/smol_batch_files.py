@@ -139,7 +139,6 @@ def load_mol_data(cmd_pointer, file_path):
     if file_path.split(".")[-1].lower() == "sdf":
         try:
             name = file_path.split("/")[-1]
-            # @@@
             sdf_file = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + name
             mol_frame = PandasTools.LoadSDF(sdf_file)
         except Exception as err:
@@ -150,7 +149,6 @@ def load_mol_data(cmd_pointer, file_path):
     elif file_path.split(".")[-1].lower() == "csv":
         try:
             name = file_path.split("/")[-1]
-            # @@@
             name = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + name
             mol_frame = pandas.read_csv(name, dtype="string")
         except Exception as err:

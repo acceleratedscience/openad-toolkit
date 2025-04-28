@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 import os
 import re
 import sys

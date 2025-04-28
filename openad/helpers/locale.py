@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 """
 Localization helper functions. This allows us to display text in a user's preferred language.
 
