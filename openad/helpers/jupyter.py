@@ -2,7 +2,6 @@ import os
 from rdkit import Chem
 from IPython.display import display, HTML
 from openad.smols.smol_functions import get_mol_rdkit, valid_identifier
-from openad.helpers.paths import parse_path
 from openad.helpers.output_msgs import msg
 from openad.helpers.output import output_error, output_warning, output_success, output_text
 
