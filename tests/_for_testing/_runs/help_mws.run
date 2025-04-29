@@ -1,0 +1,13 @@
+add molecule ?
+remove molecule ?
+list molecules ?
+show molecules ?
+enrich molecules ?
+clear analysis cache ?
+display sources ?
+rename molecule ?
+load molecules ?
+load molecules ?
+merge molecules ?
+export molecules ?
+clear molecules ?

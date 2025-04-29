@@ -4,5 +4,5 @@ result open ?
 result edit ?
 result copy ?
 result display ?
+result as dataframe ?
 edit config ?
-show molecules ?

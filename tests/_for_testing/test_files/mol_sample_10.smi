@@ -1,0 +1,9 @@
+ClC1=C(Cl)C2(Cl)C3C(Cl)C=CC3C1(Cl)C2(Cl)Cl
+ClC(Cl)=C(Cl)C(Cl)=C(Cl)Cl
+Brc1ccccc1
+Clc1ccccc1Br
+Brc1cccc(Br)c1
+Brc1ccc(Br)c(Br)c1
+Clc1cc(Cl)c(Cl)c(Cl)c1Cl
+Fc1cccc(F)c1
+Clc1ccc(-c2ccccc2)cc1

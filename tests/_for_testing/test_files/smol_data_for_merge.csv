@@ -1,0 +1,10 @@
+property,result,subject
+molecular_weight,329.065,O=C(N)C(F)(OC(F)(F)C(F)(F)C(F)(F)F)C(F)(F)F
+molecular_weight,329.065,O=C(O)C(F)(NC(F)(F)C(F)(F)C(F)(F)F)C(F)(F)F
+molecular_weight,240.099,O=C(O)C(F)(OC(F)(F)C(F)(F)C)C
+molecular_weight,328.058,O=C(O)C(F)(OC(O)(F)C(F)(F)C(F)(F)F)C(F)(F)F
+molecular_weight,346.504,O=C(O)C(F)(OC(Cl)(F)C(F)(F)C(F)(F)F)C(F)(F)F
+molecular_weight,328.058,O=C(O)C(F)(OC(F)(F)C(F)(O)C(F)(F)F)C(F)(F)F
+molecular_weight,328.058,O=C(O)C(F)(OC(F)(O)C(F)(F)C(F)(F)F)C(F)(F)F
+molecular_weight,390.955,O=C(O)C(F)(OC(F)(F)C(F)(Br)C(F)(F)F)C(F)(F)F
+molecular_weight,260.061,O=C(O)C(F)OC(O)(F)C(F)(F)C(F)(F)F
