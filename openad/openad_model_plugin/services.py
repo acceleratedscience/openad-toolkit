@@ -274,7 +274,11 @@ class ModelService(Dispatcher):
             response = self.service_request(name, path="/health", timeout=2, verify=False)
             ret_status["up"] = response.status_code == 200
             if response.status_code == 200:
-                ret_status["message"] = "Connected"
+                # check if service is in cache
+                if REMOTE_SERVICES_CACHE.get(name):
+                    ret_status["message"] = "Connected"
+                else:
+                    ret_status["message"] = "Not Ready"
             if response.status_code == 401:
                 ret_status["message"] = "Unauthorized"
             if response.status_code == 404:
@@ -338,12 +342,14 @@ class ModelService(Dispatcher):
         if service_data.get("is_remote"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
-            if response.status_code == 200:
+            # check if response is a list of service definitions
+            if response.status_code == 200 and isinstance(response.json(), list):
                 service_definitions = response.json()
         elif service_data.get("up"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
-            if response.status_code == 200:
+            # check if response is a list of service definitions
+            if response.status_code == 200 and isinstance(response.json(), list):
                 service_definitions = response.json()
         if service_definitions:
             # insert into chache when not None
