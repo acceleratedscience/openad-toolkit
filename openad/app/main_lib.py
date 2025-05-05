@@ -120,6 +120,7 @@ from openad.helpers.general import refresh_prompt, user_input
 from openad.helpers.splash import splash
 from openad.helpers.concepts import openad_intro
 from openad.helpers.plugins import display_plugin_overview
+from openad.helpers.spinner import spinner
 from openad.helpers.paths import parse_path, prepare_file_path, block_absolute, fs_success
 
 from openad.plugins import edit_json
@@ -179,14 +180,16 @@ def lang_parse(cmd_pointer, parser):
     elif parser.getName() == "catalog_add_model_service":
         result = catalog_add_model_service(cmd_pointer, parser)
         if result is True:
-            # update grammer new service added
+            spinner.start("Updating grammar")
             create_statements(cmd_pointer)
+            spinner.succeed("Grammar updated")
         return result
     elif parser.getName() == "uncatalog_model_service":
         result = uncatalog_model_service(cmd_pointer, parser)
         if result is True:
-            # update grammer service removed
+            spinner.start("Updating grammar")
             create_statements(cmd_pointer)
+            spinner.succeed("Grammar updated")
         return result
 
     elif parser.getName() == "model_service_status":

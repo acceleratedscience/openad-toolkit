@@ -160,7 +160,7 @@ def model_service_status(cmd_pointer, parser):
         # !important load services with update
         if all_services:  # proceed if any service available
             try:
-                spinner.start("searching running services")
+                spinner.start("Checking services status")
                 # TODO: verify how much time or have a more robust method
                 time.sleep(2)  # wait for service threads to ping endpoint
                 for name in all_services:
@@ -308,7 +308,6 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
     logger.debug(f"add as remote service | {service_name=} {endpoint=}")
     with Dispatcher() as service:
         if service_name in service.list():
-            spinner.fail(f"service {service_name} already exists")
             return False
         # load remote endpoint to config custom field
         if "params" in parser:
@@ -325,7 +324,29 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
             }
         )
         service.add_service(service_name, UserProvidedConfig(data=config))
-    spinner.succeed(f"Remote service '{service_name}' added!")
+    return True
+
+
+# @@
+def refresh_remote_service(service_name, endpoint, auth_token) -> bool:
+    print("refresh_remote_service")
+    logger.debug(f"refresh remote service | {service_name=} {endpoint=}")
+    with Dispatcher() as service:
+        if service_name not in service.list():
+            output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
+            return False
+
+        config = json.dumps(
+            {
+                "remote_service": True,
+                "remote_endpoint": endpoint,
+                "remote_status": False,
+                "params": {
+                    "Authorization": auth_token,
+                },
+            }
+        )
+        service.add_service(service_name, UserProvidedConfig(data=config))
     return True
 
 
@@ -340,57 +361,82 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
         for i in parser.as_dict()["params"]:
             params[i[0]] = i[1]
 
-    if "auth_group" in params.keys() and "authorization" in params.keys():
-        output_error(
-            f"It is not permitted to define auth_group and authroization in the same catalog statement ",
-            return_val=False,
-        )
-        return False
+    # Detect path source
+    path = parser.as_dict().get("path")
+    is_gcloud = path.endswith(".run.app")
+    is_bridge = path.endswith(".accelerate.science/proxy")
+    auth_group = None
 
-    if "auth_group" in params.keys():
-        auth_group = params["auth_group"]
-        lookup_table = load_lookup_table()
-        if auth_group not in lookup_table["auth_table"]:
-            output_error(
-                f"auth_group {auth_group} not in auth table, please add the authgroup and recatalog the service {service_name} ",
+    # Logic for Open Bridge models
+    if is_bridge:
+
+        # Error - Missing auth method
+        if "auth_group" not in params.keys() and "authorization" not in params.keys():
+            return output_error(
+                "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
+
+        # Error - Conflicting auth methods
+        if "auth_group" in params.keys() and "authorization" in params.keys():
+            return output_error(
+                "The <yellow>auth_group</yellow> and <yellow>authorization</yellow> keys can't be mixed in the same statement",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
+
+        # Parse auth group
+        if "auth_group" in params.keys():
+            auth_group = params["auth_group"]
+            lookup_table = load_lookup_table()
+            if auth_group not in lookup_table["auth_table"]:
+                return output_error(
+                    [
+                        f"Auth group '{auth_group}' does not exist",
+                        "To see available auth groups, run <cmd>model auth list</cmd>",
+                    ],
+                )
+
+    # Logic for Google Cloud Run models
+    if is_gcloud:
+        pass
+
+    # Add remote & exit
+    if "remote" in parser:
+        success = add_remote_service_from_endpoint(cmd_pointer, parser)
+        if auth_group is not None:
+            update_lookup_table(auth_group=auth_group, service=service_name)
+        if success:
+            output_success(
+                f"Service <yellow>{service_name}</yellow> added to catalog from <yellow>{service_path}</yellow>",
                 return_val=False,
             )
-            return False
-    else:
-        auth_group = None
+        else:
+            output_error(f"A service named <yellow>{service_name}</yellow> already exists", return_val=False)
 
-    if "remote" in parser:
-        # run this code and exit
-        output = add_remote_service_from_endpoint(cmd_pointer, parser)
-        if auth_group is not None:
-            updated_lookup_table = update_lookup_table(auth_group=auth_group, service=service_name)
-        output_success(f"Service {service_name} added to catalog for remote service {service_path}", return_val=False)
-        return output
-    # check if service exists
+        return success
+
+    # Check if service exists
     with Dispatcher() as service:
         if service_name in service.list():
-            spinner.fail(f"service {service_name} already exists in catalog")
-            output_error(f"service {service_name} already exists in catalog", return_val=False)
-            return False
-    # download model
+            return output_error(f"A service named <yellow>{service_name}</yellow> already exists")
+
+    # Download model
     local_service_path = os.path.join(SERVICE_MODEL_PATH, service_name)
     is_local_service_path, _ = retrieve_model(service_path, local_service_path)
     if is_local_service_path is False:
-        spinner.fail(f"service {service_name} was unable to be added to check url or path")
         output_error(
-            f"service {service_name} was unable to be added to check url or path",
+            f"service <yellow>{service_name}</yellow> was unable to be added to check url or path",
             return_val=False,
         )
-        spinner.stop()
         return False
-    # get any available configs from service
+
+    # Get any available configs from service
     config = load_service_config(local_service_path)
-    # add the service
+
+    # Add service
     with Dispatcher() as service:
         service.add_service(service_name, config)
-        # spinner.succeed(f"service {service_name} added to catalog")
-        output_success(f"Service {service_name} added to catalog", return_val=False)
-    # If auth group in parameters apply authgroup
+        output_success(f"Service <yellow>{service_name}</yellow> added to catalog", return_val=False)
 
     return True
 
@@ -402,7 +448,7 @@ def uncatalog_model_service(cmd_pointer, parser) -> bool:
     with Dispatcher() as service:
         # check if service exists
         if service_name not in service.list():
-            output_error(f"service {service_name} not found in catalog", return_val=False)
+            output_error(f"No service named <yellow>{service_name}</yellow> found in catalog", return_val=False)
             return False
         # stop running service
         start_service_shutdown(service_name)
@@ -413,23 +459,21 @@ def uncatalog_model_service(cmd_pointer, parser) -> bool:
     with Dispatcher() as service:  # initialize fresh load
         try:
             service.remove_service(service_name)
-            spinner.succeed(f"service {service_name} removed from catalog")
         except Exception as e:
             if "No such file or directory" in str(e):
-                spinner.warn("service doesnt exist but trying to remove from list. config file was already deleted")
+                output_warning(["Trying to remove non-existing service", "Config has been deleted"], return_val=False)
                 # TODO: make more robust error handling
                 path = os.path.join(os.path.expanduser("~/.servicing"), f"{service_name}_service.yaml")
                 open(path).close()  # create file
                 service.remove_service(service_name)
             else:
-                spinner.fail(f"failed to remove service: {str(e)}")
-                # output_error(f"failed to remove service: {str(e)}", return_val=False)
+                output_error([f"Failed to remove <yellow>{service_name}</yellow> service", str(e)], return_val=False)
                 return False
-        output_success(f"Service {service_name} removed from catalog", return_val=False)
     # remove service from authentication lookup table
     if get_service_api_key(service_name):
         remove_service_group(service_name)
 
+    output_success(f"Service <yellow>{service_name}</yellow> removed from catalog", return_val=False)
     return True
 
 
@@ -439,7 +483,7 @@ def service_up(cmd_pointer, parser) -> bool:
     service_name = parser.as_dict()["service_name"]
     logger.debug(f"start service | {service_name=} {gpu_disable=}")
     # spinner.start("Starting service")
-    output_success("Deploying Service. Please Wait.....", return_val=False)
+    output_success("Deploying Service. Please wait...", return_val=False)
     try:
         with Dispatcher() as service:
             service.up(service_name, skip_prompt=True, gpu_disable=gpu_disable)
@@ -519,6 +563,7 @@ def get_service_requester(service_name) -> str | None:
         return {"func": service.service_request, "status": status, "endpoint": endpoint}
 
 
+# @@
 def add_service_auth_group(cmd_pointer, parser):
     """Create an authentication group"""
     auth_group = parser.as_dict()["auth_group"]
