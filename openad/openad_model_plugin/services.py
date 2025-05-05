@@ -227,6 +227,25 @@ class ModelService(Dispatcher):
             url = "http://" + url
         logger.debug(f"formatted service url | {name=} {url=}")
         return url
+    
+    def get_api_key(self, name: str) -> str:
+        """Get the api key for the service
+
+        Args:
+            name (str): name of service
+
+        Returns:
+            str: api key
+        """
+        bearer_token = get_service_api_key(name)
+        if not bearer_token:
+            # get original bearer token from Authorization= USING clause
+            headers: dict = self.load_extra_data(name).get("params", {})
+            # add original bearer token to header
+            headers_lookup = {k.lower(): k for k in headers}
+            if headers_lookup.get("authorization"):
+                bearer_token = headers.get(headers_lookup.get("authorization")).strip()
+        return bearer_token
 
     def get_short_status(self, name: str) -> Dict[str, Any]:
         """Get service url and up status for local services and remote services
@@ -248,11 +267,10 @@ class ModelService(Dispatcher):
         if extra_data and extra_data.get("remote_endpoint"):
             # use remote service data
             ret_status["url"] = extra_data.get("remote_endpoint")
-            bearer_token = get_service_api_key(name)
+            # check api key expiration
+            bearer_token = self.get_api_key(name)
             ret_status["jwt_info"] = jwt_decode(bearer_token)
-            headers = {"Authorization": f"Bearer {bearer_token}"}
-            headers.update(extra_data.get("params", {}))  # add params from USING grammer
-            # ret_status["up"] = self.check_service_up(url, headers=headers, verify=False)
+            # check if remote service is up
             response = self.service_request(name, path="/health", timeout=2, verify=False)
             ret_status["up"] = response.status_code == 200
             if response.status_code == 200:
@@ -288,14 +306,11 @@ class ModelService(Dispatcher):
         #     # reset warning
         #     urllib3.warnings.simplefilter("default", urllib3.exceptions.InsecureRequestWarning)
         service_meta_data = self.load_extra_data(name)
-        headers = service_meta_data.get("params", {})
-        if headers.get("Authorization") and "Bearer" not in headers.get("Authorization"):
-            logger.debug("adding bearer prefix to Authorization header")
-            headers.update({"Authorization": "Bearer " + headers.get("Authorization").strip()})
-        bearer_token = get_service_api_key(name)
-        # overwrite headers with new token
+        headers: dict = service_meta_data.get("params", {})
+        bearer_token = self.get_api_key(name)
         if bearer_token:
-            headers.update({"Authorization": f"Bearer {get_service_api_key(name)}"})
+            # ensure proper bearer token is in headers
+            headers.update({"Authorization": f"Bearer {bearer_token}"})
         endpoint = self.get_url(name) + path
         logger.debug(f"fetching service | {method=} | {endpoint=}{path} | {headers=}'")
         try:
