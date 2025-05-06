@@ -1,4 +1,4 @@
-""" Interface libraries for working with the LLM API"""
+"""Interface libraries for working with the LLM API"""
 
 import os
 import re

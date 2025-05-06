@@ -1,4 +1,4 @@
-""" The help Module"""
+"""The help Module"""
 
 import re
 import os
@@ -51,6 +51,7 @@ def help_dict_create(
 def help_dict_create_v2(
     category: str,
     command: str | list,
+    name: str = None,
     plugin_name: str = None,
     plugin_namespace: str = None,
     description_file: str = None,
@@ -89,10 +90,11 @@ def help_dict_create_v2(
     cmd_str_list = command if isinstance(command, list) else [command]
 
     return {
-        "plugin_name": plugin_name,
-        "plugin_namespace": plugin_namespace,
         "category": category,
         "commands": cmd_str_list,
+        "name": name,
+        "plugin_name": plugin_name,
+        "plugin_namespace": plugin_namespace,
         "description": description,
     }
 
@@ -448,7 +450,7 @@ def advanced_help():
     """Call advanced Help"""
 
     # @future: build interactive command help using blessed
-    webbrowser.open("https://acceleratedscience.github.io/openad-docs/commands.html")
+    webbrowser.open("https://openad.accelerate.science/docs")
 
 
 class OpenadHelp:

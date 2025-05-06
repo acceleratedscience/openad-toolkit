@@ -15,6 +15,8 @@ from rdkit.Chem import AllChem
 from openad.helpers.output import output_text, output_table, output_warning, output_error, output_success
 from openad.helpers.output_msgs import msg
 from openad.helpers.pretty_data import list_columns, key_val_columns, key_val_full
+from openad.helpers.paths import prepare_file_path, fs_success
+from openad.smols.smol_functions import get_best_available_identifier
 from openad.app.global_var_lib import GLOBAL_SETTINGS
 
 
@@ -255,21 +257,15 @@ def export_molecule(cmd_pointer, inp):
     smol = find_smol(cmd_pointer, molecule_identifier)
     if smol:
         cmd_pointer.last_external_molecule = smol
+    else:
+        return
 
     if "as_file" in inp.as_dict() or GLOBAL_SETTINGS["display"] in ["terminal"]:
-        json_file = open(
-            cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper())
-            + "/"
-            + smol["identifiers"]["name"]
-            + ".smol.json",
-            "w",
-            encoding="utf-8",
-        )
+        filename = smol.get("identifiers", {}).get("name") or get_best_available_identifier(smol)[1]
+        file_path = prepare_file_path(cmd_pointer, filename, force_ext="sdf")
+        json_file = open(file_path, "w", encoding="utf-8")
         json.dump(smol, json_file)
-        output_success(
-            "Molecule saved to your workspace as <yellow>" + smol["identifiers"]["name"] + ".smol.json</yellow>.",
-            return_val=False,
-        )
+        fs_success(cmd_pointer, filename, file_path, "Molecule")
     elif GLOBAL_SETTINGS["display"] in ["api", "notebook"]:
         return deepcopy(smol)
     return True
@@ -360,7 +356,7 @@ def rename_mol_in_list(cmd_pointer, inp):
         output_success("Molecule successfully renamed", return_val=False)
         return True
 
-    output_error("No molecule '{identifier}' was found.", return_val=False)
+    output_error(f"No molecule '{identifier}' was found.", return_val=False)
     return False
 
 
@@ -374,10 +370,8 @@ def export_mws(cmd_pointer, inp):
         return True
 
     as_file = "file_name" in inp.as_dict()
-    workspace_path = cmd_pointer.workspace_path()
     mws = cmd_pointer.molecule_list
-    file_name = None
-    ext = "csv"  # Default export file format
+    filename = None
 
     # Return dataframe in Jupyter/API
     if GLOBAL_SETTINGS["display"] in ["notebook", "api"] and not as_file:
@@ -387,53 +381,42 @@ def export_mws(cmd_pointer, inp):
     else:
         # File name provided
         if as_file:
-            file_name = inp.as_dict()["file_name"]
+            filename = inp.as_dict()["file_name"]
 
         # No file name provided --> use default
         else:
-            file_name = f"smol_export.{ext}"
-            output_warning(msg("war_no_filename_provided", f"{file_name}.{ext}"), return_val=False, pad=0)
+            filename = "smol_export.csv"
+            output_warning(msg("war_no_filename_provided", filename), return_val=False, pad=0)
 
-        # Detect file extension and strip it
-        if file_name.lower().endswith(".molset.json"):
-            file_name = file_name[:-12]
-            ext = "molset.json"
-        elif file_name.lower().endswith(".json"):
-            file_name = file_name[:-5]
-            ext = "molset.json"
-        elif file_name.lower().endswith(".sdf"):
-            file_name = file_name[:-4]
-            ext = "sdf"
-        elif file_name.lower().endswith(".csv"):
-            file_name = file_name[:-4]
-            ext = "csv"
-        elif file_name.lower().endswith(".smi"):
-            file_name = file_name[:-4]
-            ext = "smi"
+        # Strip any unsupported file extensions
+        if not filename.lower().endswith((".json", ".csv", ".sdf", ".smi")):
+            filename = os.path.splitext(filename)[0] + ".csv"
+
+        # Turn .json into .molset.json
+        if filename.lower().endswith(".json") and not filename.lower().endswith(".molset.json"):
+            filename = os.path.splitext(filename)[0] + ".molset.json"
 
         # Find the next available file file path
-        file_path = f"{workspace_path}/{file_name}.{ext}"
-        if os.path.exists(file_path):
-            i = 1
-            while os.path.exists(f"{workspace_path}/{file_name}-{i}.{ext}"):
-                i = i + 1
-            file_path = f"{workspace_path}/{file_name}-{i}.{ext}"
+        file_path = prepare_file_path(cmd_pointer, filename)
+        if not file_path:
+            output_error("No molecules were exported")
+            return
 
         # Store the file
-        if ext == "molset.json":
+        success = False
+        err = None
+        if filename.endswith("molset.json"):
             success, err = save_molset_as_json(mws, file_path)
-        elif ext == "sdf":
+        elif filename.endswith(".sdf"):
             success, err = save_molset_as_sdf(mws, file_path)
-        elif ext == "csv":
+        elif filename.endswith(".csv"):
             success, err = save_molset_as_csv(mws, file_path)
-        elif ext == "smi":
+        elif filename.endswith(".smi"):
             success, err = save_molset_as_smiles(mws, file_path)
 
         # Success
         if success:
-            return output_success(
-                f"Result set saved to workspace as <yellow>{file_path.split('/')[-1]}</yellow>", pad=0
-            )
+            fs_success(cmd_pointer, filename, file_path, "Result set")
 
         # Error
         elif err:

@@ -1,0 +1,7 @@
+list files ?
+import ?
+move ?
+copy ?
+remove '<filename>' ?
+open '<filename>' ?
+show '<filename>' ?

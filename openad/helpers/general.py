@@ -7,7 +7,7 @@ import getpass
 import readline
 from datetime import datetime
 from IPython.display import clear_output
-from openad.helpers.output import output_text, output_error
+from openad.helpers.output import output_text, output_error, output_success
 from openad.helpers.output_msgs import msg
 from openad.plugins.style_parser import style
 
@@ -145,40 +145,6 @@ def get_toolkits():
 # Return boolean if toolkit is installed.
 def is_toolkit_installed(toolkit_name, cmd_pointer=None):
     return cmd_pointer and toolkit_name and toolkit_name.upper() in cmd_pointer.settings["toolkits"]
-
-
-# Validate a file path.
-# - - -
-# Add a default file extension when one is missing,
-# or verify if the file extension is correct.
-def validate_file_path(file_path: str, allowed_extensions: list, cmd_pointer):
-    if not file_path:
-        return
-
-    default_extension = allowed_extensions[0]
-    if len(file_path.split(".")) == 1:
-        return file_path + "." + default_extension
-    elif file_path.split(".")[-1].lower() not in allowed_extensions:
-        output_error(msg("err_invalid_file_format", "csv"))
-        return
-    else:
-        return file_path
-
-
-# Ensure a file_path is kosher:
-# - Make sure we won't override an existing file
-# - Create folder structure if it doesn't exist yet
-def ensure_file_path(file_path):
-    if os.path.exists(file_path):
-        # File already exists --> overwrite?
-        if not confirm_prompt("The destination file already exists, overwrite?"):
-            return False
-    elif not os.path.isdir(os.path.dirname(file_path)):
-        # Path doesn't exist --> create?
-        if not confirm_prompt("The destination file path does not exist, create it?"):
-            return False
-        os.makedirs(os.path.dirname(file_path))
-    return True
 
 
 # Check is a port is open.

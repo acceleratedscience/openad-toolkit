@@ -46,7 +46,7 @@ from openad.helpers.output_msgs import msg
 from openad.helpers.general import refresh_prompt
 from openad.helpers.splash import splash
 from openad.helpers.files import empty_trash
-from openad.helpers.output_content import about_workspace, about_mws, about_plugin, about_run, about_context
+from openad.helpers.concepts import about_workspace, about_mws, about_plugin, about_run, about_context
 
 # Globals
 from openad.app.global_var_lib import _repo_dir

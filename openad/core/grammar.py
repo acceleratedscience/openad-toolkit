@@ -35,7 +35,7 @@ from pyparsing import (
 )
 
 # Main
-from openad.core.help import help_dict_create, organize_commands
+from openad.core.help import help_dict_create, help_dict_create_v2, organize_commands
 import openad.toolkit.toolkit_main as toolkit_main  # Not using "from" to avoid circular import.
 from openad.smols.smol_grammar import smol_grammar_add
 from openad.mmols.mmol_grammar import mmol_grammar_add
@@ -104,6 +104,13 @@ from openad.app.global_var_lib import _all_toolkits
     file display history data remove update result install launch restart quit gui filebrowser molviewer".split(),
 )
 STRING_VALUE = alphanums
+WORKING_WITH_PATHS = (
+    "<h1>Working with paths</h1>\n"
+    "<cmd>foobar.csv</cmd>              A file in your current workspace\n"
+    "<cmd>/Users/John/foobar.csv</cmd>  An absolute file path\n"
+    "<cmd>./foobar.csv</cmd>            A file on your current working directory\n"
+    "<cmd>~/Documents/foobar.csv</cmd>  A file in your home directory"
+)
 
 ##########################################################################
 
@@ -541,7 +548,7 @@ grammar_help.append(
 # MAJOR-RELEASE-TODO:
 # In a Notebook, `x = %openad display data 'file.csv'` returns data, which
 # is inconsistent with other display commands like `display mol dopamine`
-statements.append(Forward(d_isplay + data("data") + desc("file_path"))("display_data"))
+statements.append(Forward(d_isplay + data("data") + desc("filename"))("display_data"))
 grammar_help.append(
     help_dict_create(
         name="display data",
@@ -552,7 +559,7 @@ grammar_help.append(
 )
 
 # --> result save --> Save data as csv
-statements.append(Forward(result + save + Optional(a_s + desc("file_path")))("display_data__save"))
+statements.append(Forward(result + save + Optional(a_s + desc("filename")))("display_data__save"))
 grammar_help.append(
     help_dict_create(
         name="save",
@@ -573,8 +580,8 @@ grammar_help.append(
         category="Utility",
         command="result open",
         description="""Explore table data in the browser.
-        if you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
-        """,
+        
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.""",
         parent="display data",
     )
 )
@@ -589,8 +596,8 @@ grammar_help.append(
         category="Utility",
         command="result edit",
         description="""Edit table data in the browser.
-        if you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
-        """,
+        
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.""",
         parent="display data",
     )
 )
@@ -618,8 +625,7 @@ grammar_help.append(
         command="result display",
         description=f"""Display the result in {"Jupyter Notebook" if is_notebook_mode() else "the CLI"}.
       
-        if you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.
-        """,
+If you append <cmd>-d</cmd> to the end of the command <cmd>result open -d</cmd> display will result to data viewer.""",
         parent="display data",
     )
 )
@@ -631,23 +637,11 @@ grammar_help.append(
         name="as dataframe",
         category="Utility",
         command="result as dataframe",
-        description="Return the result as dataframe (only for Jupyter Notebook)",
+        description="Return the result as dataframe (only for Jupyter Notebook).",
         parent="display data",
     )
 )
 
-# Show data
-# Note: hidden from help commands because the dataviewer is not yet implemented into the GUI.
-# Until then you need to make a detour via `display data` and then `result open`.
-statements.append(Forward(show + data("data") + desc("file_path"))("show_data"))
-# grammar_help.append(
-#     help_dict_create(
-#         name="show data",
-#         category="Utility",
-#         command="show data '<filename.csv>'",
-#         description="Explore CSV data in the browser.",
-#     )
-# )
 
 # Edit config file (CLI-only)
 if not is_notebook_mode():
@@ -674,16 +668,17 @@ if not is_notebook_mode():
 # region - GUI
 ##########################################################################
 
-# Install gui
-statements.append(Forward(install + gui)("install_gui"))
-grammar_help.append(
-    help_dict_create(
-        name="install gui",
-        category="GUI",
-        command="install gui",
-        description="Install the OpenAD GUI (graphical user interface).\n\nThe graphical user interface allows you to browse your workspace and visualize your datasets and molecules.",  # Partly repeated. Move to msgs()",
-    )
-)
+# Installation of GUI is a future feature, currently a build of the GUI is included into the repo.
+# # Install gui
+# statements.append(Forward(install + gui)("install_gui"))
+# grammar_help.append(
+#     help_dict_create(
+#         name="install gui",
+#         category="GUI",
+#         command="install gui",
+#         description="Install the OpenAD GUI (graphical user interface).\n\nThe graphical user interface allows you to browse your workspace and visualize your datasets and molecules.",  # Partly repeated. Move to msgs()",
+#     )
+# )
 
 # Launch gui
 statements.append(Forward(launch + gui)("launch_gui"))
@@ -813,60 +808,67 @@ grammar_help.append(
 )
 
 # Import file
-statements.append(
-    Forward(
-        CaselessKeyword("import")
-        + CaselessKeyword("from")
-        + desc("source")
-        + CaselessKeyword("to")
-        + desc("destination")
-    )("import_file")
-)
+statements.append(Forward(CaselessKeyword("import") + desc("file_path"))("import_file"))
+# fmt: off
+# Legacy import - keep for backward compatibility
+statements.append(Forward(CaselessKeyword("import") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("import_file_LEGACY"))
+# fmt: on
 grammar_help.append(
     help_dict_create(
         name="import",
         category="File System",
-        command="import from '<external_source_file>' to '<workspace_file>'",
-        description="Import a file from outside OpenAD into your current workspace.",
+        command="import '<file_path>'",
+        description="Import a file into your current workspace.",
     )
 )
 
 # Export file
 statements.append(
     Forward(
-        CaselessKeyword("export")
-        + CaselessKeyword("from")
-        + desc("source")
+        (CaselessKeyword("copy") | CaselessKeyword("move"))("action")
+        + desc("src_path")
         + CaselessKeyword("to")
-        + desc("destination")
-    )("export_file")
+        + desc("dest_path")
+        + Optional(CaselessKeyword("force"))("force")
+    )("copy_or_move_file")
 )
+# fmt: off
+# Legacy export & copy - keep for backward compatibility
+statements.append(Forward(CaselessKeyword("export") + CaselessKeyword("from") + desc("source") + CaselessKeyword("to") + desc("destination"))("export_file_LEGACY"))
+statements.append(Forward(CaselessKeyword("copy") + CaselessKeyword("file") + desc("source") + CaselessKeyword("to") + desc("destination"))("copy_file_LEGACY"))
+# fmt: on
 grammar_help.append(
-    help_dict_create(
-        name="export",
+    help_dict_create_v2(
+        name="copy file",
         category="File System",
-        command="export from '<workspace_file>' to '<external_file>'",
-        description="Export a file from your current workspace to anywhere on your hard drive.",
-    )
-)
+        command=[
+            "move '<source_file>' to '<destination_path>' [ force ]",
+            "copy '<source_file>' to '<destination_path>' [ force ]",
+        ],
+        description=f"""Copy or move a file from one location to another.
 
-# Copy file
-statements.append(
-    Forward(
-        CaselessKeyword("copy") + CaselessKeyword("file") + desc("source") + CaselessKeyword("to") + desc("destination")
-    )("copy_file")
-)
-grammar_help.append(
-    help_dict_create(
-        name="copy",
-        category="File System",
-        command="copy file '<workspace_file>' to '<other_workspace_name>'",
-        description="Export a file from your current workspace to another workspace.",
+When the destination path includes a filename, you will be prompted to rename it.
+Use the <cmd>force</cmd> option to overwrite the file without prompting.
+
+
+{WORKING_WITH_PATHS}
+
+
+<h1>Examples</h1>
+Copy a file from your workspace to your home directory:
+<cmd>copy 'my_molecules.sdf' to '~/'</cmd>
+
+Move and rename a file within your workspace:
+<cmd>move 'my_data/dataset.csv' to 'other_data/dataset-new.csv'</cmd>
+
+Copy a file from the filesystem to your workspace while renaming the file:
+<cmd>move '/Users/John/Documents/dataset.csv' to 'dataset-new.csv'</cmd>
+""",
     )
 )
 
 # Remove file
-statements.append(Forward(CaselessKeyword("remove") + desc("file"))("remove_file"))
+statements.append(Forward(CaselessKeyword("remove") + desc("filename"))("remove_file"))
 grammar_help.append(
     help_dict_create(
         name="remove",
@@ -883,11 +885,28 @@ grammar_help.append(
         name="open",
         category="File System",
         command="open '<filename>'",
-        description=f"""Open a file or dataframe { 'in your browser' if is_notebook_mode() else 'in an iframe' } 
+        description="""Open a file in its designated OS application.
 
 Examples:
 - <cmd>open 'base_molecules.sdf'</cmd>
 - <cmd>open my_dataframe</cmd>
+""",
+    )
+)
+
+# Show file in GUI
+statements.append(Forward(show + desc("file_path"))("show_data"))
+grammar_help.append(
+    help_dict_create(
+        name="show data",
+        category="File System",
+        command="show '<filename>'",
+        description="""Open a file in the graphical user interface.
+
+Examples:
+- <cmd>show 'my_molecules.molset.json'</cmd>
+- <cmd>show 'my_molecules.sdf'</cmd>
+- <cmd>show 'my_data.csv'</cmd>
 """,
     )
 )

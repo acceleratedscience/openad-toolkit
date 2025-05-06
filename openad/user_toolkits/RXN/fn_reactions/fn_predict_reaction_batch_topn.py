@@ -3,7 +3,7 @@
 # predict reaction topn in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1'] using (topn=6)
 # predict reaction topn in batch from list ['BrBr.c1ccc2cc3ccccc3cc2c1CCO' , 'BrBr.c1ccc2cc3ccccc3cc2c1'] use_saved
 
-""" Performs TOPN anaysis on a set of Reactions defined in a provided list"""
+"""Performs TOPN anaysis on a set of Reactions defined in a provided list"""
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
