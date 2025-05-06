@@ -269,6 +269,7 @@ class ModelService(Dispatcher):
             ret_status["url"] = extra_data.get("remote_endpoint")
             # check api key expiration
             bearer_token = self.get_api_key(name)
+            print(">>>", bearer_token)
             ret_status["jwt_info"] = jwt_decode(bearer_token)
             # check if remote service is up
             response = self.service_request(name, path="/health", timeout=2, verify=False)
@@ -407,7 +408,7 @@ class ModelService(Dispatcher):
                 # print(">>", params)
                 if "auth_group" in params_lower:
                     auth_group_name = params_lower["auth_group"]
-                    update_lookup_table(auth_group=auth_group_name, service=service_name)
+                    update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
                 elif "authorization" in params_lower:
                     refresh_remote_service(service_name, endpoint, auth_token)
 
