@@ -6,9 +6,9 @@ from typing import Any, Dict
 
 import requests
 from openad.helpers.output import output_error, output_warning
-from openad.openad_model_plugin.auth_services import get_service_api_key
+from openad.openad_model_plugin.auth_services import get_service_api_key, update_lookup_table
 from openad.openad_model_plugin.proxy.helpers import jwt_decode
-from openad.openad_model_plugin.utils import LruCache, get_logger
+from openad.openad_model_plugin.utils import LruCache, get_logger, bcolors
 from servicing import Dispatcher, UserProvidedConfig
 from typing_extensions import Self
 import urllib3
@@ -17,7 +17,7 @@ import urllib3
 urllib3.disable_warnings()
 
 
-logger = get_logger(__name__)
+logger = get_logger(__name__, color=bcolors.OKGREEN)
 
 
 REMOTE_SERVICES_CACHE = LruCache[dict](capacity=16)
@@ -314,27 +314,85 @@ class ModelService(Dispatcher):
 
     def get_remote_service_definitions(self, name: str) -> list | None:
         """retrieve remote service definitions. caches first result"""
+        print("get_remote_service_definitions")
         if REMOTE_SERVICES_CACHE.get(name):
             # cache hit
             logger.debug(f"getting '{name}' from cache")
             return REMOTE_SERVICES_CACHE.get(name)
         service_definitions = []
         service_data = self.get_short_status(name)
+
+        # Refresh expired auth tokens when possible
+        self.maybe_refresh_auth(name, service_data)
+
         if service_data.get("is_remote"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
-            if response.status_code == 200:
+            # check if response is a list of service definitions
+            if response.status_code == 200 and isinstance(response.json(), list):
                 service_definitions = response.json()
         elif service_data.get("up"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
-            if response.status_code == 200:
+            # check if response is a list of service definitions
+            if response.status_code == 200 and isinstance(response.json(), list):
                 service_definitions = response.json()
         if service_definitions:
             # insert into chache when not None
             logger.debug(f"inserting '{name}' into cache")
             REMOTE_SERVICES_CACHE.insert(name, service_definitions)
         return service_definitions
+
+    # @@
+    def maybe_refresh_auth(self, service_name, service_data):
+        """
+        Refresh auth token for google cloud.
+
+        Logic could be reused for OpenBridge.
+        """
+
+        logger.critical(f"maybe refresh auth | {service_name=}")
+
+        from openad.openad_model_plugin.catalog_model_services import refresh_remote_service
+
+        # print(22, name, service_data)
+
+        endpoint = service_data.get("url")
+        is_gcloud = endpoint.endswith(".run.app")
+
+        if is_gcloud:
+            jwt_info = service_data.get("jwt_info")
+            is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
+            if is_expired:
+                logger.critical(f"Expired google cloud token for {service_name}")
+
+                import google.auth
+                from google.auth.transport.requests import Request
+
+                credentials, project = google.auth.default()
+                auth_req = Request()
+
+                # Refresh if expired
+                if not credentials.valid:
+                    credentials.refresh(auth_req)
+
+                auth_token = getattr(credentials, "id_token", None)
+
+                # # This is supposed to be the "correct" way to
+                # # fetch the ID token, but can't get it to work.
+                # # from google.oauth2 import id_token
+                # auth_token = id_token.fetch_id_token(auth_req, url)
+                # print(auth_token)
+
+                service_meta_data = self.load_extra_data(service_name)
+                params = service_meta_data.get("params", {})
+                params_lower = {k.lower(): v for k, v in params.items()}
+                # print(">>", params)
+                if "auth_group" in params_lower:
+                    auth_group_name = params_lower["auth_group"]
+                    update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
+                elif "authorization" in params_lower:
+                    refresh_remote_service(service_name, endpoint, auth_token)
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE

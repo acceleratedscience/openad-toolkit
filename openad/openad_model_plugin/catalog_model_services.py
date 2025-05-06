@@ -329,6 +329,29 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
     return True
 
 
+# @@
+def refresh_remote_service(service_name, endpoint, auth_token) -> bool:
+    print("refresh_remote_service")
+    logger.debug(f"refresh remote service | {service_name=} {endpoint=}")
+    with Dispatcher() as service:
+        if service_name not in service.list():
+            output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
+            return False
+
+        config = json.dumps(
+            {
+                "remote_service": True,
+                "remote_endpoint": endpoint,
+                "remote_status": False,
+                "params": {
+                    "Authorization": auth_token,
+                },
+            }
+        )
+        service.add_service(service_name, UserProvidedConfig(data=config))
+    return True
+
+
 def catalog_add_model_service(cmd_pointer, parser) -> bool:
     """Add model service repo to catalog"""
 
