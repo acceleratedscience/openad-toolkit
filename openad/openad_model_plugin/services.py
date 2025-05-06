@@ -227,7 +227,7 @@ class ModelService(Dispatcher):
             url = "http://" + url
         logger.debug(f"formatted service url | {name=} {url=}")
         return url
-    
+
     def get_api_key(self, name: str) -> str:
         """Get the api key for the service
 
