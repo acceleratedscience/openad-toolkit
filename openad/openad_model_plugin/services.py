@@ -297,6 +297,10 @@ class ModelService(Dispatcher):
             ret_status["up"] = self.service_request(name, "/health", timeout=2).status_code == 200
             # ret_status["up"] = self.check_service_up(ret_status["url"])
         logger.debug(f"service info | {name=} {ret_status=}")
+
+        # Refresh expired auth tokens when possible
+        self.maybe_refresh_auth(name, ret_status)
+
         return ret_status
 
     def service_request(
@@ -340,9 +344,6 @@ class ModelService(Dispatcher):
         service_definitions = []
         service_data = self.get_short_status(name)
 
-        # Refresh expired auth tokens when possible
-        self.maybe_refresh_auth(name, service_data)
-
         if service_data.get("is_remote"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
@@ -374,11 +375,12 @@ class ModelService(Dispatcher):
 
         logger.debug(f"maybe refresh auth | {service_name=}")
 
+        # Imported here to avoid circular import issues
         from openad.openad_model_plugin.catalog_model_services import refresh_remote_service
 
         endpoint = service_data.get("url")
         is_gcloud = endpoint.endswith(".run.app")
-        is_openbridge = endpoint.endswith(".accelerate.science/proxy")
+        is_openbridge = endpoint.endswith(".accelerate.science/proxy") or endpoint.endswith(".accelerator.cafe/proxy")
 
         if is_openbridge:
             # TODO: implement openbridge refresh
