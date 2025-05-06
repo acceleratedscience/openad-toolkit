@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from openad.helpers.paths import parse_path
 
 
 def col_from_df(df, column_name) -> list:
@@ -17,7 +18,7 @@ def csv_to_df(cmd_pointer, filename):
     Returns a dataframe from a csv file.
     """
 
-    file_path = cmd_pointer.workspace_path() + "/" + filename
+    file_path = parse_path(cmd_pointer, filename)
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"File '{filename}' does not exist")
     return pd.read_csv(file_path)

@@ -106,16 +106,13 @@ from openad.app.global_var_lib import GLOBAL_SETTINGS
 # Helpers
 from openad.helpers.output import output_text, output_error, output_success, output_table
 from openad.helpers.output_msgs import msg
-from openad.helpers.general import refresh_prompt, user_input, validate_file_path, ensure_file_path
+from openad.helpers.general import refresh_prompt, user_input
 from openad.helpers.splash import splash
 from openad.helpers.concepts import openad_intro
 from openad.helpers.plugins import display_plugin_overview
+from openad.helpers.paths import parse_path, prepare_file_path, block_absolute, save_as_success
 
 from openad.plugins import edit_json
-
-# Importing our own plugins.
-# This is temporary until every plugin is available as a public pypi package.
-# from openad.plugins.style_parser import tags_to_markdown
 
 
 # This is called by the default run_cmd method, for executing current commands.
@@ -673,21 +670,16 @@ def display_history(cmd_pointer, parser):  # pylint: disable=unused-argument # g
 # Display a csv file in a table.
 def display_data(cmd_pointer, parser):
     """display data in a file"""
-    workspace_path = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/"
-    file_path = parser["file_path"]
-    filename = file_path.split("/")[-1]
 
-    # Allow for no extension.
-    if len(filename.split(".")) == 1:
-        filename = filename + ".csv"
-        file_path = file_path + ".csv"
+    file_path = parse_path(cmd_pointer, parser["filename"], fallback_ext="csv")
+    filename = os.path.basename(file_path)
 
     # Open file
     try:
         if filename.split(".")[-1].lower() == "csv":
             # From csv file.
             try:
-                df = pd.read_csv(workspace_path + file_path)
+                df = pd.read_csv(file_path)
                 df = df.fillna("")  # Replace NaN with empty string
                 return output_table(df)
             except FileNotFoundError:
@@ -700,7 +692,7 @@ def display_data(cmd_pointer, parser):
             return output_error(msg("err_invalid_file_format", "csv"))
 
     except Exception as err:  # pylint: disable=broad-exception-caught
-        output_error(msg("err_unknown", err))
+        return output_error(msg("err_unknown", err))
 
 
 # --> Save data to a csv file.
@@ -713,27 +705,26 @@ def display_data__save(cmd_pointer, parser):
     if data is None:
         return output_error(msg("memory_empty", "display"), pad=1)
 
-    # Set variables.
-    workspace_path = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/"
-    file_path = parser["file_path"] if "file_path" in parser else None  # Parser as_dict?
-    file_path = validate_file_path(file_path, ["csv"], cmd_pointer)
+    # Parse filename
+    filename = parser.get("filename")
 
-    # Prompt file path if missing.
-    while not file_path:
-        file_path = user_input(cmd_pointer, "Filename")
-        file_path = validate_file_path(file_path, ["csv"], cmd_pointer)
+    # Prompt filename if missing
+    while not filename:
+        filename = user_input(cmd_pointer, "Filename")
 
-    # Ensure the file_path is kosher:
-    # - Make sure we won't override an existing file
-    # - Create folder structure if it doesn't exist yet
-    file_path_ok = ensure_file_path(workspace_path + file_path)
+    # Make sure destination exists etc.
+    file_path = prepare_file_path(cmd_pointer, filename, fallback_ext="csv")
 
-    # Save data to file.
-    if file_path_ok:
-        data.to_csv(workspace_path + file_path, index=False)
-        return output_success(msg("success_save_data", file_path))
+    # Save data to file
+    if file_path:
+        try:
+            data.to_csv(file_path, index=False)
+            save_as_success(cmd_pointer, filename, file_path, "Result")
+        except Exception as e:  # pylint: disable=broad-except
+            return output_error(["Failed to save CSV", e])
+
     else:
-        return output_error(msg("err_save_data"))
+        return output_error("No data was stored")
 
 
 # --> Open data in browser UI.
@@ -818,11 +809,13 @@ def show_data(cmd_pointer, parser):
     """
 
     file_path = parser["file_path"]
-    filename = file_path.split("/")[-1]
+    ext = os.path.splitext(file_path)[1]
 
-    # Allow for no extension.
-    if len(filename.split(".")) == 1:
-        file_path = file_path + ".csv"
+    if block_absolute(file_path):
+        return
+
+    # Allow for no extension
+    file_path = file_path if ext else file_path + ".csv"
 
     gui_init(cmd_pointer, "~/" + file_path)
 
@@ -830,32 +823,30 @@ def show_data(cmd_pointer, parser):
 # Edit a JSON config file.
 def edit_config(cmd_pointer, parser):
     """Edits a json document in current workspace"""
-    workspace_path = cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/"
 
     # Abort in Jupyter.
     if GLOBAL_SETTINGS["display"] == "notebook":
         print("Editing JSON files is only available from command line.")
         return True
 
-    # Load schema.
-    schema = None
+    # Load schema
+    schema_path = None
     if "schema" in parser.as_dict():
         # From parameter.
-        schema = workspace_path + parser.as_dict()["schema"]
+        schema_path = parse_path(cmd_pointer, parser.as_dict()["schema"])
     else:
-        # Scan for same filename with -schema suffix.
+        # Scan for same filename with -schema suffix
+        schema_path = parse_path(cmd_pointer, re.sub(r"\.json$", "", parser.as_dict()["json_file"]) + "-schema.json")
+        if not os.path.isfile(schema_path):
+            schema_path = None
 
-        schema = workspace_path + re.sub(r"\.json$", "", parser.as_dict()["json_file"]) + "-schema.json"
-        if not os.path.isfile(schema):
-            schema = None
-
-    # Load JSON file.
-    file_to_edit = workspace_path + parser.as_dict()["json_file"]
-    if os.path.isfile(file_to_edit):
-        edit_json(file_to_edit, schema)  # pylint: disable=not-callable # it is callable
-    elif schema:
+    # Load JSON file
+    file_path = parse_path(cmd_pointer, parser.as_dict()["json_file"])
+    if os.path.isfile(file_path):
+        edit_json(file_path, schema_path)  # pylint: disable=not-callable # it is callable
+    elif schema_path:
         # JSON file not found, create new from schema.
-        edit_json(file_to_edit, schema, new=True)  # pylint: disable=not-callable # it is callable
+        edit_json(file_path, schema_path, new=True)  # pylint: disable=not-callable # it is callable
     else:
         return output_error(msg("err_file_doesnt_exist", parser.as_dict()["json_file"]))
 

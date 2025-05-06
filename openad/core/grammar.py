@@ -541,7 +541,7 @@ grammar_help.append(
 # MAJOR-RELEASE-TODO:
 # In a Notebook, `x = %openad display data 'file.csv'` returns data, which
 # is inconsistent with other display commands like `display mol dopamine`
-statements.append(Forward(d_isplay + data("data") + desc("file_path"))("display_data"))
+statements.append(Forward(d_isplay + data("data") + desc("filename"))("display_data"))
 grammar_help.append(
     help_dict_create(
         name="display data",
@@ -552,7 +552,7 @@ grammar_help.append(
 )
 
 # --> result save --> Save data as csv
-statements.append(Forward(result + save + Optional(a_s + desc("file_path")))("display_data__save"))
+statements.append(Forward(result + save + Optional(a_s + desc("filename")))("display_data__save"))
 grammar_help.append(
     help_dict_create(
         name="save",
@@ -630,23 +630,11 @@ grammar_help.append(
         name="as dataframe",
         category="Utility",
         command="result as dataframe",
-        description="Return the result as dataframe (only for Jupyter Notebook)",
+        description="Return the result as dataframe (only for Jupyter Notebook).",
         parent="display data",
     )
 )
 
-# Show data
-# Note: hidden from help commands because the dataviewer is not yet implemented into the GUI.
-# Until then you need to make a detour via `display data` and then `result open`.
-statements.append(Forward(show + data("data") + desc("file_path"))("show_data"))
-# grammar_help.append(
-#     help_dict_create(
-#         name="show data",
-#         category="Utility",
-#         command="show data '<filename.csv>'",
-#         description="Explore CSV data in the browser.",
-#     )
-# )
 
 # Edit config file (CLI-only)
 if not is_notebook_mode():
@@ -883,11 +871,28 @@ grammar_help.append(
         name="open",
         category="File System",
         command="open '<filename>'",
-        description="""Open a file or dataframe in the graphical user interface.
+        description="""Open a file in its designated OS application.
 
 Examples:
 - <cmd>open 'base_molecules.sdf'</cmd>
 - <cmd>open my_dataframe</cmd>
+""",
+    )
+)
+
+# Show file in GUI
+statements.append(Forward(show + data("data") + desc("file_path"))("show_data"))
+grammar_help.append(
+    help_dict_create(
+        name="show data",
+        category="File System",
+        command="show '<filename.csv>'",
+        description="""Open a file in the graphical user interface.
+
+Examples:
+- <cmd>show 'my_molecules.molset.json'</cmd>
+- <cmd>show 'my_molecules.sdf'</cmd>
+- <cmd>show 'my_data.csv'</cmd>
 """,
     )
 )

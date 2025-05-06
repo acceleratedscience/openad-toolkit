@@ -12,6 +12,7 @@ import pandas as pd
 # from openad.core.help import help_dict_create
 import requests
 
+from openad.helpers.paths import prepare_file_path, save_as_success
 from openad.helpers.output import output_error, output_success, output_text, output_warning
 from openad.helpers.spinner import Spinner
 from openad.openad_model_plugin.catalog_model_services import get_service_requester, help_dict_create
@@ -160,6 +161,7 @@ CLI_WIDTH = helpers_general.get_print_width(full=True)
 
 input_object = QuotedString('"', end_quote_char='"', escQuote="\\")
 
+# fmt:off
 ####################################################################################
 # here we are setting out the help and pyparsing grammar string components for creating grammar from memtadata
 # service_command_start  is used to contruct the start of a string and is broken up by type of service
@@ -290,6 +292,7 @@ service_command_description[
  """
 
 async_help_clause = "\n \n Note: If <cmd> async clause </cmd> is defined the user will be returned an id for the given job and will use the <cmd> `model service <service name> result '<job_id>' </cmd> command to retrieve it when it is ready. use this command to test for readiness."
+# fmt:on
 
 
 def service_grammar_add(statements: list, help: list, service_catalog: dict):
@@ -810,12 +813,15 @@ def openad_model_requestor(cmd_pointer, parser):
             result = pd.DataFrame(response_result)
             if "save_as" in parser:
                 results_file = str(parser["results_file"])
-                if not results_file.endswith(".csv"):
-                    results_file = results_file + ".csv"
-                result.to_csv(
-                    cmd_pointer.workspace_path(cmd_pointer.settings["workspace"].upper()) + "/" + results_file,
-                    index=False,
-                )
+                file_path = prepare_file_path(cmd_pointer, results_file, force_ext="csv")
+                if file_path:
+                    try:
+                        result.to_csv(file_path, index=False)
+                        save_as_success(cmd_pointer, results_file, file_path, "Result")
+                    except Exception as e:  # pylint: disable=broad-except
+                        output_error(["Failed to saved CSV", e], return_val=False)
+                else:
+                    output_error("File not saved", return_val=False)
             if "merge_with_mws" in parser.as_dict():
                 merge_molecule_property_data(cmd_pointer=cmd_pointer, dataframe=result)
             return result

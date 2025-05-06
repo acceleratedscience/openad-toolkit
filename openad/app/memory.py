@@ -1,4 +1,5 @@
 "Result Memory Library"
+
 import openad.helpers.output as output
 from openad.helpers.output_msgs import msg
 

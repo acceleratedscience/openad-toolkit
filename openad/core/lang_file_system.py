@@ -17,6 +17,7 @@ from openad.workers.file_system import fs_get_workspace_files
 from openad.helpers.general import confirm_prompt
 from openad.helpers.output import output_text, output_error, output_success, output_table, strip_tags
 from openad.helpers.output_msgs import msg
+from openad.helpers.paths import parse_path
 
 
 # Globals
@@ -197,7 +198,9 @@ def remove_file(cmd_pointer, parser):
 
 
 def open_file(cmd_pointer, parser):
-    from openad.gui.gui_launcher import gui_init
+    """
+    Open a file in its designated OS application.
+    """
 
-    path = "~/" + parser["file"]
-    gui_init(cmd_pointer, path)
+    file_path = parse_path(cmd_pointer, parser["file"])
+    os.system(f"open '{file_path}'")

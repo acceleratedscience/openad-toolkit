@@ -25,7 +25,7 @@ Usage:
 
         # Dynamic - simple string.
         "example_4": lambda first_name, last_name: f"Hello {first_name} {last_name}",
-        
+
         # Dynamic - multi-line string.
         "example_5": lambda fav_food: ("I love:", fav_food),
 
@@ -71,7 +71,7 @@ _messages = {
     ),
     "success_file_saved_updated": lambda filename, updated_filename: f"Warning: A file with the name '{filename}' already exists.\n<success>Saved as <yellow>{updated_filename}</yellow> instead.</success>",
     # Warning
-    "war_no_filename_provided": lambda default: f"No filename provided, reverting to the default '{default}'",
+    "war_no_filename_provided": lambda default: f"No filename provided, using default: '{default}'",
     # Error
     "err_invalid_file_format": lambda *args: [
         "Invalid file format",
