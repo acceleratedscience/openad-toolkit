@@ -329,10 +329,8 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
     return True
 
 
-# @@
+# @auth
 def refresh_remote_service(service_name, endpoint, auth_token) -> bool:
-    print("refresh_remote_service")
-    logger.debug(f"refresh remote service | {service_name=} {endpoint=}")
     with Dispatcher() as service:
         if service_name not in service.list():
             output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
@@ -348,6 +346,7 @@ def refresh_remote_service(service_name, endpoint, auth_token) -> bool:
                 },
             }
         )
+        service.remove_service(service_name)
         service.add_service(service_name, UserProvidedConfig(data=config))
     return True
 

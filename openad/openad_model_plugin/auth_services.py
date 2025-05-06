@@ -63,7 +63,6 @@ def get_service_api_key(service_name: str) -> str:
     auth_lookup_table = load_lookup_table()
     # find group name belonging to service
     auth_group = auth_lookup_table["service_table"].get(service_name, "")
-    logger.critical(f"{service_name=} / {auth_group=}")
     api_key = auth_lookup_table["auth_table"].get(auth_group, "")
     logger.debug(f"get service api key | {service_name=} {auth_group=} {api_key=}")
     return api_key
@@ -71,7 +70,7 @@ def get_service_api_key(service_name: str) -> str:
 
 def update_lookup_table(auth_group, api_key=None, service=None, hide_api=False) -> LookupTable:
     """update the lookup table values on either api_key or model service"""
-    logger.critical(f"updating auth group '{auth_group}' {api_key=} {service=}")
+    logger.debug(f"updating auth group '{auth_group}' {api_key=} {service=}")
     # Load the existing data or create a new dictionary
     data = load_lookup_table()
     # Update the dictionary with new key-value pairs

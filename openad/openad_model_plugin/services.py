@@ -333,7 +333,6 @@ class ModelService(Dispatcher):
 
     def get_remote_service_definitions(self, name: str) -> list | None:
         """retrieve remote service definitions. caches first result"""
-        print("get_remote_service_definitions")
         if REMOTE_SERVICES_CACHE.get(name):
             # cache hit
             logger.debug(f"getting '{name}' from cache")
@@ -362,23 +361,28 @@ class ModelService(Dispatcher):
             REMOTE_SERVICES_CACHE.insert(name, service_definitions)
         return service_definitions
 
-    # @@
+    # @auth
     def maybe_refresh_auth(self, service_name, service_data):
         """
         Refresh auth token for google cloud.
 
+        Checks if a service is expired, then fetches a new token for
+        the auth group or the service itself, depending how it's configured.
+
         Logic could be reused for OpenBridge.
         """
 
-        logger.critical(f"maybe refresh auth | {service_name=}")
+        logger.debug(f"maybe refresh auth | {service_name=}")
 
         from openad.openad_model_plugin.catalog_model_services import refresh_remote_service
 
-        # print(22, name, service_data)
-
         endpoint = service_data.get("url")
         is_gcloud = endpoint.endswith(".run.app")
+        is_openbridge = endpoint.endswith(".accelerate.science/proxy")
 
+        if is_openbridge:
+            # TODO: implement openbridge refresh
+            pass
         if is_gcloud:
             jwt_info = service_data.get("jwt_info")
             is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
@@ -388,6 +392,8 @@ class ModelService(Dispatcher):
                 import google.auth
                 from google.auth.transport.requests import Request
 
+                # Fetch gcloud credentials
+                # These are set by running `gcloud auth application-default login`
                 credentials, project = google.auth.default()
                 auth_req = Request()
 
@@ -395,22 +401,26 @@ class ModelService(Dispatcher):
                 if not credentials.valid:
                     credentials.refresh(auth_req)
 
+                # Get the auth token
                 auth_token = getattr(credentials, "id_token", None)
 
                 # # This is supposed to be the "correct" way to
-                # # fetch the ID token, but can't get it to work.
+                # # fetch the ID token, but can't find the creds file.
                 # # from google.oauth2 import id_token
                 # auth_token = id_token.fetch_id_token(auth_req, url)
                 # print(auth_token)
 
+                # Check if the service is configured with an auth group or token
                 service_meta_data = self.load_extra_data(service_name)
                 params = service_meta_data.get("params", {})
                 params_lower = {k.lower(): v for k, v in params.items()}
-                # print(">>", params)
+
                 if "auth_group" in params_lower:
+                    logger.critical(f"Refreshing expired auth group token for {service_name}")
                     auth_group_name = params_lower["auth_group"]
                     update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
                 elif "authorization" in params_lower:
+                    logger.critical(f"Refreshing expired remote service token for {service_name}")
                     refresh_remote_service(service_name, endpoint, auth_token)
 
     def get_service_cache(self) -> LruCache[dict]:
