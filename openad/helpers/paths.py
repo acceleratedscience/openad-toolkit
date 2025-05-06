@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 import os
 import re
 from openad.helpers.output import output_error, output_warning, output_success
@@ -45,9 +43,16 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
     if not file_path:
         return None
 
+    # Detect path type
+    is_absolute = file_path.startswith(("/", "\\"))
+    is_cwd = file_path.startswith(("./", ".\\"))
+
     # Normalize the path string to use the appropriate
     # separator for the current system
-    path = os.path.normpath(file_path)
+    file_path = os.path.normpath(file_path)
+
+    # Expand user path: ~/... --> /Users/my-username/...
+    file_path = os.path.expanduser(file_path)
 
     # Separate filename from path
     path = os.path.dirname(file_path)
@@ -63,13 +68,8 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
 
     # Fallback to default extension if none provided
     elif fallback_ext:
-        ext = os.path.splitext(file_path)[1]
+        ext = os.path.splitext(filename)[1]
         filename = filename if ext else filename + "." + fallback_ext
-
-    # Detect path type
-    is_absolute = path.startswith(("/", "\\"))
-    is_cwd = path.startswith(("./", ".\\")) or path == "."
-    print(is_cwd, path)
 
     # Absolute path
     if is_absolute:
@@ -162,6 +162,25 @@ def next_available_filename(file_path) -> str:
     while os.path.exists(f"{base}-{i}{ext}"):
         i += 1
     return f"{base}-{i}{ext}"
+
+
+def save_as_success(
+    cmd_pointer,
+    filename,  # Destination user input, eg. foo.csv or /home/foo.csv or ./foo.csv
+    file_path,  # Destination parsed through parse_path, eg. /home/user/foo.csv
+    subject="File",
+):
+    """
+    Path-type aware success message for saving files.
+    """
+    if filename.startswith(("/", "./", "\\", ".\\")):
+        output_success(f"{subject} saved to <yellow>{file_path}</yellow>", return_val=False)
+    else:
+        # Filename may have been modifier with index and extension,
+        # so we need to parse it from the file_path instead.
+        workspace_path = cmd_pointer.workspace_path()
+        within_workspace_path = file_path.replace(workspace_path, "").lstrip("/")
+        output_success(f"{subject} saved to workspace as <yellow>{within_workspace_path}</yellow>", return_val=False)
 
 
 # Temp - this is part of openad-tools

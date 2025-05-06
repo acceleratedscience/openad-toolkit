@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 import os
 import pandas as pd
 from openad.helpers.paths import parse_path

@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 import os
 from jupyter_core import paths
 

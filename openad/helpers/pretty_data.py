@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 "Pretty print data in columns."
 
 import math

@@ -1,5 +1,3 @@
-# To be migrated to openad-tools
-
 import os
 import re
 import sys
@@ -455,20 +453,3 @@ def clear_current_line():
     sys.stdout.write(eraser)
     # readline.insert_text(' ')
     # print(len(buffer), buffer)
-
-
-# ---- !!!! BELOW MISSING FROM OPENAD-TOOLS !!!! ----
-
-
-def save_as_success(
-    filename,  # Destination user input, eg. foo.csv or /home/foo.csv or ./foo.csv
-    file_path,  # Destination parsed through parse_path, eg. /home/user/foo.csv
-    subject="File",
-):
-    """
-    Success message for saving files.
-    """
-    if filename.startswith(("/", "./", "\\", ".\\")):
-        output_success(f"{subject} saved to <yellow>{file_path}</yellow>", return_val=False)
-    else:
-        output_success(f"{subject} saved to workspace as <yellow>{file_path.split('/')[-1]}</yellow>", return_val=False)
