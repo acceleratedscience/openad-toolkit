@@ -1,4 +1,4 @@
-"""Contains Run Related functions """
+"""Contains Run Related functions"""
 
 import os
 import glob
