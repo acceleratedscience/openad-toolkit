@@ -895,7 +895,7 @@ Examples:
 )
 
 # Show file in GUI
-statements.append(Forward(show + data("data") + desc("file_path"))("show_data"))
+statements.append(Forward(show + desc("file_path"))("show_data"))
 grammar_help.append(
     help_dict_create(
         name="show data",

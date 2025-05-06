@@ -1,0 +1,11 @@
+import './tests/_for_testing/test_files/base_molecules.sdf'
+copy 'base_molecules.sdf' to 'test_files/base_molecules-copy.sdf'
+copy 'base_molecules.sdf' to 'test_files/base_molecules-copy.sdf'
+copy 'base_molecules.sdf' to 'test_files/base_molecules-copy1.sdf'
+move 'test_files/base_molecules-copy.sdf' to 'test_files/base_molecules-renamed.sdf'
+list files test_files
+remove 'test_files'
+open 'base_molecules.sdf'
+show 'base_molecules.sdf'
+remove 'base_molecules.sdf'
+list files
