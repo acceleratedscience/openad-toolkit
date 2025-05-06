@@ -80,7 +80,6 @@ def update_lookup_table(auth_group, api_key=None, service=None, hide_api=False) 
     if service and auth_group in data["auth_table"]:
         # map a model service to auth group
         data["service_table"].update({service: auth_group})
-
     # Save the updated dictionary back to the pickle file
     save_lookup_table(data)
     # return latest data
