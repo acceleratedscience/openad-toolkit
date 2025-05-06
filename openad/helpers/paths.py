@@ -25,7 +25,7 @@ def prepare_file_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None)
                 - if no, print error and return None
     """
     file_path = parse_path(cmd_pointer, file_path, fallback_ext, force_ext)
-    file_path = ensure_file_path(file_path)
+    file_path = _ensure_file_path(file_path)
     # if not file_path:
     #     output_error("Directory does not exist", return_val=False)
     #     return None
@@ -80,7 +80,6 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
 
     # Current working directory path
     elif is_cwd:
-        path = "" if path == "." else path
         path = os.path.normpath(os.path.join(os.getcwd(), path, filename))
 
     # Default: workspace path
@@ -97,7 +96,7 @@ def parse_path(cmd_pointer, file_path, fallback_ext=None, force_ext=None) -> str
     return path
 
 
-def ensure_file_path(file_path) -> bool:
+def _ensure_file_path(file_path) -> bool:
     """
     Ensure a file_path is valid.
 
@@ -107,7 +106,7 @@ def ensure_file_path(file_path) -> bool:
     if os.path.exists(file_path):
         # File already exists --> overwrite?
         if not confirm_prompt("The destination file already exists, overwrite?"):
-            return next_available_filename(file_path)
+            return _next_available_filename(file_path)
     elif not os.path.exists(os.path.dirname(file_path)):
         # Directory doesn't exist --> create?
         if not confirm_prompt("The destination directory does not exist, create it?"):
@@ -120,21 +119,7 @@ def ensure_file_path(file_path) -> bool:
     return file_path
 
 
-def block_absolute(file_path) -> bool:
-    """
-    Display error when absolute paths are not allowed.
-
-    Usage:
-    if block_absolute(file_path):
-        return
-    """
-    if file_path.startswith("/"):
-        output_error(NOT_ALLOWED_ERR)
-        return True
-    return False
-
-
-def next_available_filename(file_path) -> str:
+def _next_available_filename(file_path) -> str:
     """
     Returns the file path with next available filename by appending a number to the filename.
     """
@@ -164,23 +149,58 @@ def next_available_filename(file_path) -> str:
     return f"{base}-{i}{ext}"
 
 
-def save_as_success(
+def block_absolute(file_path) -> bool:
+    """
+    Display error when absolute paths are not allowed.
+
+    Usage:
+    if block_absolute(file_path):
+        return
+    """
+    if is_abs_path(file_path):
+        output_error(NOT_ALLOWED_ERR)
+        return True
+    return False
+
+
+def is_abs_path(file_path) -> bool:
+    """
+    Check if a path is absolute.
+    """
+    if file_path.startswith(("/", "./", "~/", "\\", ".\\", "~\\")):
+        return True
+    return False
+
+
+def fs_success(
     cmd_pointer,
-    filename,  # Destination user input, eg. foo.csv or /home/foo.csv or ./foo.csv
-    file_path,  # Destination parsed through parse_path, eg. /home/user/foo.csv
+    path_input,  # Destination user input, eg. foo.csv or /home/foo.csv or ./foo.csv
+    path_resolved,  # Destination parsed through parse_path, eg. /home/user/foo.csv
     subject="File",
+    action="saved",  # saved / removed
 ):
     """
     Path-type aware success message for saving files.
     """
-    if filename.startswith(("/", "./", "\\", ".\\")):
-        output_success(f"{subject} saved to <yellow>{file_path}</yellow>", return_val=False)
+    # Absolute path
+    if is_abs_path(path_input):
+        output_success(f"{subject} {action}: <yellow>{path_resolved}</yellow>", return_val=False)
+
+    # Workspace path
     else:
         # Filename may have been modifier with index and extension,
         # so we need to parse it from the file_path instead.
         workspace_path = cmd_pointer.workspace_path()
-        within_workspace_path = file_path.replace(workspace_path, "").lstrip("/")
-        output_success(f"{subject} saved to workspace as <yellow>{within_workspace_path}</yellow>", return_val=False)
+        within_workspace_path = path_resolved.replace(workspace_path, "").lstrip("/")
+        if action == "saved":
+            output_success(
+                f"{subject} saved to workspace as <yellow>{within_workspace_path}</yellow>", return_val=False
+            )
+        elif action == "removed":
+            output_success([f"{subject} removed from workspace", within_workspace_path], return_val=False)
+
+
+### ------
 
 
 # Temp - this is part of openad-tools
