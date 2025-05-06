@@ -2,7 +2,7 @@
 # predict reaction 'BrBr.c1ccc2cc3ccccc3cc2c1CCO'
 # predict reaction 'BrBr.c1ccc2cc3ccccc3cc2c1CCO' use_saved
 
-""" Perform Predict Reaction on a Reaction String"""
+"""Perform Predict Reaction on a Reaction String"""
 from time import sleep
 import importlib.util as ilu
 from openad.smols.smol_cache import create_analysis_record, save_result

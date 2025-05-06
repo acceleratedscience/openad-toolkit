@@ -1,4 +1,4 @@
-""" Provides Settings Management and Toolkit Management"""
+"""Provides Settings Management and Toolkit Management"""
 
 import pickle
 import os
