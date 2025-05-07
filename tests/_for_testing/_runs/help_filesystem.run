@@ -1,5 +1,7 @@
 list files ?
 import ?
-export from ?
+move ?
 copy ?
 remove '<filename>' ?
+open '<filename>' ?
+show '<filename>' ?

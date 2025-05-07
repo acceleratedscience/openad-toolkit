@@ -5,3 +5,4 @@ save run as test_run
 run test_run
 list runs
 display run test_run
+remove run test_run

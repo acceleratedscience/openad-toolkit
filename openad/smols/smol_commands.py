@@ -356,7 +356,7 @@ def rename_mol_in_list(cmd_pointer, inp):
         output_success("Molecule successfully renamed", return_val=False)
         return True
 
-    output_error("No molecule '{identifier}' was found.", return_val=False)
+    output_error(f"No molecule '{identifier}' was found.", return_val=False)
     return False
 
 

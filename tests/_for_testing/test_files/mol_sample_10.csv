@@ -1,0 +1,11 @@
+ID,NAME,SOL,SMILES,SOL_classification,mols2grid-id,img
+n-hexylbenzene,n-hexylbenzene,-5.21,c1ccccc1CCCCCC,(A) low,11,
+bibenzyl,bibenzyl,-4.62,c1ccccc1CCc2ccccc2,(A) low,12,
+1-ethylnaphthalene,1-ethylnaphthalene,-4.17,c1ccc2ccccc2c1CC,(A) low,13,
+"1,3-dimethylnaphthalene","1,3-dimethylnaphthalene",-4.29,c1c(C)cc2ccccc2c1C,(A) low,14,
+anthracene,anthracene,-6.35,c(c(ccc1)cc(c2ccc3)c3)(c1)c2,(A) low,15,
+"9,10-dimethylanthracene","9,10-dimethylanthracene",-6.57,Cc2c1ccccc1c(C)c3ccccc23,(A) low,16,
+naphthacene,naphthacene,-8.6,c(c(cc(c1ccc2)c2)cc(c3ccc4)c4)(c1)c3,(A) low,17,
+chrysene,chrysene,-8.06,c1ccc2ccc3c4ccccc4ccc3c2c1,(A) low,18,
+"1,7-phenantroline","1,7-phenantroline",-2.68,c1ccc2ccc3nccnc3c2c1,(B) medium,19,
+6-aminochrysene,6-aminochrysene,-6.2,Nc3cc2c1ccccc1ccc2c4ccccc34,(A) low,20,

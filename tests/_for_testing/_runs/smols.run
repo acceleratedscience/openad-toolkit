@@ -1,0 +1,6 @@
+import './tests/_for_testing/test_files/base_molecules.sdf'
+display molecule CCC
+show mol 'CCC'
+show molset 'base_molecules.sdf'
+@CCC>>molecular_weight
+export molecule dopamine

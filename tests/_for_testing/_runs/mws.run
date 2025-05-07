@@ -1,0 +1,13 @@
+add molecule CCC force
+add molecule dopamine
+remove molecule CCC
+list molecules
+show molecules
+clear analysis cache
+display sources dopamine
+rename molecule dopamine as dopamine_test
+list molecules
+load molecules from file './tests/_for_testing/test_files/base_molecules.sdf'
+export molecules as 'delete-me.csv'
+clear molecules
+remove 'delete-me.csv'
