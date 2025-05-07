@@ -140,10 +140,19 @@ _messages = {
     # region - RUNS
     ##########################################################################
     # General
+<<<<<<< HEAD
     "create_run_started": '\n'.join([
         "<yellow>Recording started</yellow>",
         "Run any number of commands and end with <cmd>save run as <run_name></cmd>",
     ]),
+=======
+    "create_run_started": "\n".join(
+        [
+            "<yellow>Recording started</yellow>",
+            "Run any number of commands and end with <cmd>save run as <run_name></cmd>",
+        ]
+    ),
+>>>>>>> origin/main
     # Negative
     "no_runs_saved_yet": [
         "<yellow>No runs saved yet</yellow>",

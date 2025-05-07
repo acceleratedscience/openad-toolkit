@@ -13,7 +13,7 @@ from servicing import Dispatcher, UserProvidedConfig
 from typing_extensions import Self
 import urllib3
 
-
+#
 urllib3.disable_warnings()
 
 
@@ -269,7 +269,6 @@ class ModelService(Dispatcher):
             ret_status["url"] = extra_data.get("remote_endpoint")
             # check api key expiration
             bearer_token = self.get_api_key(name)
-            print(">>>", bearer_token)
             ret_status["jwt_info"] = jwt_decode(bearer_token)
             # check if remote service is up
             response = self.service_request(name, path="/health", timeout=2, verify=False)

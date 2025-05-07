@@ -1,4 +1,4 @@
-""" Helpers for getting and Saving Credentials"""
+"""Helpers for getting and Saving Credentials"""
 
 import pickle
 import readline

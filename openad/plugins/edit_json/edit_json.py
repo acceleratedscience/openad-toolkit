@@ -778,7 +778,7 @@ class EditJson:
 
             # JSON file path
             if self.show_path:
-                path_output = style(f"\U0001F4C1 File path: <magenta>{self.json_path}</magenta>", nowrap=True)
+                path_output = style(f"\U0001f4c1 File path: <magenta>{self.json_path}</magenta>", nowrap=True)
                 if 1:
                     path_output += style(" / Type <cmd>:o</cmd> to open", nowrap=True)
                 display_append(path_output)
