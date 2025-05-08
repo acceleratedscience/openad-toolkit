@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 import requests
 from openad.helpers.output import output_error, output_warning
-from openad.openad_model_plugin.auth_services import get_service_api_key, update_lookup_table
+from openad.openad_model_plugin.auth_services import get_service_api_key
 from openad.openad_model_plugin.proxy.helpers import jwt_decode
 from openad.openad_model_plugin.utils import LruCache, get_logger
 from servicing import Dispatcher, UserProvidedConfig
