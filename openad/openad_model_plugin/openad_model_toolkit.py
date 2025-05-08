@@ -242,16 +242,16 @@ generation_targets = {
 
 service_command_help[
     "get_molecule_property"
-] = "get molecule property <property> FOR @mols | [<list of SMILES>] | <SMILES>   USING (<parameter>=<value> <parameter>=<value>) (merge with mols|molecules)"
+] = "get molecule property <property> FOR @mols | <smiles> | [<smiles>,<smiles>,...] USING (<parameter>=<value> <parameter>=<value>) [ merge with molecules|mols ]"
 service_command_help[
     "get_crystal_property"
 ] = "get crystal property <property> FOR <directory> USING (<parameter>=<value> <parameter>=<value>)"
 service_command_help[
     "get_protein_property"
-] = "get protein property <property> FOR [<list of Proteins>] | <Protein> USING (<parameter>=<value> <parameter>=<value>)"
+] = "get protein property <property> FOR <fasta> | [<fasta>,<fasta>,...] USING (<parameter>=<value> <parameter>=<value>)"
 service_command_help[
     "generate_data"
-] = "generate with <property> data <TARGET> (sample <sample_size>) USING (<parameter>=<value> <parameter>=<value>) "
+] = "generate with <property> data <target> (sample <sample_size>) USING (<parameter>=<value> <parameter>=<value>)"
 
 service_command_description[
     "get_molecule_property"
