@@ -1067,7 +1067,7 @@ def create_statements(cmd_pointer):
         cmd_pointer.current_statement_defs |= stmt
 
     # statements_zom = ZeroOrMore(statements_def)
-    spinner.succeed("Grammar updated")
+    spinner.stop()
 
 
 def or_builder(options: list) -> str:

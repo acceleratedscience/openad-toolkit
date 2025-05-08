@@ -165,7 +165,7 @@ def model_service_status(cmd_pointer, parser):
                 time.sleep(2)  # wait for service threads to ping endpoint
                 for name in all_services:
                     res = service.get_short_status(name)
-                    print(f"\n\n{res=}")
+                    # print(f"\n\n{res=}") # %%
                     # set the status of the service
                     if res.get("message"):
                         # an overwite if something occured

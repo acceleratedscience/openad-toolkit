@@ -14,12 +14,15 @@ import requests
 
 from openad.helpers.paths import prepare_file_path, fs_success
 from openad.helpers.output import output_error, output_success, output_text, output_warning
-from openad.helpers.spinner import Spinner
 from openad.openad_model_plugin.catalog_model_services import get_service_requester, help_dict_create
 from openad.openad_model_plugin.auth_services import get_service_api_key
 from openad.openad_model_plugin.catalog_model_services import Dispatcher
 from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.smols.smol_batch_files import merge_molecule_property_data
+from openad.helpers.spinner import Spinner
+
+spinner = Spinner(GLOBAL_SETTINGS["VERBOSE"])
+
 from pyparsing import (  # replaceWith,; Combine,; pyparsing_test,; ParseException,
     CaselessKeyword,
     CharsNotIn,
@@ -298,6 +301,7 @@ async_help_clause = "\n \n Note: If <cmd> async clause </cmd> is defined the use
 def service_grammar_add(statements: list, help: list, service_catalog: dict):
     """defines the grammar available for managing molecules"""
     for service in service_catalog.keys():
+        spinner.start(f"Updating grammar for {service}")
         service_list = service_catalog[service]
         for schema in service_list:
             # Allow Async for command if supported
@@ -539,6 +543,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                 )
             )
 
+    spinner.stop()
     return statements
 
 
@@ -774,7 +779,6 @@ def openad_model_requestor(cmd_pointer, parser):
 
     a_request = request_generate(cmd_pointer, parser)
 
-    spinner = Spinner(GLOBAL_SETTINGS["VERBOSE"])
     spinner.start("Executing Request Against Server")
 
     with Dispatcher as servicer:
