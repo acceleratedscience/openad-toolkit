@@ -390,7 +390,7 @@ class ModelService(Dispatcher):
             jwt_info = service_data.get("jwt_info")
             is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
             if is_expired:
-                logger.critical(f"Expired google cloud token for {service_name}")
+                logger.debug(f"Expired google cloud token for {service_name}")
 
                 import google.auth
                 from google.auth.transport.requests import Request
