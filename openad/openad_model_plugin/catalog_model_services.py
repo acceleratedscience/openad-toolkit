@@ -537,6 +537,7 @@ def get_service_requester(service_name) -> str | None:
         return None
     with Dispatcher() as service:
         status = service.get_short_status(service_name)
+        spinner.stop()  # Spinner may be started from within get_short_status -> maybe_refresh_auth
         endpoint = service.get_url(service_name)
         return {"func": service.service_request, "status": status, "endpoint": endpoint}
 
