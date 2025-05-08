@@ -302,7 +302,6 @@ class ModelService(Dispatcher):
 
         # Refresh expired auth tokens when possible
         self.maybe_refresh_auth(name, ret_status)
-        spinner.stop()
 
         return ret_status
 
