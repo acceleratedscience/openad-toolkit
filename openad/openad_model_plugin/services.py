@@ -333,14 +333,12 @@ class ModelService(Dispatcher):
 
     def get_remote_service_definitions(self, name: str) -> list | None:
         """retrieve remote service definitions. caches first result"""
-        # print("get_remote_service_definitions") # %%
         if REMOTE_SERVICES_CACHE.get(name):
             # cache hit
             logger.debug(f"getting '{name}' from cache")
             return REMOTE_SERVICES_CACHE.get(name)
         service_definitions = []
         service_data = self.get_short_status(name)
-
         if service_data.get("is_remote"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
