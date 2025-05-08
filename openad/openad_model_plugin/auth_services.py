@@ -68,6 +68,26 @@ def get_service_api_key(service_name: str) -> str:
     return api_key
 
 
+def update_lookup_table(auth_group, api_key=None, service=None, hide_api=False) -> LookupTable:
+    """update the lookup table values on either api_key or model service"""
+    logger.debug(f"updating auth group '{auth_group}' {api_key=} {service=}")
+    # Load the existing data or create a new dictionary
+    data = load_lookup_table()
+    # Update the dictionary with new key-value pairs
+    if api_key:
+        # create auth group entry
+        data["auth_table"].update({auth_group: api_key})
+    if service and auth_group in data["auth_table"]:
+        # map a model service to auth group
+        data["service_table"].update({service: auth_group})
+    # Save the updated dictionary back to the pickle file
+    save_lookup_table(data)
+    # return latest data
+    if hide_api:
+        return hide_api_keys(data)
+    return data
+
+
 def remove_service_group(service_name, hide_api=False) -> LookupTable:
     """remove a model service from lookup table"""
     logger.debug(f"removing service '{service_name}' from auth group lookup table")
