@@ -46,6 +46,7 @@ from openad.plugins.style_parser import tags_to_markdown
 from openad.helpers.general import is_notebook_mode
 from openad.helpers.output import output_error, output_text
 from openad.helpers.output_msgs import msg
+from openad.helpers.spinner import spinner
 from openad.openad_model_plugin.openad_model_toolkit import service_grammar_add
 
 from openad.openad_model_plugin.catalog_model_services import get_cataloged_service_defs, service_catalog_grammar
@@ -1012,6 +1013,8 @@ def create_statements(cmd_pointer):
     #    return
     # global statements_zom
 
+    spinner.start("Updating grammar")
+
     cmd_pointer.current_statements = orig_statements.copy()
     cmd_pointer.current_statement_defs = Forward()
     service_statements = []
@@ -1064,6 +1067,7 @@ def create_statements(cmd_pointer):
         cmd_pointer.current_statement_defs |= stmt
 
     # statements_zom = ZeroOrMore(statements_def)
+    spinner.succeed("Grammar updated")
 
 
 def or_builder(options: list) -> str:
