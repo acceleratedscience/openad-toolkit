@@ -5,10 +5,12 @@ import time
 from typing import Any, Dict
 
 import requests
+
 from openad.helpers.output import output_error, output_warning
 from openad.openad_model_plugin.auth_services import get_service_api_key, update_lookup_table
 from openad.openad_model_plugin.proxy.helpers import jwt_decode
 from openad.openad_model_plugin.utils import LruCache, get_logger
+from openad.helpers.spinner import spinner
 from servicing import Dispatcher, UserProvidedConfig
 from typing_extensions import Self
 import urllib3
@@ -417,12 +419,16 @@ class ModelService(Dispatcher):
                 params_lower = {k.lower(): v for k, v in params.items()}
 
                 if "auth_group" in params_lower:
-                    logger.critical(f"Refreshing expired auth group token for {service_name}")
+                    logger.debug(f"Refreshing expired auth group token for {service_name}")
+                    spinner.start(f"Refreshing expired auth group token for {service_name}")
                     auth_group_name = params_lower["auth_group"]
                     update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
+                    spinner.stop()
                 elif "authorization" in params_lower:
-                    logger.critical(f"Refreshing expired remote service token for {service_name}")
+                    logger.debug(f"Refreshing expired remote service token for {service_name}")
+                    spinner.start(f"Refreshing expired remote service token for {service_name}")
                     refresh_remote_service(service_name, endpoint, auth_token)
+                    spinner.stop()
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE
