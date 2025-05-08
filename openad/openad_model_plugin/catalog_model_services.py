@@ -338,7 +338,8 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
     params = {}
     if "params" in parser.as_dict():
         for i in parser.as_dict()["params"]:
-            params[i[0]] = i[1]
+            key_lower = i[0].lower()
+            params[key_lower] = i[1]
 
     # Detect path source
     path = parser.as_dict().get("path")
