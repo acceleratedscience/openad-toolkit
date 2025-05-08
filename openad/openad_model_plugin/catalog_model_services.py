@@ -341,43 +341,36 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
 
     # Detect path source
     path = parser.as_dict().get("path")
-    is_gcloud = path.endswith(".run.app")
-    is_bridge = path.endswith(".accelerate.science/proxy")
+    is_openbridge = path.endswith(".accelerate.science/proxy")
     auth_group = None
 
-    # Logic for Open Bridge models
-    if is_bridge:
-        # Error - Missing auth method
-        if "auth_group" not in params.keys() and "authorization" not in params.keys():
+    # Error - Missing auth method
+    if is_openbridge and "auth_group" not in params.keys() and "authorization" not in params.keys():
+        return output_error(
+            "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
+            "For more info, run <cmd>catalog model ?</cmd>",
+        )
+
+    # Error - Conflicting auth methods
+    if "auth_group" in params.keys() and "authorization" in params.keys():
+        return output_error(
+            "The <yellow>auth_group</yellow> and <yellow>authorization</yellow> keys can't be mixed in the same statement",
+            "For more info, run <cmd>catalog model ?</cmd>",
+        )
+
+    # Parse auth group
+    if "auth_group" in params.keys():
+        auth_group = params["auth_group"]
+        lookup_table = load_lookup_table()
+        if auth_group not in lookup_table["auth_table"]:
             return output_error(
-                "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
-                "For more info, run <cmd>catalog model ?</cmd>",
+                [
+                    f"Auth group '{auth_group}' does not exist",
+                    "To see available auth groups, run <cmd>model auth list</cmd>",
+                ],
             )
 
-        # Error - Conflicting auth methods
-        if "auth_group" in params.keys() and "authorization" in params.keys():
-            return output_error(
-                "The <yellow>auth_group</yellow> and <yellow>authorization</yellow> keys can't be mixed in the same statement",
-                "For more info, run <cmd>catalog model ?</cmd>",
-            )
-
-        # Parse auth group
-        if "auth_group" in params.keys():
-            auth_group = params["auth_group"]
-            lookup_table = load_lookup_table()
-            if auth_group not in lookup_table["auth_table"]:
-                return output_error(
-                    [
-                        f"Auth group '{auth_group}' does not exist",
-                        "To see available auth groups, run <cmd>model auth list</cmd>",
-                    ],
-                )
-
-    # Logic for Google Cloud Run models
-    if is_gcloud:
-        pass
-
-    # Add remote & exit
+    # Remote
     if "remote" in parser:
         success = add_remote_service_from_endpoint(cmd_pointer, parser)
         if auth_group is not None:
@@ -392,30 +385,32 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
 
         return success
 
-    # Check if service exists
-    with Dispatcher() as service:
-        if service_name in service.list():
-            return output_error(f"A service named <yellow>{service_name}</yellow> already exists")
+    # Local
+    else:
+        # Check if service exists
+        with Dispatcher() as service:
+            if service_name in service.list():
+                return output_error(f"A service named <yellow>{service_name}</yellow> already exists")
 
-    # Download model
-    local_service_path = os.path.join(SERVICE_MODEL_PATH, service_name)
-    is_local_service_path, _ = retrieve_model(service_path, local_service_path)
-    if is_local_service_path is False:
-        output_error(
-            f"service <yellow>{service_name}</yellow> was unable to be added to check url or path",
-            return_val=False,
-        )
-        return False
+        # Download model
+        local_service_path = os.path.join(SERVICE_MODEL_PATH, service_name)
+        is_local_service_path, _ = retrieve_model(service_path, local_service_path)
+        if is_local_service_path is False:
+            output_error(
+                [f"Service <yellow>{service_name}</yellow> failed to be added", "Check path or url for typos"],
+                return_val=False,
+            )
+            return False
 
-    # Get any available configs from service
-    config = load_service_config(local_service_path)
+        # Get any available configs from service
+        config = load_service_config(local_service_path)
 
-    # Add service
-    with Dispatcher() as service:
-        service.add_service(service_name, config)
-        output_success(f"Service <yellow>{service_name}</yellow> added to catalog", return_val=False)
+        # Add service
+        with Dispatcher() as service:
+            service.add_service(service_name, config)
+            output_success(f"Service <yellow>{service_name}</yellow> added to catalog", return_val=False)
 
-    return True
+        return True
 
 
 def uncatalog_model_service(cmd_pointer, parser) -> bool:
