@@ -171,8 +171,12 @@ def model_service_status(cmd_pointer, parser):
         if all_services:  # proceed if any service available
             try:
                 spinner.start("Checking services status")
-                # TODO: verify how much time or have a more robust method
-                time.sleep(2)  # wait for service threads to ping endpoint
+
+                # No longer needed because requests have their own timeout
+                # Leaving here in case there's unintended consequences.
+                # # TODO: verify how much time or have a more robust method
+                # time.sleep(2)  # wait for service threads to ping endpoint
+
                 for name in all_services:
                     res = service.get_short_status(name)
 
