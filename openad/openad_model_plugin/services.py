@@ -423,10 +423,9 @@ class ModelService(Dispatcher):
                     auth_group_name = params_lower["auth_group"]
                     spinner.start(f"Refreshing expired auth for auth group: {auth_group_name}")
                     update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
-                    spinner.stop()
                 elif "authorization" in params_lower:
                     refresh_remote_service(service_name, endpoint, auth_token)
-                    spinner.stop()
+            spinner.stop()
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE
