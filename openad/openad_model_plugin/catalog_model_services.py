@@ -936,7 +936,7 @@ Use the <cmd>remote</cmd> clause when cataloging from a hosted service URL.
     The location of the model service, to be provided in single quotes.
     This can be a local path, a GitHub SSH URI, or a URL for an existing remote service:
     <cmd><soft>...</soft>from '/path/to/service'</cmd>
-    <cmd><soft>...</soft>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
+    <cmd><soft>...</soft>from 'git@github.com:acceleratedscience/openad-service-gen.git'</cmd>
     <cmd><soft>...</soft>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
 
 <cmd><service_name></cmd>
@@ -967,7 +967,7 @@ Authorization:
 {ATTENTION_PROXY_URL}
 
 - Catalog a model using SkyPilot deployment
-<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen</cmd>
+<cmd>catalog model service from 'git@github.com:acceleratedscience/openad-service-gen.git' as gen</cmd>
 
 - Catalog a model using a authentication group
 <cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf USING (inference-service=molformer auth_group=default)</cmd>
