@@ -382,14 +382,15 @@ class ModelService(Dispatcher):
         endpoint = service_data.get("url")
         is_gcloud = endpoint.endswith(".run.app")
         is_openbridge = endpoint.endswith(".accelerate.science/proxy") or endpoint.endswith(".accelerator.cafe/proxy")
+        jwt_info = service_data.get("jwt_info")
+        is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
 
-        if is_openbridge:
-            # TODO: implement openbridge refresh
-            pass
-        if is_gcloud:
-            jwt_info = service_data.get("jwt_info")
-            is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
-            if is_expired:
+        if is_expired:
+            spinner.start(f"Refreshing expired auth for service: {service_name}")
+            if is_openbridge:
+                # TODO: implement openbridge refresh
+                pass
+            if is_gcloud:
                 logger.debug(f"Expired google cloud token for {service_name}")
 
                 import google.auth
@@ -419,14 +420,11 @@ class ModelService(Dispatcher):
                 params_lower = {k.lower(): v for k, v in params.items()}
 
                 if "auth_group" in params_lower:
-                    logger.debug(f"Refreshing expired auth group token for {service_name}")
-                    spinner.start(f"Refreshing expired auth group token for {service_name}")
                     auth_group_name = params_lower["auth_group"]
+                    spinner.start(f"Refreshing expired auth for auth group: {auth_group_name}")
                     update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
                     spinner.stop()
                 elif "authorization" in params_lower:
-                    logger.debug(f"Refreshing expired remote service token for {service_name}")
-                    spinner.start(f"Refreshing expired remote service token for {service_name}")
                     refresh_remote_service(service_name, endpoint, auth_token)
                     spinner.stop()
 
