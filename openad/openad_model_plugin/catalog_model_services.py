@@ -132,6 +132,7 @@ def get_cataloged_service_defs() -> Dict[str, dict]:
         dispatcher_services = service.list()
         # iterate over keys not used before
         for name in set(dispatcher_services):  # - set(list_of_namespaces):
+            spinner.start(f"Loading definitions for {name}")
             remote_definitions = service.get_remote_service_definitions(name)
             if remote_definitions:
                 logger.debug(f"adding remote service defs for | {name=}")
