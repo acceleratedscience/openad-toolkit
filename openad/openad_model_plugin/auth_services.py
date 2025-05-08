@@ -25,7 +25,7 @@ class LookupTable(TypedDict):
 
 def save_lookup_table(data: LookupTable):
     """save authentication lookup table to pickle file"""
-    logger.debug("saving auth lookup table")
+    logger.critical("saving auth lookup table")
     with auth_lookup_lock:  # lock file to prevent concurrent access
         with open(auth_lookup_path, "wb") as file:
             pickle.dump(data, file)
@@ -47,6 +47,7 @@ def load_lookup_table(hide_api: bool = False) -> LookupTable:
         if os.path.exists(auth_lookup_path):
             with open(auth_lookup_path, "rb") as file:
                 data = pickle.load(file)
+                print(data)
         else:
             data = {"auth_table": {}, "service_table": {}}
             save_lookup_table(data)  # create an empty lookup table

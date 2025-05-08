@@ -603,6 +603,7 @@ def list_auth_services(cmd_pointer, parser):
     auth_groups = []
     apis = []
     # Extract services and their corresponding auth groups
+    print(lookup_table["service_table"].items())
     for service, auth_group in lookup_table["service_table"].items():
         services.append(service)
         auth_groups.append(auth_group)
