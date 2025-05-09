@@ -173,7 +173,7 @@ input_object = QuotedString('"', end_quote_char='"', escQuote="\\")
 save_as_clause = "+ Optional(CaselessKeyword('save_as')('save_as')+desc('results_file'))"
 save_as_clause_help = " [ save_as '<filename.csv>' ]"
 async_clause = "+ Optional(CaselessKeyword('async')('async')) "
-async_clause_help = " (async)"
+async_clause_help = " [ async ]"
 service_command_start = {}
 service_command_subject = {}
 service_command_help = {}
@@ -248,54 +248,51 @@ service_command_help[
 ] = "get crystal property <property> FOR <directory> USING (<parameter>=<value> <parameter>=<value>)"
 service_command_help[
     "get_protein_property"
-] = "get protein property <property> FOR <fasta> | [<fasta>,<fasta>,...] USING (<parameter>=<value> <parameter>=<value>)"
+] = "get protein property <property> FOR '<fasta>' | ['<fasta>','<fasta>',...] USING (<parameter>=<value> <parameter>=<value>)"
 service_command_help[
     "generate_data"
-] = "generate with <property> data <TARGET> (sample <sample_size>) USING (<parameter>=<value> <parameter>=<value>)"
+] = "generate with <property> data <TARGET> [ sample <sample_size> ] USING (<parameter>=<value> <parameter>=<value>)"
 
 service_command_description[
     "get_molecule_property"
-] = """
-Generate or predict a given property for one or molecules specified by the SMILES strings provided in the <cmd>FOR</cmd> clause.
+] = """Generate or predict a given property for one or molecules specified by the SMILES strings provided in the <cmd>FOR</cmd> clause.
 
 Supported properties:
 <cmd><property_list></cmd>
 
 The SMILES can be provided as:
 - A single SMILES string: <cmd>FOR CC(C)CC1=CC=C(C=C1)C(C)C(=O)O</cmd>
-- A comma-seperated list of SMILES strings in square brackets: <cmd>FOR [CCO, CC(C)CC1=CC=C(C=C1)C(C)C(=O)O]</cmd>
+- A comma-separated list of SMILES strings in square brackets: <cmd>FOR [CCO, CC(C)CC1=CC=C(C=C1)C(C)C(=O)O]</cmd>
 - A reference to your molecule working set: <cmd>FOR @mols</cmd>
 
 Note that SMILES with square brackets should be enclosed in single quotes when inside a list, for example: <cmd>['C([H])([H])([H])[H]', CCO]</cmd>
 Everywhere else, single quotes are optional.
 
-The <cmd>merge with mols</cmd> clause will update the molecule working set with the results.
-Example implementation:
+The <cmd>merge with mols</cmd> clause will update the molecule working set with the results. Example implementation:
   <cmd>add molecule CCO</cmd>
   <cmd>add molecule CC(C)CC1=CC=C(C=C1)C(C)C(=O)O</cmd>
   <cmd>get molecule property <property> for @mols merge with mols</cmd>
   <cmd>show molecules</cmd>
-
 """
 service_command_description[
     "get_crystal_property"
-] = """
-This command gets (generate/predict) crystal properties
-"""
+] = "This command gets (generate/predict) crystal properties\n"
 service_command_description[
     "get_protein_property"
-] = """
-This command gets (generates/predicts) a protein property for one or proteins specified with a FASTA string in the <cmd>FOR</cmd> clause.
-FASTA strings can be provided as a single string or multiple FASTA strings in a comma separated list in square brackets 
-e.g. <cmd> FOR ['NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC','NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC' ]</cmd>.
-FASTA strings must be provided in single quotes.
-This command gets (generates/predicts) the following properties:\n<cmd><property_list></cmd>\n
+] = """Generate or predict a given property for one or proteins specified by the FASTA strings in the <cmd>FOR</cmd> clause.
+
+Supported properties:
+<cmd><property_list></cmd>
+
+The FASTAs can be provided as:
+- A single FASTA string: <cmd>FOR 'NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC'</cmd>
+- A comma-separated list of FASTA strings in square brackets: <cmd>FOR ['NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC','NLMKRCTRGFRKLGKCTTLEEEKCKTLYPRGQCTCSDSKMNTHSCDCKSC']</cmd>
+
+Note that FASTA strings shoudl be enclosed in single quotes.
 """
 service_command_description[
     "generate_data"
-] = """
-    This function generates a data set based on the following parameters 
- """
+] = """This function generates a data set based on the parameters listed below.\n"""
 
 async_help_clause = "\n \n Note: If <cmd> async clause </cmd> is defined the user will be returned an id for the given job and will use the <cmd> `model service <service name> result '<job_id>' </cmd> command to retrieve it when it is ready. use this command to test for readiness."
 # fmt:on
@@ -306,7 +303,6 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
     for service in service_catalog.keys():
         service_list = service_catalog[service]
         for schema in service_list:
-            print("\n\n", 500, schema)
             # Allow Async for command if supported
             if "async_allow" in schema and schema["async_allow"]:
                 async_allow = True
@@ -406,14 +402,16 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                 function_description = ""
                 if "target" in schema:
                     if schema["target"] is not None:
-                        target_description = "<h1>Target</h1>\n"
+                        target_description = "Target: "
                         for key, value in schema["target"].items():
-                            target_description = target_description + f"- <cmd>{key}</cmd> : {value}\n  "
+                            if key == "title":
+                                target_description = target_description + f"<cmd>{value}</cmd>\n"
+                            else:
+                                target_description = target_description + f"<soft>{key}:</soft> {value}\n"
+                        target_description = target_description + "\n"
 
                 if schema["description"] is not None:
-
-                    schema_description = schema["description"].replace("Name: ", "").replace("Description: \n", "")
-                    function_description = "\n<h1>Function Description<'/h1>\n\n" + schema_description
+                    function_description = "\n\n<h1>Function Description</h1>\n" + schema["description"]
                     while "  " in function_description:
                         function_description = function_description.replace("  ", " ")
             except Exception as e:
@@ -426,7 +424,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                 num_params += 1
                 print_description = ""
                 for key, value in description.items():
-                    print_description = print_description + f"  <soft>{(key + ':'):<8}</soft> {value}\n"
+                    print_description = print_description + f"  <soft>{key}:</soft> {value}\n"
 
                 parameter_help = parameter_help + f"<cmd>{parameter}</cmd>\n{print_description}\n"
             if "generator_type" in schema.keys():
@@ -451,7 +449,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                                 )
                             ),
                         ).replace("<property>", help_type.split("|")[0].split(",")[0].replace("[", "").lstrip())
-                        + "\n<h1>Parameters</h1>\n<warning>Note: the parameters for the <cmd>USING</cmd> clause should be entered in the order they are listed below.</warning>\n\n"
+                        + "\n\n<h1>Parameters</h1>\n<warning>Note: the parameters for the <cmd>USING</cmd> clause should be entered in the order they are listed below.</warning>\n\n"
                         + parameter_help
                     )
                 except Exception as e:
@@ -466,26 +464,27 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                             list(help_type.split("|")[0].replace(" ", "").replace("[", "").replace("]", "").split(","))
                         ),
                     ).replace("<property>", help_type.split("|")[0].split(",")[0].replace("[", "").lstrip())
-                    + "\n<h1>Parameters</h1>\n<soft>No parameters are avaialanle for this command.</soft>\n\n"
+                    + "\n\n<h1>Parameters</h1>\n<soft>No parameters are avaialable for this command.</soft>\n\n"
                     + parameter_help
                 )
 
             required_parameters = ""
-            for i in schema["required_parameters"]:
+            for param in schema["required_parameters"]:
                 if required_parameters == "":
                     required_parameters = "\n<h1>Required Parameters</h1>\n"
-                required_parameters = required_parameters + f"\n - <cmd>{i}</cmd>"
+                required_parameters = required_parameters + f"- <cmd>{param}</cmd>\n "
             algo_versions = ""
             if "algorithm_versions" in schema:
-                algo_versions = " \n<h1>Algorithm Versions</h1>\n"
-                for i in schema["algorithm_versions"]:
-                    algo_versions = algo_versions + f"\n - <cmd>{i}</cmd>"
+                algo_versions = "\n<h1>Algorithm Versions</h1>\n"
+                for algo in schema["algorithm_versions"]:
+                    if algo:
+                        algo_versions = algo_versions + f"- <cmd>{algo}</cmd>\n"
             try:
                 if "generator_type" in schema.keys():
                     if not schema["target"]:
                         command_str = (
                             str(service + " " + service_command_help["generate_data"])
-                            .replace("<TARGET>", "")
+                            .replace("<TARGET> ", "")
                             .replace("<property>", help_type)
                         )
                     else:
@@ -499,7 +498,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                                 + str(service_command_help["generate_data"])
                                 .replace(
                                     "<TARGET>",
-                                    " for  <" + schema["target"]["type"] + ">",
+                                    "FOR <" + schema["target"]["type"] + ">",
                                 )
                                 .replace("<property>", help_type)
                             )
@@ -510,7 +509,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                                 + str(service_command_help["generate_data"])
                                 .replace(
                                     "<TARGET>",
-                                    " for (<" + schema["target"]["type"] + ">)",
+                                    "FOR (<" + schema["target"]["type"] + ">)",
                                 )
                                 .replace("<property>", help_type)
                             )
