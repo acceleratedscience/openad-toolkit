@@ -256,10 +256,12 @@ service_command_help[
 service_command_description[
     "get_molecule_property"
 ] = """
-This command gets (generate/predict) a molecule's property for one or molecules specified with a SMILES string in the <cmd>FOR</cmd> clause. SMILES can be provided as a single SMILES string or multiple smiles in a comma seperated list in square brackets e.g. <cmd>FOR [CCO, CC(C)CC1=CC=C(C=C1)C(C)C(=O)O]</cmd>.
-SMILES strings can be specified with or without single quotes, but when in a list smiles with square brackets should be enclosed in single quotes e.g <cmd>['C([H])([H])([H])[H]', CCO]</cmd>
+This command gets (generate/predict) a molecule's property for one or molecules specified by the SMILES strings provided in the <cmd>FOR</cmd> clause. The SMILES can be provided as a single SMILES string or a comma-seperated list of multiple smiles in square brackets. E.g. <cmd>FOR [CCO, CC(C)CC1=CC=C(C=C1)C(C)C(=O)O]</cmd>.
 
-This command gets (generate/predict) the following properties:\n<cmd><property_list></cmd>
+SMILES with square brackets should be enclosed in single quotes whhen inside a list, e.g <cmd>['C([H])([H])([H])[H]', CCO]</cmd>.Everywhere else, single quotes are optional.
+
+This command gets (generate/predict) the following properties:
+<cmd><property_list></cmd>
 
 The clause <cmd>merge with mols </cmd> will merge the resulting molecule properties with the memory molecule working set.
 
