@@ -171,7 +171,7 @@ input_object = QuotedString('"', end_quote_char='"', escQuote="\\")
 #       # generate_data is for any of the different types of data set generation options
 
 save_as_clause = "+ Optional(CaselessKeyword('save_as')('save_as')+desc('results_file'))"
-save_as_clause_help = " (save_as '<filename.csv>')"
+save_as_clause_help = " [ save_as '<filename.csv>' ]"
 async_clause = "+ Optional(CaselessKeyword('async')('async')) "
 async_clause_help = " (async)"
 service_command_start = {}
@@ -256,21 +256,25 @@ service_command_help[
 service_command_description[
     "get_molecule_property"
 ] = """
-This command gets (generate/predict) a molecule's property for one or molecules specified by the SMILES strings provided in the <cmd>FOR</cmd> clause. The SMILES can be provided as a single SMILES string or a comma-seperated list of multiple smiles in square brackets. E.g. <cmd>FOR [CCO, CC(C)CC1=CC=C(C=C1)C(C)C(=O)O]</cmd>.
+Generate or predict a given property for one or molecules specified by the SMILES strings provided in the <cmd>FOR</cmd> clause.
 
-SMILES with square brackets should be enclosed in single quotes whhen inside a list, e.g <cmd>['C([H])([H])([H])[H]', CCO]</cmd>.Everywhere else, single quotes are optional.
-
-This command gets (generate/predict) the following properties:
+Supported properties:
 <cmd><property_list></cmd>
 
-The clause <cmd>merge with mols </cmd> will merge the resulting molecule properties with the memory molecule working set.
+The SMILES can be provided as:
+- A single SMILES string: <cmd>FOR CC(C)CC1=CC=C(C=C1)C(C)C(=O)O</cmd>
+- A comma-seperated list of SMILES strings in square brackets: <cmd>FOR [CCO, CC(C)CC1=CC=C(C=C1)C(C)C(=O)O]</cmd>
+- A reference to your molecule working set: <cmd>FOR @mols</cmd>
 
-Note: <cmd> @mols </cmd>  specifies the list in the current molecules working set.
-    Example: 
-        The following will generate the specified properties for the molecules in the molecule working set.
-        <cmd>get molecule property <property> for @mols </cmd>
-        The following will generate the specified properties for the molecules in the molecule working set and will merge the resulting molecule properties with the memory molecule working set.
-        <cmd>get molecule property <property> for @mols merge with mols</cmd>
+Note that SMILES with square brackets should be enclosed in single quotes when inside a list, for example: <cmd>['C([H])([H])([H])[H]', CCO]</cmd>
+Everywhere else, single quotes are optional.
+
+The <cmd>merge with mols</cmd> clause will update the molecule working set with the results.
+Example implementation:
+  <cmd>add molecule CCO</cmd>
+  <cmd>add molecule CC(C)CC1=CC=C(C=C1)C(C)C(=O)O</cmd>
+  <cmd>get molecule property <property> for @mols merge with mols</cmd>
+  <cmd>show molecules</cmd>
 
 """
 service_command_description[
@@ -302,6 +306,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
     for service in service_catalog.keys():
         service_list = service_catalog[service]
         for schema in service_list:
+            print("\n\n", 500, schema)
             # Allow Async for command if supported
             if "async_allow" in schema and schema["async_allow"]:
                 async_allow = True
@@ -322,7 +327,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
 
             if valid_type is None:
                 valid_type = '( (Word("[")+delimitedList(oneOf(valid_types)|Suppress(Word("\'"))+oneOf(valid_types)+Suppress(Word("\'")),delim=",")("types")+Word("]")) | ( oneOf(valid_types)("type")) ) '
-                help_type = "[ " + ", ".join(list(schema["valid_types"])) + " ] | <valid_property>  "
+                help_type = "[ " + ", ".join(list(schema["valid_types"])) + " ] | <valid_property>"
             expression = ""
 
             # if parameters  exist for command build parameter grammar
@@ -401,12 +406,14 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                 function_description = ""
                 if "target" in schema:
                     if schema["target"] is not None:
-                        target_description = "<h2>Target:</h2>\n"
+                        target_description = "<h1>Target</h1>\n"
                         for key, value in schema["target"].items():
                             target_description = target_description + f"- <cmd>{key}</cmd> : {value}\n  "
 
                 if schema["description"] is not None:
-                    function_description = "\n<h2>Function Description:</h2>\n" + schema["description"]
+
+                    schema_description = schema["description"].replace("Name: ", "").replace("Description: \n", "")
+                    function_description = "\n<h1>Function Description<'/h1>\n\n" + schema_description
                     while "  " in function_description:
                         function_description = function_description.replace("  ", " ")
             except Exception as e:
@@ -419,9 +426,9 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                 num_params += 1
                 print_description = ""
                 for key, value in description.items():
-                    print_description = print_description + f"- <cmd>{key}</cmd> : {value}\n  "
+                    print_description = print_description + f"  <soft>{(key + ':'):<8}</soft> {value}\n"
 
-                parameter_help = parameter_help + f"<cmd>{parameter}</cmd> \n {print_description}\n  "
+                parameter_help = parameter_help + f"<cmd>{parameter}</cmd>\n{print_description}\n"
             if "generator_type" in schema.keys():
                 key = "generate_data"
             else:
@@ -444,7 +451,7 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                                 )
                             ),
                         ).replace("<property>", help_type.split("|")[0].split(",")[0].replace("[", "").lstrip())
-                        + "<h2>Parameters:</h2>\n   <warning>--Note: Parameters should be entered for <cmd> USING Clause </cmd> in the order they are below. </warning>\n"
+                        + "\n<h1>Parameters</h1>\n<warning>Note: the parameters for the <cmd>USING</cmd> clause should be entered in the order they are listed below.</warning>\n\n"
                         + parameter_help
                     )
                 except Exception as e:
@@ -459,19 +466,18 @@ def service_grammar_add(statements: list, help: list, service_catalog: dict):
                             list(help_type.split("|")[0].replace(" ", "").replace("[", "").replace("]", "").split(","))
                         ),
                     ).replace("<property>", help_type.split("|")[0].split(",")[0].replace("[", "").lstrip())
-                    + "\n"
-                    + " <h2>No Parameters</h2>\n"
+                    + "\n<h1>Parameters</h1>\n<soft>No parameters are avaialanle for this command.</soft>\n\n"
                     + parameter_help
                 )
 
             required_parameters = ""
             for i in schema["required_parameters"]:
                 if required_parameters == "":
-                    required_parameters = "\n<h2>Required Parameters:</h2> \n"
+                    required_parameters = "\n<h1>Required Parameters</h1>\n"
                 required_parameters = required_parameters + f"\n - <cmd>{i}</cmd>"
             algo_versions = ""
             if "algorithm_versions" in schema:
-                algo_versions = " \n <h2> Algorithm Versions </h2> \n"
+                algo_versions = " \n<h1>Algorithm Versions</h1>\n"
                 for i in schema["algorithm_versions"]:
                     algo_versions = algo_versions + f"\n - <cmd>{i}</cmd>"
             try:
@@ -861,7 +867,7 @@ def format_properties(props: list):
     props_string = props_string + single_value_columns(props, helpers_general.get_print_width(full=True), 40)
 
     props_string = re.sub(r"<(.*?:)> ", r"<success>\1</success>", props_string)
-    return "\n" + props_string
+    return props_string
 
 
 def single_value_columns(values, sys_cli_width, designated_display_width):
