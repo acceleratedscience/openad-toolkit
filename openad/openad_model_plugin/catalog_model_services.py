@@ -9,6 +9,7 @@ from functools import lru_cache
 from subprocess import run
 from typing import Dict, Tuple
 import pandas as pd
+from requests.exceptions import JSONDecodeError
 
 import pyparsing as py
 from openad.core.help import help_dict_create

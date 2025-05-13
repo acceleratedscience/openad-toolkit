@@ -5,6 +5,7 @@ import time
 from typing import Any, Dict
 
 import requests
+from requests.exceptions import JSONDecodeError
 from openad.helpers.output import output_error, output_warning
 from openad.openad_model_plugin.auth_services import get_service_api_key
 from openad.openad_model_plugin.proxy.helpers import jwt_decode
@@ -342,15 +343,20 @@ class ModelService(Dispatcher):
         if service_data.get("is_remote"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
-            # check if response is a list of service definitions
-            if response.status_code == 200 and isinstance(response.json(), list):
-                service_definitions = response.json()
+            if response.status_code == 200:
+                try:
+                    service_definitions = response.json()
+                except JSONDecodeError:
+                    pass
         elif service_data.get("up"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
             # check if response is a list of service definitions
-            if response.status_code == 200 and isinstance(response.json(), list):
-                service_definitions = response.json()
+            if response.status_code == 200:
+                try:
+                    service_definitions = response.json()
+                except JSONDecodeError:
+                    pass
         if service_definitions:
             # insert into chache when not None
             logger.debug(f"inserting '{name}' into cache")
