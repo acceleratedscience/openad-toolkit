@@ -673,6 +673,7 @@ def service_catalog_grammar(statements: list, help: list):
     down = py.CaselessKeyword("down")
     service = py.CaselessKeyword("service")
     status = py.CaselessKeyword("status")
+    refresh = py.CaselessKeyword("refresh")
     fr_om = py.CaselessKeyword("from")
     _list = py.CaselessKeyword("list")
     quoted_string = py.QuotedString("'", escQuote="\\")
@@ -832,6 +833,18 @@ Examples:
             # command="model catalog status", # Consistent - to be swapped
             command="model service status",  # Inconsistent
             description="Get the status of your currently cataloged services.",
+        )
+    )
+
+    # ---
+    # Refresh model service status
+    statements.append(py.Forward(model + service + refresh)("model_service_refresh"))
+    help.append(
+        help_dict_create(
+            name="model service refresh",
+            category="Model",
+            command="model service refresh",
+            description="Refresh the grammar definitions. Use this when the grammar for a service is missing.",
         )
     )
 
