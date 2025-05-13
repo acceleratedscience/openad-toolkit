@@ -380,7 +380,6 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
 
     # OpenBridge only
     if is_openbridge:
-
         # Error - Missing auth method
         if "auth_group" not in params.keys() and "authorization" not in params.keys():
             return output_error(
