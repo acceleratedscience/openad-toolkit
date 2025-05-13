@@ -378,12 +378,22 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
     is_openbridge = path.endswith(".accelerate.science/proxy")
     auth_group = None
 
-    # Error - Missing auth method
-    if is_openbridge and "auth_group" not in params.keys() and "authorization" not in params.keys():
-        return output_error(
-            "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
-            "For more info, run <cmd>catalog model ?</cmd>",
-        )
+    # OpenBridge only
+    if is_openbridge:
+
+        # Error - Missing auth method
+        if "auth_group" not in params.keys() and "authorization" not in params.keys():
+            return output_error(
+                "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
+
+        # Error - Missing inference service
+        if "inference-service" not in params.keys():
+            return output_error(
+                "The <yellow>inference-service</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
 
     # Error - Conflicting auth methods
     if "auth_group" in params.keys() and "authorization" in params.keys():
