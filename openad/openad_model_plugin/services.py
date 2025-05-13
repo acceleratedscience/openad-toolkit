@@ -275,8 +275,7 @@ class ModelService(Dispatcher):
             response = self.service_request(name, path="/health", timeout=2, verify=False)
             ret_status["up"] = response.status_code == 200
             if response.status_code == 200:
-                # check if service is in cache
-                if REMOTE_SERVICES_CACHE.get(name):
+                if response.text == "UP":
                     ret_status["message"] = "Connected"
                 else:
                     ret_status["message"] = "Not Ready"
