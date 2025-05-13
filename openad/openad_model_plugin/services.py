@@ -278,7 +278,7 @@ class ModelService(Dispatcher):
                 if response.text == "UP":
                     ret_status["message"] = "Connected"
                 else:
-                    ret_status["message"] = "Not Ready"
+                    ret_status["message"] = "Not ready"
             if response.status_code == 401:
                 ret_status["message"] = "Unauthorized"
             if response.status_code == 404:
