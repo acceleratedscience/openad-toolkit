@@ -1,0 +1,82 @@
+# Below copy-paste ready commands to get the help output for each
+# individual model function as hosted on openad.accelerate.science
+
+# moler->generation
+moler generate with MoLeRDefaultGenerator ?
+
+# moler->conditional_generation
+moler generate with MolGXQM9Generator data ?
+
+# bi_aa_binding->conditional_generation
+bi_aa_binding generate with ranking_ensemble_il18bp_hl ?
+bi_aa_binding generate with ranking_ensemble_sirpa_hl data ?
+bi_aa_binding generate with ranking_ensemble_sirpa_hl_fold_1 ?
+bi_aa_binding generate with ranking_ensemble_sirpa_hl_fold_2 ?
+bi_aa_binding generate with ranking_ensemble_upar_hl ?
+bi_aa_binding generate with ranking_ensemble_zero_shot_hl ?
+
+# bmfm_mammal->Model-proteins
+bmfm_mammal get protein property dti ?
+bmfm_mammal get protein property sol ?
+
+# molformer->Model-molecules
+molformer get molecule property molformer_classification ?
+molformer get molecule property molformer_multitask_classification ?
+molformer get molecule property molformer_regression ?
+
+# pfas->Model-molecules
+pfas get molecule property [ EPA_2023 ? 
+
+# bmfm_sm->Model-molecules
+bmfm_sm get molecule property [ BACE ?
+
+# generation->conditional_generation
+generation generate with AaeGenerator ?
+generation generate with GraphGAGenerator ?
+generation generate with GraphMCTSGenerator ?
+generation generate with KeyBERTGenerator ?
+generation generate with OrganGenerator ?
+generation generate with PaccMannRLProteinBasedGenerator ?
+generation generate with RegressionTransformerMolecules ?
+generation generate with RegressionTransformerProteins ?
+generation generate with ReinventGenerator ?
+generation generate with SMILESGAGenerator ?
+generation generate with SMILESLSTMHCGenerator ?
+generation generate with SMILESLSTMPPOGenerator ?
+generation generate with VaeGenerator ?
+
+# generation->controlled_sampling
+generation generate with CatalystGenerator ?
+
+# generation->generation
+generation generate with PaccMannVAEGenerator ?
+generation generate with TorchDrugGCPN ?
+generation generate with TorchDrugGraphAF ?
+
+# properties->Model-crystals
+properties get crystal property absolute_energy ?
+properties get crystal property band_gap ?
+properties get crystal property bulk_moduli ?
+properties get crystal property fermi_energy ?
+properties get crystal property formation_energy ?
+properties get crystal property metal_nonmetal_classifier ?
+properties get crystal property metal_semiconductor_classifier ?
+properties get crystal property poisson_ratio ?
+properties get crystal property shear_moduli ?
+
+# properties->Model-molecules
+properties get molecule property [ mol ?
+properties get molecule property activ ?
+properties get molecule property scsco ?
+properties get molecule property simil ?
+
+# properties->Model-proteins
+properties get protein property [ length, bom ?
+properties get protein property [ protein_wei ?
+properties get protein property [ charge_dens ?
+
+# smi_ted->Model-molecules
+smi_ted get molecule property [ qm8-e1-cam, ?
+smi_ted get molecule property [ qm9-alpha,  ?
+smi_ted get molecule property [ bace, bbbp, ?
+

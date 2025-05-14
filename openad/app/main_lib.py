@@ -190,9 +190,10 @@ def lang_parse(cmd_pointer, parser):
         return result
 
     elif parser.getName() == "model_service_status":
-        # update grammer for definitions not fetched because service was down
-        create_statements(cmd_pointer)  # TODO: move this to a separate refresh command
         return model_service_status(cmd_pointer, parser)
+    elif parser.getName() == "model_service_refresh":
+        # Refresh grammer for definitions not fetched because service was down
+        return create_statements(cmd_pointer)
     elif parser.getName() == "model_service_config":
         return model_service_config(cmd_pointer, parser)
     elif parser.getName() == "get_catalog_namespaces":
