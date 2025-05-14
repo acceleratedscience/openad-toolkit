@@ -14,7 +14,7 @@ import requests
 
 from openad.helpers.paths import prepare_file_path, fs_success
 from openad.helpers.output import output_error, output_success, output_text, output_warning
-from openad.helpers.spinner import Spinner
+from openad.helpers.spinner import spinner
 from openad.openad_model_plugin.catalog_model_services import get_service_requester, help_dict_create
 from openad.openad_model_plugin.auth_services import get_service_api_key
 from openad.openad_model_plugin.catalog_model_services import Dispatcher
@@ -774,7 +774,6 @@ def openad_model_requestor(cmd_pointer, parser):
 
     a_request = request_generate(cmd_pointer, parser)
 
-    spinner = Spinner(GLOBAL_SETTINGS["VERBOSE"])
     spinner.start("Executing Request Against Server")
 
     with Dispatcher as servicer:
