@@ -15,7 +15,6 @@ from servicing import Dispatcher, UserProvidedConfig
 from typing_extensions import Self
 import urllib3
 
-#
 urllib3.disable_warnings()
 
 
@@ -368,6 +367,28 @@ class ModelService(Dispatcher):
         return service_definitions
 
     # @auth
+    def refresh_remote_service(self, service_name, endpoint, auth_token) -> bool:
+        """Refresh remote service with new auth token"""
+        output_warning(f"Refreshing remote service: {service_name}")
+        logger.debug(f"refreshing remote service | {service_name=}")
+        if service_name not in self.list():
+            output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
+            return False
+        config = json.dumps(
+            {
+                "remote_service": True,
+                "remote_endpoint": endpoint,
+                "remote_status": False,
+                "params": {
+                    "Authorization": auth_token,
+                },
+            }
+        )
+        self.remove_service(service_name)
+        self.add_service(service_name, UserProvidedConfig(data=config))
+        return True
+
+    # @auth
     def maybe_refresh_auth(self, service_name, service_data):
         """
         Refresh auth token for google cloud.
@@ -379,9 +400,6 @@ class ModelService(Dispatcher):
         """
 
         logger.debug(f"maybe refresh auth | {service_name=}")
-
-        # Imported here to avoid circular import issues
-        from openad.openad_model_plugin.catalog_model_services import refresh_remote_service
 
         endpoint = service_data.get("url")
         is_gcloud = endpoint.endswith(".run.app")
@@ -428,7 +446,7 @@ class ModelService(Dispatcher):
                     spinner.start(f"Refreshing expired auth for auth group: {auth_group_name}")
                     update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
                 elif "authorization" in params_lower:
-                    refresh_remote_service(service_name, endpoint, auth_token)
+                    self.refresh_remote_service(service_name, endpoint, auth_token)
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE
