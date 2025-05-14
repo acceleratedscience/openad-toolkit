@@ -9,9 +9,9 @@ from tests.helpers import random_name
 @pytest.mark.parametrize(
     "from_path",
     [
-        "git@github.com:acceleratedscience/property_inference_service.git",
-        "git@github.com:acceleratedscience/generation_inference_service.git",
-        "https://github.com/acceleratedscience/property_inference_service.git",
+        "git@github.com:acceleratedscience/openad-service-prop.git",
+        "git@github.com:acceleratedscience/openad-service-gen.git",
+        "https://github.com/acceleratedscience/openad-service-prop.git",
     ],
 )
 def test_retrieve_model(from_path):
