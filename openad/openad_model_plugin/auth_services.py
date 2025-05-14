@@ -25,7 +25,7 @@ class LookupTable(TypedDict):
 
 def save_lookup_table(data: LookupTable):
     """save authentication lookup table to pickle file"""
-    logger.debug("saving auth lookup table")
+    logger.critical("saving auth lookup table")
     with auth_lookup_lock:  # lock file to prevent concurrent access
         with open(auth_lookup_path, "wb") as file:
             pickle.dump(data, file)
@@ -35,7 +35,7 @@ def hide_api_keys(data: LookupTable) -> LookupTable:
     """hide api key from output. in place operation"""
     logger.debug("hiding api keys")
     for auth_group, api_key in data["auth_table"].items():
-        data["auth_table"][auth_group] = api_key[:6] + "..." if len(api_key) > 4 else api_key
+        data["auth_table"][auth_group] = api_key[:6] + "..." + api_key[-6:] if len(api_key) > 15 else api_key
     return data
 
 

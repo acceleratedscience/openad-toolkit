@@ -7,9 +7,10 @@ from typing import Any, Dict
 import requests
 from requests.exceptions import JSONDecodeError
 from openad.helpers.output import output_error, output_warning
-from openad.openad_model_plugin.auth_services import get_service_api_key
+from openad.openad_model_plugin.auth_services import get_service_api_key, update_lookup_table
 from openad.openad_model_plugin.proxy.helpers import jwt_decode
 from openad.openad_model_plugin.utils import LruCache, get_logger
+from openad.helpers.spinner import spinner
 from servicing import Dispatcher, UserProvidedConfig
 from typing_extensions import Self
 import urllib3
@@ -297,6 +298,10 @@ class ModelService(Dispatcher):
             ret_status["up"] = self.service_request(name, "/health", timeout=2).status_code == 200
             # ret_status["up"] = self.check_service_up(ret_status["url"])
         logger.debug(f"service info | {name=} {ret_status=}")
+
+        # Refresh expired auth tokens when possible
+        self.maybe_refresh_auth(name, ret_status)
+
         return ret_status
 
     def service_request(
@@ -361,6 +366,69 @@ class ModelService(Dispatcher):
             logger.debug(f"inserting '{name}' into cache")
             REMOTE_SERVICES_CACHE.insert(name, service_definitions)
         return service_definitions
+
+    # @auth
+    def maybe_refresh_auth(self, service_name, service_data):
+        """
+        Refresh auth token for google cloud.
+
+        Checks if a service is expired, then fetches a new token for
+        the auth group or the service itself, depending how it's configured.
+
+        Logic could be reused for OpenBridge.
+        """
+
+        logger.debug(f"maybe refresh auth | {service_name=}")
+
+        # Imported here to avoid circular import issues
+        from openad.openad_model_plugin.catalog_model_services import refresh_remote_service
+
+        endpoint = service_data.get("url")
+        is_gcloud = endpoint.endswith(".run.app")
+        is_openbridge = endpoint.endswith(".accelerate.science/proxy") or endpoint.endswith(".accelerator.cafe/proxy")
+        jwt_info = service_data.get("jwt_info")
+        is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
+
+        if is_expired:
+            spinner.start(f"Refreshing expired auth for service: {service_name}")
+            if is_openbridge:
+                # TODO: implement openbridge refresh
+                pass
+            if is_gcloud:
+                logger.debug(f"Expired google cloud token for {service_name}")
+
+                import google.auth
+                from google.auth.transport.requests import Request
+
+                # Fetch gcloud credentials
+                # These are set by running `gcloud auth application-default login`
+                credentials, project = google.auth.default()
+                auth_req = Request()
+
+                # Refresh if expired
+                if not credentials.valid:
+                    credentials.refresh(auth_req)
+
+                # Get the auth token
+                auth_token = getattr(credentials, "id_token", None)
+
+                # # This is supposed to be the "correct" way to
+                # # fetch the ID token, but can't find the creds file.
+                # # from google.oauth2 import id_token
+                # auth_token = id_token.fetch_id_token(auth_req, url)
+                # print(auth_token)
+
+                # Check if the service is configured with an auth group or token
+                service_meta_data = self.load_extra_data(service_name)
+                params = service_meta_data.get("params", {})
+                params_lower = {k.lower(): v for k, v in params.items()}
+
+                if "auth_group" in params_lower:
+                    auth_group_name = params_lower["auth_group"]
+                    spinner.start(f"Refreshing expired auth for auth group: {auth_group_name}")
+                    update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
+                elif "authorization" in params_lower:
+                    refresh_remote_service(service_name, endpoint, auth_token)
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE

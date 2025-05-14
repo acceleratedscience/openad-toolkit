@@ -40,12 +40,14 @@ import openad.toolkit.toolkit_main as toolkit_main  # Not using "from" to avoid 
 from openad.smols.smol_grammar import smol_grammar_add
 from openad.mmols.mmol_grammar import mmol_grammar_add
 from openad.plugins.style_parser import tags_to_markdown
+from openad.helpers.spinner import spinner
 
 
 # Helpers
 from openad.helpers.general import is_notebook_mode
 from openad.helpers.output import output_error, output_text
 from openad.helpers.output_msgs import msg
+from openad.helpers.spinner import spinner
 from openad.openad_model_plugin.openad_model_toolkit import service_grammar_add
 
 from openad.openad_model_plugin.catalog_model_services import get_cataloged_service_defs, service_catalog_grammar
@@ -1012,6 +1014,8 @@ def create_statements(cmd_pointer):
     #    return
     # global statements_zom
 
+    spinner.start("Updating grammar")
+
     cmd_pointer.current_statements = orig_statements.copy()
     cmd_pointer.current_statement_defs = Forward()
     service_statements = []
@@ -1026,6 +1030,8 @@ def create_statements(cmd_pointer):
         smol_grammar_add(statements=cmd_pointer.current_statements, grammar_help=temp_help)
 
         # cmd_pointer.current_statements.extend(service_statements)
+
+        spinner.stop()  # Spinner may be started from within get_cataloged_service_defs -> get_short_status -> maybe_refresh_auth
 
         cmd_pointer.current_help.help_model_services.clear()
         cmd_pointer.current_help.help_model_services.extend(temp_help)
@@ -1064,6 +1070,7 @@ def create_statements(cmd_pointer):
         cmd_pointer.current_statement_defs |= stmt
 
     # statements_zom = ZeroOrMore(statements_def)
+    spinner.stop()
 
 
 def or_builder(options: list) -> str:
