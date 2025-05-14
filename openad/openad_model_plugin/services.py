@@ -272,7 +272,7 @@ class ModelService(Dispatcher):
             bearer_token = self.get_api_key(name)
             ret_status["jwt_info"] = jwt_decode(bearer_token)
             # check if remote service is up
-            response = self.service_request(name, path="/health", timeout=2, verify=False)
+            response = self.service_request(name, path="/health", timeout=1, verify=False)
             ret_status["up"] = response.status_code == 200
             if response.status_code == 200:
                 if response.text == "UP":
@@ -294,7 +294,7 @@ class ModelService(Dispatcher):
         elif not ret_status.get("is_remote") and ret_status.get("url"):
             # TODO: this should be fixed in servicing library
             # recheck if service is actually down
-            ret_status["up"] = self.service_request(name, "/health", timeout=2).status_code == 200
+            ret_status["up"] = self.service_request(name, "/health", timeout=1).status_code == 200
             # ret_status["up"] = self.check_service_up(ret_status["url"])
         logger.debug(f"service info | {name=} {ret_status=}")
 
@@ -304,7 +304,7 @@ class ModelService(Dispatcher):
         return ret_status
 
     def service_request(
-        self, name: str, path="/service", method="GET", timeout=10, verify=True, _json=None
+        self, name: str, path="/service", method="GET", timeout=2, verify=True, _json=None
     ) -> requests.Response:
         """make a request to the service backend"""
         # if verify is False:
