@@ -13,6 +13,7 @@ import pandas as pd
 import pyparsing as py
 from openad.core.help import help_dict_create
 from openad.helpers.output import output_error, output_success, output_table, output_text, output_warning
+from openad.helpers.general import get_case_insensitive_key
 from openad.helpers.spinner import spinner
 from openad.helpers.paths import parse_path, fs_success
 from openad.openad_model_plugin.auth_services import (
@@ -154,7 +155,15 @@ def model_service_status(cmd_pointer, parser):
     """get all services status"""
     logger.debug("listing model status")
     # get list of directory names for the catalog models
-    models = {"Service": [], "Status": [], "Endpoint": [], "Host": [], "API expires": []}
+    models = {
+        "Service": [],
+        "Status": [],
+        "Endpoint": [],
+        "Host": [],
+        "Auth Group": [],
+        "Auth Key": [],
+        "API Expires": [],
+    }
     with Dispatcher(update_status=True) as service:
         # get all the services then order by name and if url exists
         all_services: list = service.list()
@@ -162,10 +171,33 @@ def model_service_status(cmd_pointer, parser):
         if all_services:  # proceed if any service available
             try:
                 spinner.start("Checking services status")
-                # TODO: verify how much time or have a more robust method
-                time.sleep(2)  # wait for service threads to ping endpoint
+
+                # No longer needed because requests have their own timeout
+                # Leaving here in case there's unintended consequences.
+                # # TODO: verify how much time or have a more robust method
+                # time.sleep(2)  # wait for service threads to ping endpoint
+
                 for name in all_services:
                     res = service.get_short_status(name)
+
+                    # Add auth information
+                    config = service.get_config_as_dict(name)
+                    data = params = config.get("data", {}).get("data", "{}")
+                    data = json.loads(data)
+                    params = data.get("params", {})
+                    _, auth_group = get_case_insensitive_key(params, "auth_group")
+                    _, auth_key = get_case_insensitive_key(params, "authorization")
+                    if auth_group:
+                        models["Auth Group"].append(auth_group)
+                        models["Auth Key"].append("-")
+                    elif auth_key:
+                        auth_key_trunc = auth_key[:6] + "..." + auth_key[-6:] if len(auth_key) > 15 else auth_key
+                        models["Auth Group"].append("-")
+                        models["Auth Key"].append(auth_key_trunc)
+                    else:
+                        models["Auth Group"].append("-")
+                        models["Auth Key"].append("-")
+
                     # set the status of the service
                     if res.get("message"):
                         # an overwite if something occured
@@ -181,10 +213,10 @@ def model_service_status(cmd_pointer, parser):
                     if res.get("is_remote"):
                         models["Host"].append("remote")
                         proxy_info: dict = res.get("jwt_info")
-                        models["API expires"].append(proxy_info.get("exp_formatted", "No Info"))
+                        models["API Expires"].append(proxy_info.get("exp_formatted", "No Info"))
                     else:
                         models["Host"].append("local")
-                        models["API expires"].append("")
+                        models["API Expires"].append("")
                     models["Service"].append(name)
                     models["Status"].append(status)
                     models["Endpoint"].append(res.get("url"))
@@ -194,7 +226,8 @@ def model_service_status(cmd_pointer, parser):
             finally:
                 spinner.stop()
     df = DataFrame(models)
-    return df.sort_values(by=["Status", "Service"], ascending=[False, True])
+    df = df.sort_values(by=["Status", "Service"], ascending=[False, True])
+    return output_table(df, is_data=False)
 
 
 def model_service_config(cmd_pointer, parser):
@@ -328,28 +361,6 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
     return True
 
 
-# @auth
-def refresh_remote_service(service_name, endpoint, auth_token) -> bool:
-    with Dispatcher() as service:
-        if service_name not in service.list():
-            output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
-            return False
-
-        config = json.dumps(
-            {
-                "remote_service": True,
-                "remote_endpoint": endpoint,
-                "remote_status": False,
-                "params": {
-                    "Authorization": auth_token,
-                },
-            }
-        )
-        service.remove_service(service_name)
-        service.add_service(service_name, UserProvidedConfig(data=config))
-    return True
-
-
 def catalog_add_model_service(cmd_pointer, parser) -> bool:
     """Add model service repo to catalog"""
 
@@ -367,12 +378,21 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
     is_openbridge = path.endswith(".accelerate.science/proxy")
     auth_group = None
 
-    # Error - Missing auth method
-    if is_openbridge and "auth_group" not in params.keys() and "authorization" not in params.keys():
-        return output_error(
-            "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
-            "For more info, run <cmd>catalog model ?</cmd>",
-        )
+    # OpenBridge only
+    if is_openbridge:
+        # Error - Missing auth method
+        if "auth_group" not in params.keys() and "authorization" not in [key.lower() for key in params.keys()]:
+            return output_error(
+                "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
+
+        # Error - Missing inference service
+        if "inference-service" not in [key.lower() for key in params.keys()]:
+            return output_error(
+                "The <yellow>inference-service</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
 
     # Error - Conflicting auth methods
     if "auth_group" in params.keys() and "authorization" in params.keys():
@@ -637,7 +657,8 @@ def list_auth_services(cmd_pointer, parser):
             auth_groups.append(auth_group)
             apis.append(api)
     # Creating the DataFrame
-    return DataFrame({"service": services, "auth group": auth_groups, "api key": apis})
+    df = DataFrame({"auth group": auth_groups, "service": services, "api key": apis})
+    return output_table(df, is_data=False)
 
 
 def get_model_service_result(cmd_pointer, parser):
