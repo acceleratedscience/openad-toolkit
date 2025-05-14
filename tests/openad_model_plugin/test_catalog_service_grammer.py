@@ -22,11 +22,11 @@ def test_model_service_status(run_openad):
     "from_path, service_name",
     [
         (
-            "git@github.com:acceleratedscience/property_inference_service.git",
+            "git@github.com:acceleratedscience/openad-service-prop.git",
             random_name(),
         ),
         (
-            "https://github.com/acceleratedscience/property_inference_service.git",
+            "https://github.com/acceleratedscience/openad-service-prop.git",
             random_name(),
         ),
         (f"/tmp/{random_name()}", random_name()),
@@ -63,7 +63,7 @@ def test_model_service_up(run_openad, dispatcher):
     """Test bringing up a model service"""
     # setup
     service_name = up_service_name
-    from_path = "git@github.com:acceleratedscience/property_inference_service.git"
+    from_path = "git@github.com:acceleratedscience/openad-service-prop.git"
     cmd_model_status = "model service status"
     cmd_model_up = f"model service up '{service_name}'"
     cmd_add_service = f"catalog model service from '{from_path}' as '{service_name}'"
