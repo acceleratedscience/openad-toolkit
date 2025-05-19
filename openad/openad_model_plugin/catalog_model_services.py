@@ -13,6 +13,7 @@ import pandas as pd
 import pyparsing as py
 from openad.core.help import help_dict_create
 from openad.helpers.output import output_error, output_success, output_table, output_text, output_warning
+from openad.helpers.general import get_case_insensitive_key
 from openad.helpers.spinner import spinner
 from openad.helpers.paths import parse_path, fs_success
 from openad.openad_model_plugin.auth_services import (
@@ -132,6 +133,7 @@ def get_cataloged_service_defs() -> Dict[str, dict]:
         dispatcher_services = service.list()
         # iterate over keys not used before
         for name in set(dispatcher_services):  # - set(list_of_namespaces):
+            spinner.start(f"Loading definitions for {name}")
             remote_definitions = service.get_remote_service_definitions(name)
             if remote_definitions:
                 logger.debug(f"adding remote service defs for | {name=}")
@@ -153,18 +155,49 @@ def model_service_status(cmd_pointer, parser):
     """get all services status"""
     logger.debug("listing model status")
     # get list of directory names for the catalog models
-    models = {"Service": [], "Status": [], "Endpoint": [], "Host": [], "API expires": []}
+    models = {
+        "Service": [],
+        "Status": [],
+        "Endpoint": [],
+        "Host": [],
+        "Auth Group": [],
+        "Auth Key": [],
+        "API Expires": [],
+    }
     with Dispatcher(update_status=True) as service:
         # get all the services then order by name and if url exists
         all_services: list = service.list()
         # !important load services with update
         if all_services:  # proceed if any service available
             try:
-                spinner.start("searching running services")
-                # TODO: verify how much time or have a more robust method
-                time.sleep(2)  # wait for service threads to ping endpoint
+                spinner.start("Checking services status")
+
+                # No longer needed because requests have their own timeout
+                # Leaving here in case there's unintended consequences.
+                # # TODO: verify how much time or have a more robust method
+                # time.sleep(2)  # wait for service threads to ping endpoint
+
                 for name in all_services:
                     res = service.get_short_status(name)
+
+                    # Add auth information
+                    config = service.get_config_as_dict(name)
+                    data = params = config.get("data", {}).get("data", "{}")
+                    data = json.loads(data)
+                    params = data.get("params", {})
+                    _, auth_group = get_case_insensitive_key(params, "auth_group")
+                    _, auth_key = get_case_insensitive_key(params, "authorization")
+                    if auth_group:
+                        models["Auth Group"].append(auth_group)
+                        models["Auth Key"].append("-")
+                    elif auth_key:
+                        auth_key_trunc = auth_key[:6] + "..." + auth_key[-6:] if len(auth_key) > 15 else auth_key
+                        models["Auth Group"].append("-")
+                        models["Auth Key"].append(auth_key_trunc)
+                    else:
+                        models["Auth Group"].append("-")
+                        models["Auth Key"].append("-")
+
                     # set the status of the service
                     if res.get("message"):
                         # an overwite if something occured
@@ -180,10 +213,10 @@ def model_service_status(cmd_pointer, parser):
                     if res.get("is_remote"):
                         models["Host"].append("remote")
                         proxy_info: dict = res.get("jwt_info")
-                        models["API expires"].append(proxy_info.get("exp_formatted", "No Info"))
+                        models["API Expires"].append(proxy_info.get("exp_formatted", "No Info"))
                     else:
                         models["Host"].append("local")
-                        models["API expires"].append("")
+                        models["API Expires"].append("")
                     models["Service"].append(name)
                     models["Status"].append(status)
                     models["Endpoint"].append(res.get("url"))
@@ -193,7 +226,8 @@ def model_service_status(cmd_pointer, parser):
             finally:
                 spinner.stop()
     df = DataFrame(models)
-    return df.sort_values(by=["Status", "Service"], ascending=[False, True])
+    df = df.sort_values(by=["Status", "Service"], ascending=[False, True])
+    return output_table(df, is_data=False)
 
 
 def model_service_config(cmd_pointer, parser):
@@ -308,7 +342,6 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
     logger.debug(f"add as remote service | {service_name=} {endpoint=}")
     with Dispatcher() as service:
         if service_name in service.list():
-            spinner.fail(f"service {service_name} already exists")
             return False
         # load remote endpoint to config custom field
         if "params" in parser:
@@ -325,7 +358,6 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
             }
         )
         service.add_service(service_name, UserProvidedConfig(data=config))
-    spinner.succeed(f"Remote service '{service_name}' added!")
     return True
 
 
@@ -338,61 +370,90 @@ def catalog_add_model_service(cmd_pointer, parser) -> bool:
     params = {}
     if "params" in parser.as_dict():
         for i in parser.as_dict()["params"]:
-            params[i[0]] = i[1]
+            key_lower = i[0].lower()
+            params[key_lower] = i[1]
 
+    # Detect path source
+    path = parser.as_dict().get("path")
+    is_openbridge = path.endswith(".accelerate.science/proxy")
+    auth_group = None
+
+    # OpenBridge only
+    if is_openbridge:
+        # Error - Missing auth method
+        if "auth_group" not in params.keys() and "authorization" not in [key.lower() for key in params.keys()]:
+            return output_error(
+                "The <yellow>auth_group</yellow> or <yellow>authorization</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
+
+        # Error - Missing inference service
+        if "inference-service" not in [key.lower() for key in params.keys()]:
+            return output_error(
+                "The <yellow>inference-service</yellow> key is required to connect to the OpenAD proxy server",
+                "For more info, run <cmd>catalog model ?</cmd>",
+            )
+
+    # Error - Conflicting auth methods
     if "auth_group" in params.keys() and "authorization" in params.keys():
-        output_error(
-            f"It is not permitted to define auth_group and authroization in the same catalog statement ",
-            return_val=False,
+        return output_error(
+            "The <yellow>auth_group</yellow> and <yellow>authorization</yellow> keys can't be mixed in the same statement",
+            "For more info, run <cmd>catalog model ?</cmd>",
         )
-        return False
 
+    # Parse auth group
     if "auth_group" in params.keys():
         auth_group = params["auth_group"]
         lookup_table = load_lookup_table()
         if auth_group not in lookup_table["auth_table"]:
+            return output_error(
+                [
+                    f"Auth group '{auth_group}' does not exist",
+                    "To see available auth groups, run <cmd>model auth list</cmd>",
+                ],
+            )
+
+    # Remote
+    if "remote" in parser:
+        success = add_remote_service_from_endpoint(cmd_pointer, parser)
+        if auth_group is not None:
+            update_lookup_table(auth_group=auth_group, service=service_name)
+        if success:
+            output_success(
+                f"Service <yellow>{service_name}</yellow> added to catalog from <yellow>{service_path}</yellow>",
+                return_val=False,
+            )
+        else:
+            output_error(f"A service named <yellow>{service_name}</yellow> already exists", return_val=False)
+
+        return success
+
+    # Local
+    else:
+        # Check if service exists
+        with Dispatcher() as service:
+            if service_name in service.list():
+                return output_error(f"A service named <yellow>{service_name}</yellow> already exists")
+
+        # Download model
+        local_service_path = os.path.join(SERVICE_MODEL_PATH, service_name)
+        is_local_service_path, _ = retrieve_model(service_path, local_service_path)
+        if is_local_service_path is False:
             output_error(
-                f"auth_group {auth_group} not in auth table, please add the authgroup and recatalog the service {service_name} ",
+                [f"Service <yellow>{service_name}</yellow> failed to be added", "Check path or url for typos"],
                 return_val=False,
             )
             return False
-    else:
-        auth_group = None
 
-    if "remote" in parser:
-        # run this code and exit
-        output = add_remote_service_from_endpoint(cmd_pointer, parser)
-        if auth_group is not None:
-            updated_lookup_table = update_lookup_table(auth_group=auth_group, service=service_name)
-        output_success(f"Service {service_name} added to catalog for remote service {service_path}", return_val=False)
-        return output
-    # check if service exists
-    with Dispatcher() as service:
-        if service_name in service.list():
-            spinner.fail(f"service {service_name} already exists in catalog")
-            output_error(f"service {service_name} already exists in catalog", return_val=False)
-            return False
-    # download model
-    local_service_path = os.path.join(SERVICE_MODEL_PATH, service_name)
-    is_local_service_path, _ = retrieve_model(service_path, local_service_path)
-    if is_local_service_path is False:
-        spinner.fail(f"service {service_name} was unable to be added to check url or path")
-        output_error(
-            f"service {service_name} was unable to be added to check url or path",
-            return_val=False,
-        )
-        spinner.stop()
-        return False
-    # get any available configs from service
-    config = load_service_config(local_service_path)
-    # add the service
-    with Dispatcher() as service:
-        service.add_service(service_name, config)
-        # spinner.succeed(f"service {service_name} added to catalog")
-        output_success(f"Service {service_name} added to catalog", return_val=False)
-    # If auth group in parameters apply authgroup
+        # Get any available configs from service
+        config = load_service_config(local_service_path)
 
-    return True
+        # Add service
+        with Dispatcher() as service:
+            service.add_service(service_name, config)
+            output_success(f"Service <yellow>{service_name}</yellow> added to catalog", return_val=False)
+
+        return True
 
 
 def uncatalog_model_service(cmd_pointer, parser) -> bool:
@@ -402,7 +463,7 @@ def uncatalog_model_service(cmd_pointer, parser) -> bool:
     with Dispatcher() as service:
         # check if service exists
         if service_name not in service.list():
-            output_error(f"service {service_name} not found in catalog", return_val=False)
+            output_error(f"No service named <yellow>{service_name}</yellow> found in catalog", return_val=False)
             return False
         # stop running service
         start_service_shutdown(service_name)
@@ -413,23 +474,21 @@ def uncatalog_model_service(cmd_pointer, parser) -> bool:
     with Dispatcher() as service:  # initialize fresh load
         try:
             service.remove_service(service_name)
-            spinner.succeed(f"service {service_name} removed from catalog")
         except Exception as e:
             if "No such file or directory" in str(e):
-                spinner.warn("service doesnt exist but trying to remove from list. config file was already deleted")
+                output_warning(["Trying to remove non-existing service", "Config has been deleted"], return_val=False)
                 # TODO: make more robust error handling
                 path = os.path.join(os.path.expanduser("~/.servicing"), f"{service_name}_service.yaml")
                 open(path).close()  # create file
                 service.remove_service(service_name)
             else:
-                spinner.fail(f"failed to remove service: {str(e)}")
-                # output_error(f"failed to remove service: {str(e)}", return_val=False)
+                output_error([f"Failed to remove <yellow>{service_name}</yellow> service", str(e)], return_val=False)
                 return False
-        output_success(f"Service {service_name} removed from catalog", return_val=False)
     # remove service from authentication lookup table
     if get_service_api_key(service_name):
         remove_service_group(service_name)
 
+    output_success(f"Service <yellow>{service_name}</yellow> removed from catalog", return_val=False)
     return True
 
 
@@ -439,7 +498,7 @@ def service_up(cmd_pointer, parser) -> bool:
     service_name = parser.as_dict()["service_name"]
     logger.debug(f"start service | {service_name=} {gpu_disable=}")
     # spinner.start("Starting service")
-    output_success("Deploying Service. Please Wait.....", return_val=False)
+    output_success("Deploying Service. Please wait...", return_val=False)
     try:
         with Dispatcher() as service:
             service.up(service_name, skip_prompt=True, gpu_disable=gpu_disable)
@@ -515,10 +574,12 @@ def get_service_requester(service_name) -> str | None:
         return None
     with Dispatcher() as service:
         status = service.get_short_status(service_name)
+        spinner.stop()  # Spinner may be started from within get_short_status -> maybe_refresh_auth
         endpoint = service.get_url(service_name)
         return {"func": service.service_request, "status": status, "endpoint": endpoint}
 
 
+# @@
 def add_service_auth_group(cmd_pointer, parser):
     """Create an authentication group"""
     auth_group = parser.as_dict()["auth_group"]
@@ -596,7 +657,8 @@ def list_auth_services(cmd_pointer, parser):
             auth_groups.append(auth_group)
             apis.append(api)
     # Creating the DataFrame
-    return DataFrame({"service": services, "auth group": auth_groups, "api key": apis})
+    df = DataFrame({"auth group": auth_groups, "service": services, "api key": apis})
+    return output_table(df, is_data=False)
 
 
 def get_model_service_result(cmd_pointer, parser):
@@ -673,6 +735,7 @@ def service_catalog_grammar(statements: list, help: list):
     down = py.CaselessKeyword("down")
     service = py.CaselessKeyword("service")
     status = py.CaselessKeyword("status")
+    refresh = py.CaselessKeyword("refresh")
     fr_om = py.CaselessKeyword("from")
     _list = py.CaselessKeyword("list")
     quoted_string = py.QuotedString("'", escQuote="\\")
@@ -836,6 +899,18 @@ Examples:
     )
 
     # ---
+    # Refresh model service status
+    statements.append(py.Forward(model + service + refresh)("model_service_refresh"))
+    help.append(
+        help_dict_create(
+            name="model service refresh",
+            category="Model",
+            command="model service refresh",
+            description="Refresh the grammar definitions. Use this when the grammar for a service is missing.",
+        )
+    )
+
+    # ---
     # Model service describe
     statements.append(py.Forward(model + service + describe + (service_name)("service_name"))("model_service_config"))
     help.append(
@@ -936,7 +1011,7 @@ Use the <cmd>remote</cmd> clause when cataloging from a hosted service URL.
     The location of the model service, to be provided in single quotes.
     This can be a local path, a GitHub SSH URI, or a URL for an existing remote service:
     <cmd><soft>...</soft>from '/path/to/service'</cmd>
-    <cmd><soft>...</soft>from 'git@github.com:acceleratedscience/generation_inference_service.git'</cmd>
+    <cmd><soft>...</soft>from 'git@github.com:acceleratedscience/openad-service-gen.git'</cmd>
     <cmd><soft>...</soft>from remote '0.0.0.0:8080'</cmd> <soft>// Note: 'remote' is required for cataloging a remote service</soft>
 
 <cmd><service_name></cmd>
@@ -967,7 +1042,7 @@ Authorization:
 {ATTENTION_PROXY_URL}
 
 - Catalog a model using SkyPilot deployment
-<cmd>catalog model service from 'git@github.com:acceleratedscience/generation_inference_service.git' as gen</cmd>
+<cmd>catalog model service from 'git@github.com:acceleratedscience/openad-service-gen.git' as gen</cmd>
 
 - Catalog a model using a authentication group
 <cmd>catalog model service from remote 'https://open.accelerate.science/proxy' as molf USING (inference-service=molformer auth_group=default)</cmd>

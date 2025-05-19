@@ -5,15 +5,16 @@ import time
 from typing import Any, Dict
 
 import requests
+from requests.exceptions import JSONDecodeError
 from openad.helpers.output import output_error, output_warning
-from openad.openad_model_plugin.auth_services import get_service_api_key
+from openad.openad_model_plugin.auth_services import get_service_api_key, update_lookup_table
 from openad.openad_model_plugin.proxy.helpers import jwt_decode
 from openad.openad_model_plugin.utils import LruCache, get_logger
+from openad.helpers.spinner import spinner
 from servicing import Dispatcher, UserProvidedConfig
 from typing_extensions import Self
 import urllib3
 
-#
 urllib3.disable_warnings()
 
 
@@ -271,14 +272,13 @@ class ModelService(Dispatcher):
             bearer_token = self.get_api_key(name)
             ret_status["jwt_info"] = jwt_decode(bearer_token)
             # check if remote service is up
-            response = self.service_request(name, path="/health", timeout=2, verify=False)
+            response = self.service_request(name, path="/health", timeout=1, verify=False)
             ret_status["up"] = response.status_code == 200
             if response.status_code == 200:
-                # check if service is in cache
-                if REMOTE_SERVICES_CACHE.get(name):
+                if response.text == "UP":
                     ret_status["message"] = "Connected"
                 else:
-                    ret_status["message"] = "Not Ready"
+                    ret_status["message"] = "Not ready"
             if response.status_code == 401:
                 ret_status["message"] = "Unauthorized"
             if response.status_code == 404:
@@ -294,13 +294,17 @@ class ModelService(Dispatcher):
         elif not ret_status.get("is_remote") and ret_status.get("url"):
             # TODO: this should be fixed in servicing library
             # recheck if service is actually down
-            ret_status["up"] = self.service_request(name, "/health", timeout=2).status_code == 200
+            ret_status["up"] = self.service_request(name, "/health", timeout=1).status_code == 200
             # ret_status["up"] = self.check_service_up(ret_status["url"])
         logger.debug(f"service info | {name=} {ret_status=}")
+
+        # Refresh expired auth tokens when possible
+        self.maybe_refresh_auth(name, ret_status)
+
         return ret_status
 
     def service_request(
-        self, name: str, path="/service", method="GET", timeout=10, verify=True, _json=None
+        self, name: str, path="/service", method="GET", timeout=2, verify=True, _json=None
     ) -> requests.Response:
         """make a request to the service backend"""
         # if verify is False:
@@ -342,20 +346,107 @@ class ModelService(Dispatcher):
         if service_data.get("is_remote"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
-            # check if response is a list of service definitions
-            if response.status_code == 200 and isinstance(response.json(), list):
-                service_definitions = response.json()
+            if response.status_code == 200:
+                try:
+                    service_definitions = response.json()
+                except JSONDecodeError:
+                    pass
         elif service_data.get("up"):
             logger.debug(f"fetching remote service defs | {name=}'")
             response = self.service_request(name, verify=False)
             # check if response is a list of service definitions
-            if response.status_code == 200 and isinstance(response.json(), list):
-                service_definitions = response.json()
+            if response.status_code == 200:
+                try:
+                    service_definitions = response.json()
+                except JSONDecodeError:
+                    pass
         if service_definitions:
             # insert into chache when not None
             logger.debug(f"inserting '{name}' into cache")
             REMOTE_SERVICES_CACHE.insert(name, service_definitions)
         return service_definitions
+
+    # @auth
+    def refresh_remote_service(self, service_name, endpoint, auth_token) -> bool:
+        """Refresh remote service with new auth token"""
+        output_warning(f"Refreshing remote service: {service_name}")
+        logger.debug(f"refreshing remote service | {service_name=}")
+        if service_name not in self.list():
+            output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
+            return False
+        config = json.dumps(
+            {
+                "remote_service": True,
+                "remote_endpoint": endpoint,
+                "remote_status": False,
+                "params": {
+                    "Authorization": auth_token,
+                },
+            }
+        )
+        self.remove_service(service_name)
+        self.add_service(service_name, UserProvidedConfig(data=config))
+        return True
+
+    # @auth
+    def maybe_refresh_auth(self, service_name, service_data):
+        """
+        Refresh auth token for google cloud.
+
+        Checks if a service is expired, then fetches a new token for
+        the auth group or the service itself, depending how it's configured.
+
+        Logic could be reused for OpenBridge.
+        """
+
+        logger.debug(f"maybe refresh auth | {service_name=}")
+
+        endpoint = service_data.get("url")
+        is_gcloud = endpoint.endswith(".run.app")
+        is_openbridge = endpoint.endswith(".accelerate.science/proxy") or endpoint.endswith(".accelerator.cafe/proxy")
+        jwt_info = service_data.get("jwt_info")
+        is_expired = (int(jwt_info.get("exp", 0)) - time.time()) <= 0 if jwt_info else False
+
+        if is_expired:
+            spinner.start(f"Refreshing expired auth for service: {service_name}")
+            if is_openbridge:
+                # TODO: implement openbridge refresh
+                pass
+            if is_gcloud:
+                logger.debug(f"Expired google cloud token for {service_name}")
+
+                import google.auth
+                from google.auth.transport.requests import Request
+
+                # Fetch gcloud credentials
+                # These are set by running `gcloud auth application-default login`
+                credentials, project = google.auth.default()
+                auth_req = Request()
+
+                # Refresh if expired
+                if not credentials.valid:
+                    credentials.refresh(auth_req)
+
+                # Get the auth token
+                auth_token = getattr(credentials, "id_token", None)
+
+                # # This is supposed to be the "correct" way to
+                # # fetch the ID token, but can't find the creds file.
+                # # from google.oauth2 import id_token
+                # auth_token = id_token.fetch_id_token(auth_req, url)
+                # print(auth_token)
+
+                # Check if the service is configured with an auth group or token
+                service_meta_data = self.load_extra_data(service_name)
+                params = service_meta_data.get("params", {})
+                params_lower = {k.lower(): v for k, v in params.items()}
+
+                if "auth_group" in params_lower:
+                    auth_group_name = params_lower["auth_group"]
+                    spinner.start(f"Refreshing expired auth for auth group: {auth_group_name}")
+                    update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
+                elif "authorization" in params_lower:
+                    self.refresh_remote_service(service_name, endpoint, auth_token)
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE
