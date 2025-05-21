@@ -27,6 +27,7 @@ from openad.openad_model_plugin.auth_services import (
 from openad.openad_model_plugin.config import DISPATCHER_SERVICE_PATH, SERVICE_MODEL_PATH, SERVICES_PATH
 from openad.openad_model_plugin.services import ModelService, UserProvidedConfig
 from openad.openad_model_plugin.utils import bcolors, get_logger
+from openad.openad_model_plugin.demo.launch_demo import launch_model_service_demo
 from pandas import DataFrame
 from tabulate import tabulate
 from tomlkit import parse
@@ -724,6 +725,13 @@ def get_model_service_result(cmd_pointer, parser):
     return result
 
 
+def model_service_demo(cmd_pointer, parser):
+    """
+    Spin up the model service demo in a subprocess.
+    """
+    return launch_model_service_demo()
+
+
 def service_catalog_grammar(statements: list, help: list):
     """This function creates the required grammar for managing cataloging services and model up or down"""
     logger.debug("catalog model service grammer")
@@ -1172,3 +1180,7 @@ Examples:
 """,
         )
     )
+
+    # ---
+    # Model service demo
+    statements.append(py.Forward(model + service + py.CaselessKeyword("demo"))("model_service_demo"))
