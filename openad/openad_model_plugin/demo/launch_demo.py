@@ -54,7 +54,7 @@ def launch_model_service_demo():
             "To test the service:",
             "<cmd>demo_service ?</cmd>",
             "<cmd>demo_service get molecule property num_atoms for CC</cmd>",
-            "<cmd>service_demo get molecule property num_atoms for NCCc1c[nH]c2ccc(O)cc12</cmd>",
+            "<cmd>demo_service get molecule property num_atoms for NCCc1c[nH]c2ccc(O)cc12</cmd>",
         ]
         return output_text("\n".join(msg), edge=True, pad=1)
     except Exception as e:  # pylint: disable=broad-except
