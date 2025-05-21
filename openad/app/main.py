@@ -17,7 +17,7 @@ import atexit
 from openad.app.main_lib import lang_parse, initialise, set_context, unset_context
 from openad.toolkit.toolkit_main import load_toolkit
 from openad.app import login_manager
-from openad.gui.gui_launcher import gui_init, GUI_SERVER, gui_shutdown
+from openad.gui.gui_launcher import gui_init, gui_shutdown
 from openad.gui.ws_server import ws_server  # Web socket server for gui - experimental
 from openad.helpers.output import output_table
 from openad.helpers.plugins import display_plugin_overview
@@ -38,6 +38,7 @@ from openad.core.lang_workspaces import set_workspace
 
 
 from openad.llm_assist.model_reference import SUPPORTED_TELL_ME_MODELS, SUPPORTED_TELL_ME_MODELS_SETTINGS
+from openad.openad_model_plugin.demo.launch_demo import terminate_model_service_demo
 
 # Helpers
 from openad.helpers.general import singular, confirm_prompt, get_case_insensitive_key
@@ -1207,9 +1208,17 @@ def cmd_line():
 
 
 def cleanup():
+    """
+    Cleanup function called on exit.
+    """
+    # Shut down GUI if it's running
     gui_shutdown(ignore_warning=True)
+
+    # Shut down model service demo if it's running
+    terminate_model_service_demo()
 
 
 atexit.register(cleanup)
+
 if __name__ == "__main__":
     cmd_line()

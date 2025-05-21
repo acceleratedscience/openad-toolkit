@@ -68,6 +68,12 @@ class DemoPredictor(SimplePredictor):
 # Register the class in global scope
 DemoPredictor.register(no_model=True)
 
-# if __name__ == "__main__":
-# Start the server
-start_server(port=8034)
+if __name__ == "__main__":
+    # Customization for the demo subprocess
+    # --> Find next available port if 8034 is taken
+    from openad.helpers.general import next_avail_port
+
+    host, port = next_avail_port(8034)
+
+    # Start the server
+    start_server(port=8034)

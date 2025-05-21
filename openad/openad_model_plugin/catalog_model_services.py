@@ -27,6 +27,7 @@ from openad.openad_model_plugin.auth_services import (
 from openad.openad_model_plugin.config import DISPATCHER_SERVICE_PATH, SERVICE_MODEL_PATH, SERVICES_PATH
 from openad.openad_model_plugin.services import ModelService, UserProvidedConfig
 from openad.openad_model_plugin.utils import bcolors, get_logger
+from openad.openad_model_plugin.demo.launch_demo import launch_model_service_demo
 from pandas import DataFrame
 from tabulate import tabulate
 from tomlkit import parse
@@ -725,37 +726,10 @@ def get_model_service_result(cmd_pointer, parser):
 
 
 def model_service_demo(cmd_pointer, parser):
-    from threading import Thread
-    import logging
-
-    def start_server_quiet(host, port, log_level):
-        # Disable all logging completely
-        logging.disable(logging.CRITICAL)
-
-        # Import service utils after loggers are quieted
-        from openad_service_utils import start_server
-        from openad.openad_model_plugin.demo.model_service_demo import DemoPredictor
-
-        # Register service
-        DemoPredictor.register(no_model=True)
-
-        # Start the server
-        start_server(host, port, log_level)
-
-    demo_thread = Thread(
-        target=start_server_quiet,
-        args=("0.0.0.0", 8034, logging.CRITICAL),
-        daemon=True,  # Exit thread when openad exits
-    )
-    demo_thread.start()
-
-    # Message
-    msg = [
-        "<success>Demo model service started on port 8034</success>\n",
-        "Next up, run:",
-        "<cmd>catalog model service from remote 'http://localhost:8034' as demo_service</cmd>",
-    ]
-    return output_text("\n".join(msg), edge=True, pad=1)
+    """
+    Spin up the model service demo in a subprocess.
+    """
+    return launch_model_service_demo()
 
 
 def service_catalog_grammar(statements: list, help: list):
