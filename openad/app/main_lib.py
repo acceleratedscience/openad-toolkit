@@ -29,6 +29,7 @@ from openad.openad_model_plugin.catalog_model_services import (
     detach_service_auth_group,
     list_auth_services,
     get_model_service_result,
+    model_service_demo,
 )
 
 # molecules
@@ -214,6 +215,8 @@ def lang_parse(cmd_pointer, parser):
         return detach_service_auth_group(cmd_pointer, parser)
     elif parser.getName() == "list_auth_services":
         return list_auth_services(cmd_pointer, parser)
+    elif parser.getName() == "model_service_demo":
+        return model_service_demo(cmd_pointer, parser)
 
     # @later -- move out all logic from here.
     # Language Model How To

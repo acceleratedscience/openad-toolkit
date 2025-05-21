@@ -724,6 +724,40 @@ def get_model_service_result(cmd_pointer, parser):
     return result
 
 
+def model_service_demo(cmd_pointer, parser):
+    from threading import Thread
+    import logging
+
+    def start_server_quiet(host, port, log_level):
+        # Disable all logging completely
+        logging.disable(logging.CRITICAL)
+
+        # Import service utils after loggers are quieted
+        from openad_service_utils import start_server
+        from openad.openad_model_plugin.demo.model_service_demo import DemoPredictor
+
+        # Register service
+        DemoPredictor.register(no_model=True)
+
+        # Start the server
+        start_server(host, port, log_level)
+
+    demo_thread = Thread(
+        target=start_server_quiet,
+        args=("0.0.0.0", 8034, logging.CRITICAL),
+        daemon=True,  # Exit thread when openad exits
+    )
+    demo_thread.start()
+
+    # Message
+    msg = [
+        "<success>Demo model service started on port 8034</success>\n",
+        "Next up, run:",
+        "<cmd>catalog model service from remote 'http://localhost:8034' as demo_service</cmd>",
+    ]
+    return output_text("\n".join(msg), edge=True, pad=1)
+
+
 def service_catalog_grammar(statements: list, help: list):
     """This function creates the required grammar for managing cataloging services and model up or down"""
     logger.debug("catalog model service grammer")
@@ -1172,3 +1206,7 @@ Examples:
 """,
         )
     )
+
+    # ---
+    # Model service demo
+    statements.append(py.Forward(model + service + py.CaselessKeyword("demo"))("model_service_demo"))
