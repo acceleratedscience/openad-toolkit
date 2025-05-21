@@ -2,7 +2,7 @@
 Model service demo used for tutorials and examples.
 
 To launch:
-    openad model service demo
+    model service demo
 
 Model repo:
     https://github.com/acceleratedscience/openad-service-demo

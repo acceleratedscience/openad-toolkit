@@ -1,3 +1,8 @@
+"""
+Launch and shutdown of the model service demo.
+See model_service_demo.py for more info and the actual demo service.
+"""
+
 import os
 import sys
 import threading
