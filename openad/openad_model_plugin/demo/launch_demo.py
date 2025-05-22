@@ -7,6 +7,7 @@ import os
 import sys
 import threading
 import subprocess
+from openad.helpers.general import confirm_prompt
 from openad.helpers.output import output_error, output_text, output_success, output_warning
 
 DEMO_PROCESS = None
@@ -36,9 +37,8 @@ def launch_model_service_demo(restart=False, debug=False):
     if not utils_installed:
         return
 
-    python_executable = sys.executable
     service_path = os.path.join(os.path.dirname(__file__), "model_service_demo.py")
-    command = [python_executable, service_path]
+    command = [sys.executable, service_path]
 
     try:
         DEMO_PROCESS = subprocess.Popen(
@@ -72,7 +72,7 @@ def _verify_utils_installed():
     Make sure openad_service_utils are installed.
     """
     try:
-        import openad_service_utils
+        from openad_service_utils import start_server
 
         return True
     except ImportError:
@@ -120,8 +120,7 @@ def terminate_model_service_demo():
     """
     global DEMO_PROCESS
     if DEMO_PROCESS is None:
-        output_text("<soft>No demo service is running</soft>", return_val=False)
-        return False
+        return True
 
     if DEMO_PROCESS:
         try:
