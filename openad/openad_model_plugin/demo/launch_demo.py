@@ -7,18 +7,33 @@ import os
 import sys
 import threading
 import subprocess
-from openad.helpers.output import output_error, output_text, output_success
+from openad.helpers.output import output_error, output_text, output_success, output_warning
 
 DEMO_PROCESS = None
 
 
-def launch_model_service_demo():
+def launch_model_service_demo(restart=False, log_subprocess=False):
     """
     Spin up the model service demo in a subprocess.
     """
 
     global DEMO_PROCESS
-    log_subprocess = False  # Set to true for debugging subprocess
+
+    # Process already running
+    if DEMO_PROCESS:
+        # Try restart if requested
+        if restart:
+            success = terminate_model_service_demo()
+            if not success:
+                return
+
+        # Success message
+        return _print_success(new=False)
+
+    # Make sure openad_service_utils are installed
+    utils_installed = _verify_utils_installed()
+    if not utils_installed:
+        return
 
     python_executable = sys.executable
     service_path = os.path.join(os.path.dirname(__file__), "model_service_demo.py")
@@ -46,19 +61,53 @@ def launch_model_service_demo():
             log_thread.start()
 
         # Success message
-        msg = [
-            "<success>Demo model service started at <yellow>http://localhost:8034</yellow></success>\n",
-            "Next up, run:",
-            "<cmd>catalog model service from remote 'http://localhost:8034' as demo_service</cmd>",
-            "",
-            "To test the service:",
-            "<cmd>demo_service ?</cmd>",
-            "<cmd>demo_service get molecule property num_atoms for CC</cmd>",
-            "<cmd>demo_service get molecule property num_atoms for NCCc1c[nH]c2ccc(O)cc12</cmd>",
-        ]
-        return output_text("\n".join(msg), edge=True, pad=1)
+        return _print_success()
     except Exception as e:  # pylint: disable=broad-except
         return output_error(f"Failed to start model service demo: {e}")
+
+
+def _verify_utils_installed():
+    """
+    Make sure openad_service_utils are installed.
+    """
+    try:
+        import openad_service_utils
+
+        return True
+    except ImportError:
+        msg = (
+            "Install openad_service_utils to use the demo model service:\n"
+            "<cmd>pip install git+https://github.com/acceleratedscience/openad_service_utils.git@0.3.1</cmd>"
+        )
+        output_warning(msg, return_val=False)
+        return False
+
+
+def _print_success(new=True):
+    """
+    Success message & instructions.
+    """
+    main_msg = (
+        "<success>Demo model service started at <yellow>http://localhost:8034</yellow></success>"
+        if new
+        else (
+            "<yellow>Demo model service already running at <reset>http://localhost:8034</reset></yellow>\n"
+            "<soft>To restart the demo service, run <cmd>model service demo restart</cmd></soft>"
+        )
+    )
+
+    msg = [
+        main_msg,
+        "",
+        "Next up, run:",
+        "<cmd>catalog model service from remote 'http://localhost:8034' as demo_service</cmd>",
+        "",
+        "To test the service:",
+        "<cmd>demo_service ?</cmd>",
+        "<cmd>demo_service get molecule property num_atoms for CC</cmd>",
+        "<cmd>demo_service get molecule property num_atoms for NCCc1c[nH]c2ccc(O)cc12</cmd>",
+    ]
+    return output_text("\n".join(msg), edge=True, pad=1)
 
 
 def terminate_model_service_demo():
@@ -69,13 +118,18 @@ def terminate_model_service_demo():
     if DEMO_PROCESS:
         try:
             DEMO_PROCESS.terminate()
-            DEMO_PROCESS.wait()  # Wait for the process to terminate
-            output_success("Demo model service terminated")
+            DEMO_PROCESS.wait()
+            output_success("Demo model service terminated", return_val=False)
+            DEMO_PROCESS = None
+            return True
         except Exception as err1:  # pylint: disable=broad-except
             try:
-                DEMO_PROCESS.kill()  # Force kill if terminate fails
-                output_success("Demo model service killed")
+                # Force kill if terminate fails
+                DEMO_PROCESS.kill()
+                DEMO_PROCESS.wait()
+                output_success("Demo model service killed", return_val=False)
+                DEMO_PROCESS = None
+                return True
             except Exception as err2:  # pylint: disable=broad-except
-                output_error(["Failed to terminate model service demo", err1, err2])
-        finally:
-            DEMO_PROCESS = None
+                output_error(["Failed to terminate model service demo", err1, err2], return_val=False)
+                return False
