@@ -111,7 +111,7 @@ class RUNCMD(Cmd):
     toolkit_current = None
     prompt = None
     histfile = os.path.expanduser(_meta_dir + "/.cmd_history")
-    histfile_size = 1000  # prompt history file per workspace limit
+    histfile_size = 50  # prompt history file per workspace limit
     current_help = openad_help.OpenadHelp()  # handle to the current help object
     current_help.help_orig = grammar_help.copy()  # copy of the base line command help functions (excludes Toolkits)
     current_help.reset_help()  # initialises help
@@ -747,6 +747,11 @@ class RUNCMD(Cmd):
 
     def default(self, line):
         """Default method call on hitting of the return Key, it tries to parse and execute the statements."""
+
+        # Prevent the history from growing too large
+        if readline.get_current_history_length() > self.histfile_size:
+            readline.remove_history_item(0)
+
         inp = line  # assigning line to input value
 
         x = None
