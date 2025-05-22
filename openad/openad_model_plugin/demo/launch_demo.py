@@ -132,7 +132,6 @@ def terminate_model_service_demo():
             return True
         except Exception as err1:  # pylint: disable=broad-except
             try:
-
                 # Force kill if terminate fails
                 DEMO_PROCESS.kill()
                 DEMO_PROCESS.wait(timeout=5)
