@@ -732,7 +732,7 @@ def model_service_demo(cmd_pointer, parser):
     restart = "restart" in parser.as_dict()
     debug = "debug" in parser.as_dict()
 
-    return launch_model_service_demo(restart=restart, log_subprocess=debug)
+    return launch_model_service_demo(restart=restart, debug=debug)
 
 
 def service_catalog_grammar(statements: list, help: list):
@@ -1187,9 +1187,12 @@ Examples:
     # ---
     # Model service demo
     statements.append(
-        py.Forward(model + service + py.CaselessKeyword("demo") + py.Optional(py.CaselessKeyword("restart")))(
-            "model_service_demo"
-        )
+        py.Forward(
+            model
+            + service
+            + py.CaselessKeyword("demo")
+            + py.Optional(py.CaselessKeyword("restart")("restart") | py.CaselessKeyword("debug")("debug"))
+        )("model_service_demo")
     )
     help.append(
         help_dict_create(

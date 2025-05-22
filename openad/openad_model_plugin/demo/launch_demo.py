@@ -12,7 +12,7 @@ from openad.helpers.output import output_error, output_text, output_success, out
 DEMO_PROCESS = None
 
 
-def launch_model_service_demo(restart=False, log_subprocess=False):
+def launch_model_service_demo(restart=False, debug=False):
     """
     Spin up the model service demo in a subprocess.
     """
@@ -21,14 +21,15 @@ def launch_model_service_demo(restart=False, log_subprocess=False):
 
     # Process already running
     if DEMO_PROCESS:
-        # Try restart if requested
-        if restart:
+        # Try restart
+        if restart or debug:
             success = terminate_model_service_demo()
             if not success:
                 return
 
-        # Success message
-        return _print_success(new=False)
+        # Remind instructions
+        else:
+            return _print_success(new=False)
 
     # Make sure openad_service_utils are installed
     utils_installed = _verify_utils_installed()
@@ -48,8 +49,8 @@ def launch_model_service_demo(restart=False, log_subprocess=False):
             bufsize=1,  # Line-buffered output
         )
 
-        # Log the output of the subprocess
-        if log_subprocess:
+        # Log the subprocess' stdout
+        if debug:
 
             def log_output():
                 for line in iter(DEMO_PROCESS.stdout.readline, ""):
@@ -88,11 +89,14 @@ def _print_success(new=True):
     Success message & instructions.
     """
     main_msg = (
-        "<success>Demo model service started at <yellow>http://localhost:8034</yellow></success>"
+        (
+            "<success>Demo model service started at <yellow>http://localhost:8034</yellow></success>\n"
+            f"<soft>PID: {DEMO_PROCESS.pid}</soft>"
+        )
         if new
         else (
             "<yellow>Demo model service already running at <reset>http://localhost:8034</reset></yellow>\n"
-            "<soft>To restart the demo service, run <cmd>model service demo restart</cmd></soft>"
+            f"<soft>PID: {DEMO_PROCESS.pid} / To restart the demo service, run <cmd>model service demo restart</cmd></soft>"
         )
     )
 
@@ -115,21 +119,29 @@ def terminate_model_service_demo():
     Terminate the model service demo.
     """
     global DEMO_PROCESS
+    if DEMO_PROCESS is None:
+        output_text("<soft>No demo service is running</soft>", return_val=False)
+        return False
+
     if DEMO_PROCESS:
         try:
             DEMO_PROCESS.terminate()
-            DEMO_PROCESS.wait()
-            output_success("Demo model service terminated", return_val=False)
+            DEMO_PROCESS.wait(timeout=1)
+            output_success(f"Demo model service terminated - PID: {DEMO_PROCESS.pid}", return_val=False)
             DEMO_PROCESS = None
             return True
         except Exception as err1:  # pylint: disable=broad-except
             try:
+
                 # Force kill if terminate fails
                 DEMO_PROCESS.kill()
-                DEMO_PROCESS.wait()
-                output_success("Demo model service killed", return_val=False)
+                DEMO_PROCESS.wait(timeout=5)
+                output_success(f"Demo model service killed - PID: {DEMO_PROCESS.pid}", return_val=False)
                 DEMO_PROCESS = None
                 return True
             except Exception as err2:  # pylint: disable=broad-except
-                output_error(["Failed to terminate model service demo", err1, err2], return_val=False)
+                output_error(
+                    [f"Failed to terminate model service demo with PID: {DEMO_PROCESS.pid}", err1, err2],
+                    return_val=False,
+                )
                 return False
