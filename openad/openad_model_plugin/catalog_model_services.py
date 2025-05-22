@@ -729,7 +729,10 @@ def model_service_demo(cmd_pointer, parser):
     """
     Spin up the model service demo in a subprocess.
     """
-    return launch_model_service_demo()
+    restart = "restart" in parser.as_dict()
+    debug = "debug" in parser.as_dict()
+
+    return launch_model_service_demo(restart=restart, debug=debug)
 
 
 def service_catalog_grammar(statements: list, help: list):
@@ -1183,4 +1186,38 @@ Examples:
 
     # ---
     # Model service demo
-    statements.append(py.Forward(model + service + py.CaselessKeyword("demo"))("model_service_demo"))
+    statements.append(
+        py.Forward(
+            model
+            + service
+            + py.CaselessKeyword("demo")
+            + py.Optional(py.CaselessKeyword("restart")("restart") | py.CaselessKeyword("debug")("debug"))
+        )("model_service_demo")
+    )
+    help.append(
+        help_dict_create(
+            name="model service demo",
+            category="Model",
+            command="model service demo",
+            description="""Launch a demo service to learn about the OpenAD model service.
+
+Before you can run the demo service, you'll need to install the service tools:
+<cmd>pip install git+https://github.com/acceleratedscience/openad_service_utils.git@0.3.1</cmd>
+
+Further instructions are provided once the service is launched.
+It will shut down automatically when OpenAD is terminated.
+
+Optional clauses:
+<cmd>restart</cmd>
+    Reboot the service
+<cmd>debug</cmd>
+    Display the logs from the subprocess
+
+Examples:
+- <cmd>model service demo</cmd>
+- <cmd>model service demo restart</cmd>
+- <cmd>model service demo debug</cmd>
+    
+""",
+        )
+    )
