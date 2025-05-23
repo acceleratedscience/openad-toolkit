@@ -40,6 +40,7 @@ import openad.toolkit.toolkit_main as toolkit_main  # Not using "from" to avoid 
 from openad.smols.smol_grammar import smol_grammar_add
 from openad.mmols.mmol_grammar import mmol_grammar_add
 from openad.plugins.style_parser import tags_to_markdown
+from openad.helpers.spinner import spinner
 
 
 # Helpers
@@ -1012,6 +1013,8 @@ def create_statements(cmd_pointer):
     #    return
     # global statements_zom
 
+    spinner.start("Updating grammar")
+
     cmd_pointer.current_statements = orig_statements.copy()
     cmd_pointer.current_statement_defs = Forward()
     service_statements = []
@@ -1064,6 +1067,7 @@ def create_statements(cmd_pointer):
         cmd_pointer.current_statement_defs |= stmt
 
     # statements_zom = ZeroOrMore(statements_def)
+    spinner.stop()
 
 
 def or_builder(options: list) -> str:

@@ -30,7 +30,7 @@ class Spinner(Halo):
     def __init__(self):
 
         # Fancy spinner, but requires more CPU, blocking the main thread
-        # To do: see is separating thread for spinner resolves this
+        # To do: see if separating thread for spinner resolves this
         wave_spinner = {
             "interval": 700,
             "frames": [
