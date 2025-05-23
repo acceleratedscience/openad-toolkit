@@ -27,6 +27,7 @@ from openad.openad_model_plugin.auth_services import (
 from openad.openad_model_plugin.config import DISPATCHER_SERVICE_PATH, SERVICE_MODEL_PATH, SERVICES_PATH
 from openad.openad_model_plugin.services import ModelService, UserProvidedConfig
 from openad.openad_model_plugin.utils import bcolors, get_logger
+from openad.openad_model_plugin.demo.launch_demo import launch_model_service_demo
 from pandas import DataFrame
 from tabulate import tabulate
 from tomlkit import parse
@@ -725,37 +726,13 @@ def get_model_service_result(cmd_pointer, parser):
 
 
 def model_service_demo(cmd_pointer, parser):
-    from threading import Thread
-    import logging
+    """
+    Spin up the model service demo in a subprocess.
+    """
+    restart = "restart" in parser.as_dict()
+    debug = "debug" in parser.as_dict()
 
-    def start_server_quiet(host, port, log_level):
-        # Disable all logging completely
-        logging.disable(logging.CRITICAL)
-
-        # Import service utils after loggers are quieted
-        from openad_service_utils import start_server
-        from openad.openad_model_plugin.demo.model_service_demo import DemoPredictor
-
-        # Register service
-        DemoPredictor.register(no_model=True)
-
-        # Start the server
-        start_server(host, port, log_level)
-
-    demo_thread = Thread(
-        target=start_server_quiet,
-        args=("0.0.0.0", 8034, logging.CRITICAL),
-        daemon=True,  # Exit thread when openad exits
-    )
-    demo_thread.start()
-
-    # Message
-    msg = [
-        "<success>Demo model service started on port 8034</success>\n",
-        "Next up, run:",
-        "<cmd>catalog model service from remote 'http://localhost:8034' as demo_service</cmd>",
-    ]
-    return output_text("\n".join(msg), edge=True, pad=1)
+    return launch_model_service_demo(restart=restart, debug=debug)
 
 
 def service_catalog_grammar(statements: list, help: list):
@@ -1209,4 +1186,37 @@ Examples:
 
     # ---
     # Model service demo
-    statements.append(py.Forward(model + service + py.CaselessKeyword("demo"))("model_service_demo"))
+    statements.append(
+        py.Forward(
+            model
+            + service
+            + py.CaselessKeyword("demo")
+            + py.Optional(py.CaselessKeyword("restart")("restart") | py.CaselessKeyword("debug")("debug"))
+        )("model_service_demo")
+    )
+    help.append(
+        help_dict_create(
+            name="model service demo",
+            category="Model",
+            command="model service demo",
+            description="""Launch a demo service to learn about the OpenAD model service.
+
+Before you can run the demo service, you'll need to install the service tools:
+<cmd>pip install git+https://github.com/acceleratedscience/openad_service_utils.git@0.3.1</cmd>
+
+Further instructions are provided once the service is launched.
+It will shut down automatically when OpenAD is terminated.
+
+Optional clauses:
+<cmd>restart</cmd>
+    Reboot the service
+<cmd>debug</cmd>
+    Display the logs from the subprocess
+
+Examples:
+- <cmd>model service demo</cmd>
+- <cmd>model service demo restart</cmd>
+- <cmd>model service demo debug</cmd>
+""",
+        )
+    )

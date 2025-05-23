@@ -2,7 +2,7 @@
 Model service demo used for tutorials and examples.
 
 To launch:
-    openad model service demo
+    model service demo
 
 Model repo:
     https://github.com/acceleratedscience/openad-service-demo
@@ -68,6 +68,6 @@ class DemoPredictor(SimplePredictor):
 # Register the class in global scope
 DemoPredictor.register(no_model=True)
 
-# if __name__ == "__main__":
-# Start the server
-start_server(port=8034)
+if __name__ == "__main__":
+    # Start the server
+    start_server(port=8034)
