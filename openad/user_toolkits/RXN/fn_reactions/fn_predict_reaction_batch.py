@@ -12,7 +12,7 @@ from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.helpers.output import output_text, output_error, output_warning, output_table
 from openad.helpers.output_msgs import msg
 from openad.helpers.general import load_tk_module
-from openad.helpers.spinner import Spinner
+from openad.helpers.spinner import spinner
 
 
 def get_reaction_from_smiles(reaction_smiles: str) -> Chem.rdChemReactions.ChemicalReaction:
@@ -74,7 +74,6 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
         except Exception:  # pylint: disable=broad-exception-caught
             output_error("Could not load valid list from file column 'reactions' ", return_val=False)
             return True
-    newspin = Spinner(GLOBAL_SETTINGS["VERBOSE"])
 
     ### setting up default values... note to put into json metdata file in future
 
@@ -138,7 +137,7 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
             display(get_reaction_from_smiles(reaction_prediction["smiles"]))
 
     if len(new_from_list) > 0:
-        newspin.start("Starting Prediction")
+        spinner.start("Starting Prediction")
         from_list = new_from_list
         rxn4chemistry_wrapper = cmd_pointer.login_settings["client"][
             cmd_pointer.login_settings["toolkits"].index("RXN")
@@ -148,7 +147,7 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
         while status == False:
             try:
                 if retries == 0:
-                    newspin.info("Processing Prediction")
+                    spinner.info("Processing Prediction")
 
                 predict_reaction_batch_response = rxn4chemistry_wrapper.predict_reaction_batch(from_list)
                 sleep(2)
@@ -156,8 +155,8 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retries = retries + 1
                 if retries > 4:
-                    newspin.fail("Unable to Process")
-                    newspin.stop()
+                    spinner.fail("Unable to Process")
+                    spinner.stop()
                     raise Exception("Server unresponsive" + str(e)) from e  # pylint: disable=broad-exception-raised
 
         retries = 0
@@ -165,7 +164,7 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
         reaction_predictions = {}
         while "predictions" not in reaction_predictions:
             try:
-                newspin.text = "Processing Prediction"
+                spinner.text = "Processing Prediction"
 
                 reaction_predictions = rxn4chemistry_wrapper.get_predict_reaction_batch_results(
                     predict_reaction_batch_response["task_id"]
@@ -175,11 +174,11 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retries = retries + 1
                 if retries > 10:
-                    newspin.fail("Unable to Process")
-                    newspin.stop()
+                    spinner.fail("Unable to Process")
+                    spinner.stop()
                     raise BaseException("Server unresponsive" + str(e)) from e  # pylint: disable=broad-exception-raised
-        newspin.succeed("Finished Processing")
-        newspin.stop()
+        spinner.succeed("Finished Processing")
+        spinner.stop()
         if GLOBAL_SETTINGS["display"] == "notebook":
             from IPython.display import display  # pylint: disable=import-outside-toplevel
         for reaction_prediction in reaction_predictions["predictions"]:
@@ -215,7 +214,7 @@ def predict_reaction_batch(inputs: dict, cmd_pointer):
                 display(get_reaction_from_smiles(reaction_prediction["smiles"]))
 
     output_text(" ", return_val=False)
-    if not GLOBAL_SETTINGS["VERBOSE"]:
+    if GLOBAL_SETTINGS["display"] == "api":
         return reaction_predictions["predictions"]
     else:
         return True

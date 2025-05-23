@@ -47,11 +47,6 @@ GLOBAL_SETTINGS = {
     # - web: not yet used
     "display": None,
     #
-    # Setting verbose to false will hide spinners
-    # and some other non-essential output
-    # Todo: this is diplocate of "display" is "notebook" (to be confirmed)
-    "VERBOSE": True,
-    #
     # The width in characters we limit the printed output to.
     "max_print_width": 150,
     #
