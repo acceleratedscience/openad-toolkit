@@ -143,6 +143,7 @@ def get_cataloged_service_defs() -> Dict[str, dict]:
                 logger.warning(f"remote service defs not found, sevice not available | {name=}")
                 service_definitions[name] = remote_definitions
 
+    spinner.stop()
     return service_definitions
 
 
@@ -1217,7 +1218,6 @@ Examples:
 - <cmd>model service demo</cmd>
 - <cmd>model service demo restart</cmd>
 - <cmd>model service demo debug</cmd>
-    
 """,
         )
     )

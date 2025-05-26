@@ -45,9 +45,8 @@ from openad.helpers.spinner import spinner
 
 # Helpers
 from openad.helpers.general import is_notebook_mode
-from openad.helpers.output import output_error, output_text
+from openad.helpers.output import output_error
 from openad.helpers.output_msgs import msg
-from openad.helpers.spinner import spinner
 from openad.openad_model_plugin.openad_model_toolkit import service_grammar_add
 
 from openad.openad_model_plugin.catalog_model_services import get_cataloged_service_defs, service_catalog_grammar
@@ -1031,8 +1030,6 @@ def create_statements(cmd_pointer):
 
         # cmd_pointer.current_statements.extend(service_statements)
 
-        spinner.stop()  # Spinner may be started from within get_cataloged_service_defs -> get_short_status -> maybe_refresh_auth
-
         cmd_pointer.current_help.help_model_services.clear()
         cmd_pointer.current_help.help_model_services.extend(temp_help)
         cmd_pointer.current_help.reset_help()
@@ -1410,7 +1407,11 @@ def output_train_statements(cmd_pointer):
     for training_file in glob.glob(
         os.path.expanduser(str(os.path.expanduser(cmd_pointer.home_dir + "/prompt_train/")) + "/*")
     ):
-        os.remove(training_file)
+        # Fail silently when runnning concurrent sessions
+        try:
+            os.remove(training_file)
+        except Exception:  # pylint: disable=broad-except
+            pass
 
     while i < len(grammar_help):
         training_statements.append(
