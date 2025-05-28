@@ -19,9 +19,7 @@ from openad.openad_model_plugin.auth_services import get_service_api_key
 from openad.openad_model_plugin.catalog_model_services import Dispatcher
 from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.smols.smol_batch_files import merge_molecule_property_data
-from openad.helpers.spinner import Spinner
-
-spinner = Spinner(GLOBAL_SETTINGS["VERBOSE"])
+from openad.helpers.spinner import spinner
 
 from pyparsing import (  # replaceWith,; Combine,; pyparsing_test,; ParseException,
     CaselessKeyword,

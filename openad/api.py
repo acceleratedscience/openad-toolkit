@@ -22,7 +22,6 @@ class OpenadAPI:
         # import openad.app.main as main_app
 
         self.main_app = self._load_main()
-        self.main_app.GLOBAL_SETTINGS["VERBOSE"] = False
         self.name = name
 
     def _load_main(self):

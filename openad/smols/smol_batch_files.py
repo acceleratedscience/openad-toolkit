@@ -19,7 +19,7 @@ from openad.smols.smol_transformers import dataframe2molset
 from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.helpers.output import output_error, output_warning, output_success, output_text
 from openad.helpers.output_msgs import msg
-from openad.helpers.spinner import Spinner
+from openad.helpers.spinner import spinner
 from openad.helpers.paths import parse_path
 from openad.plugins.style_parser import style
 
@@ -235,7 +235,6 @@ def _enrich_with_pubchem_data(cmd_pointer, molset):
 
     output_molset = []
 
-    spinner = Spinner(GLOBAL_SETTINGS["VERBOSE"])
     spinner.start("Fetching from PubChem")
 
     for i, smol in enumerate(molset):
