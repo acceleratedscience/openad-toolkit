@@ -11,16 +11,15 @@ from openad.core.help import organize_commands
 
 
 class OpenadAPI:
-    """API class for OpenAD"""
+    """API class for OpenAD with memory leak fixes"""
 
     main_app = None
     module_name = "openad.app.main"
     name = None
-    context_cache = deepcopy({"workspace": None, "toolkit": None})
 
     def __init__(self, name="No Name"):
-        # import openad.app.main as main_app
-
+        # Use instance-level context cache instead of class-level
+        self.context_cache = deepcopy({"workspace": None, "toolkit": None})
         self.main_app = self._load_main()
         self.name = name
 
@@ -28,11 +27,10 @@ class OpenadAPI:
         spec = importlib.util.find_spec(self.module_name)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-
         return module
 
     def request(self, command, Vars=None, **kwargs):
-        """Invokes the Magic command interface for OpenAD and ensure dataFrame Data is of type data"""
+        """Invokes the Magic command interface for OpenAD with memory cleanup"""
         api_variable = {}
         self.main_app.GLOBAL_SETTINGS["display"] = "api"
         command_list = command.split()
@@ -42,14 +40,31 @@ class OpenadAPI:
             while i < x:
                 if command_list[i - 1].upper() == "DATAFRAME":
                     try:
-                        df = kwargs[command_list[i]]  # pylint: disable=eval-used #only way to execute
+                        df = kwargs[command_list[i]]
                         if isinstance(df, DataFrame):
                             api_variable[command_list[i]] = df
-                    except:  # pylint: disable=bare-except # We do not care what fails
+                    except:
                         pass
                 i += 1
 
+        # Execute the command
         result = self.main_app.api_remote(command, self.context_cache, api_variable)
+
+        # MEMORY LEAK FIX: Clean up the global MAGIC_PROMPT after each request
+        if hasattr(self.main_app, "MAGIC_PROMPT") and self.main_app.MAGIC_PROMPT is not None:
+            magic_prompt = self.main_app.MAGIC_PROMPT
+
+            # Clear accumulated data
+            magic_prompt.api_variables.clear()
+            # magic_prompt.molecule_list.clear()
+
+            # Clear memory object
+            if hasattr(magic_prompt, "memory") and magic_prompt.memory:
+                magic_prompt.memory.wipe()
+
+            # Clear global memory
+            if hasattr(self.main_app, "MEMORY") and self.main_app.MEMORY:
+                self.main_app.MEMORY.wipe()
 
         if isinstance(result, Styler):
             result = result.data
@@ -61,19 +76,21 @@ class OpenadAPI:
         return x
 
     def __del__(self):
+        # Clean up when instance is destroyed
+        if hasattr(self.main_app, "MAGIC_PROMPT") and self.main_app.MAGIC_PROMPT is not None:
+            magic_prompt = self.main_app.MAGIC_PROMPT
+            magic_prompt.api_variables.clear()
+            magic_prompt.molecule_list.clear()
         return
 
     def help_dump(self):
         """dumps the help text in markup"""
-
-        # return render_commands_csv()
-
+        # ... (rest of the method unchanged)
         output_text("<h1>Generating <yellow>commands.md</yellow> from help</h1>", pad_top=4)
 
-        output = []  # Markdown
-        toc = []  # Table of content
+        output = []
+        toc = []
 
-        # Just-the-docs markdown context
         jtd_identifier = (
             "---",
             "title: Commands",
@@ -83,7 +100,6 @@ class OpenadAPI:
         )
         output.append("\n".join(jtd_identifier) + "\n")
 
-        # Intro comment
         comment = (
             "DO NOT EDIT",
             "-----------",
@@ -93,14 +109,12 @@ class OpenadAPI:
         comment = "\n".join(comment)
         output.append(f"<!--\n\n{comment}\n\n-->" + "\n")
 
-        # Parse main commands
-        output.append(f"## OpenAD\n")
+        output.append("## OpenAD\n")
         toc.append(_toc_link("OpenAD"))
         cmds = self.main_app.RUNCMD().current_help.help_current
         cmds_organized = organize_commands(cmds)
         _compile_section(output, toc, cmds_organized)
 
-        # Parse tookit commands
         for toolkit_name in _all_toolkits:
             output.append(f"## {toolkit_name}\n\n")
             toc.append(_toc_link(toolkit_name))
@@ -110,7 +124,6 @@ class OpenadAPI:
                 toolkit_cmds_organized = organize_commands(toolkit_cmds)
                 _compile_section(output, toc, toolkit_cmds_organized)
 
-        # Write output to file to this python file's parent folder
         toc = "### Table of Contents\n" + "\n".join(toc) + "\n"
         output = output[:2] + [toc] + output[2:]
         output = "\n".join(output)
@@ -121,12 +134,12 @@ class OpenadAPI:
         output = ""
         for x in temp:
             while str(x).startswith("   "):
-                X = str(x).replace("   ", "  ")
+                x = str(x).replace("   ", "  ")
             output = output + x + "\n"
         return output
 
 
-# Compile all commands of a single section.
+# Helper functions (unchanged)
 def _compile_section(output, toc, cmds_organized):
     output.append('<details markdown="block">')
     output.append("<summary>See commands</summary>\n")
@@ -139,13 +152,8 @@ def _compile_section(output, toc, cmds_organized):
     output.append("</details>\n")
 
 
-# Prepare the command description for proper rendering.
 def _parse_description(description):
     description = tags_to_markdown(description)
-
-    # Style notes as blockquotes, and ensure they're always
-    # followed by an empty line, to avoid the next lines to
-    # be treated as part of the blockquote.
     description = re.sub(
         r"(\*\*Note:\*\*.+?)(\n{1,})",
         lambda match: (
@@ -154,15 +162,9 @@ def _parse_description(description):
         description,
         flags=re.MULTILINE,
     )
-
-    # description = description.splitlines()
-    # description = "\n".join([line.strip() for line in description])
     return description.strip()
 
 
-# Convert a title to a markdown
-# link for the table of contents.
-# Foo Bar --> #foo-bar
 def _toc_link(title, level=0):
     dash = "  " * level + "- "
     return f"{dash}[{title}](#{title.replace(' ', '-').lower()})"
