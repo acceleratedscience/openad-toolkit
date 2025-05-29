@@ -528,8 +528,8 @@ class RUNCMD(Cmd):
 
     def add_history(self, inp):
         """CMD class called function: adds history file"""
-        if len(inp.strip()) < 4096:
-            readline.add_history(inp)
+        if len(str(str(inp).strip())) < 4096:
+            readline.add_history(str(str(inp).strip()))
 
     def complete(self, text, state):
         """CMD class called function:
@@ -1106,8 +1106,8 @@ def api_remote(
         # Note, may be possible add code completion here #revisit
         else:
             magic_prompt.preloop()
-            if len(inp.strip()) < 4096:
-                magic_prompt.add_history(inp.strip())
+            if len(str(inp.strip())) < 4096:
+                magic_prompt.add_history(inp)
             magic_prompt.postloop()
             readline.write_history_file(magic_prompt.histfile)
 
