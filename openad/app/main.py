@@ -519,6 +519,8 @@ class RUNCMD(Cmd):
                 # >> create new workspace foobar
                 # >> ctrl+c
                 # (Reboot)
+                print(readline.get_current_history_length())
+                readline.clear_history()
                 readline.write_history_file(self.histfile)
 
     def postloop(self):
@@ -528,10 +530,13 @@ class RUNCMD(Cmd):
             readline.write_history_file(self.histfile)
         except:
             print(readline.get_current_history_length())
+            readline.clear_history()
+            readline.write_history_file(self.histfile)
 
     def add_history(self, inp):
         """CMD class called function: adds history file"""
         inp = str(inp)
+
         if len(str(str(inp).strip())) < int(4096):
             readline.add_history(str(str(inp).strip()))
 
