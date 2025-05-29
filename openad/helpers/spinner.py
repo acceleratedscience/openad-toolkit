@@ -26,12 +26,10 @@ else:
 
 
 class Spinner(Halo):
-
     def __init__(self):
-
         # Fancy spinner, but requires more CPU, blocking the main thread
         # To do: see if separating thread for spinner resolves this
-        wave_spinner = {
+        wave_spinner = {  # noqa: F841
             "interval": 700,
             "frames": [
                 "▉▋▍▎▏▏",
