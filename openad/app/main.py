@@ -1082,14 +1082,14 @@ def api_remote(
     magic_prompt.api_variables = api_var_list
     # We now manage history. The history sometimes gets corrupted through no fault of ours.
     # If so, we just reset it.
-    try:
-        readline.clear_history()
-        readline.read_history_file(magic_prompt.histfile)
-    except Exception:  # pylint: disable=broad-exception-caught # could be a number of errors
-        readline.add_history("")
-        readline.write_history_file(magic_prompt.histfile)
-        readline.clear_history()
-        readline.read_history_file(magic_prompt.histfile)
+    # try:
+    #    readline.clear_history()
+    #    readline.read_history_file(magic_prompt.histfile)
+    # except Exception:  # pylint: disable=broad-exception-caught # could be a number of errors
+    #    readline.add_history("")
+    #    readline.write_history_file(magic_prompt.histfile)
+    #    readline.clear_history()
+    #    readline.read_history_file(magic_prompt.histfile)
     for i in arguments:
         inp = inp + a_space + i
         a_space = " "
