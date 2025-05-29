@@ -57,8 +57,10 @@ def add_history_entry(cmd_pointer, inp):
         readline.add_history(inp)
 
         # Prevent the history from growing too large
+        print(555, readline.get_current_history_length(), ">", cmd_pointer.histfile_size)
         if readline.get_current_history_length() > cmd_pointer.histfile_size:
             readline.remove_history_item(0)
+        print(666, readline.get_current_history_length(), ">", cmd_pointer.histfile_size)
 
         if DEBUG_HIST:
             output_text(f"add_history_entry #{cmd_pointer.histfile_size}: {inp}", return_val=False)

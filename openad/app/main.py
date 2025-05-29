@@ -1012,7 +1012,6 @@ def api_remote(
     """
 
     global MAGIC_PROMPT
-    # GLOBAL_SETTINGS["display"] = "notebook"
 
     initialise()
 
