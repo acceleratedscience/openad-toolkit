@@ -509,12 +509,10 @@ class RUNCMD(Cmd):
 
     def preloop(self):
         """CMD class called function: Preloop is called by cmd to get an update the history file each History File"""
-        print("preloop")
         init_history(self)
 
     def postloop(self):
         """CMD class called function: Post loop is called by cmd to get an update the history file"""
-        print("postloop")
         update_history_file(self)
 
     def complete(self, text, state):
@@ -734,10 +732,6 @@ class RUNCMD(Cmd):
 
     def default(self, line):
         """Default method call on hitting of the return Key, it tries to parse and execute the statements."""
-
-        # Prevent the history from growing too large
-        if readline.get_current_history_length() > self.histfile_size:
-            readline.remove_history_item(0)
 
         inp = line  # assigning line to input value
 
@@ -1085,7 +1079,7 @@ def api_remote(
         # Note, may be possible add code completion here #revisit
         else:
             magic_prompt.preloop()
-            add_history_entry(inp)
+            add_history_entry(magic_prompt, inp)
             magic_prompt.postloop()
 
             result = magic_prompt.default(inp)
@@ -1150,7 +1144,7 @@ def cmd_line():
                 and command_line.settings["context"] == words[2 + word_increment].upper()
             ):
                 command_line.preloop()
-                add_history_entry(str(" ".join(words[3 + word_increment :])).strip())
+                add_history_entry(command_line, str(" ".join(words[3 + word_increment :])).strip())
                 command_line.postloop()
                 result = command_line.default(str(" ".join(words[3 + word_increment :])).strip())
         else:
@@ -1158,7 +1152,7 @@ def cmd_line():
             # Note, may be possible add code completion here #revisit
 
             command_line.preloop()
-            add_history_entry(inp[+increment:].strip())
+            add_history_entry(command_line, inp[+increment:].strip())
             command_line.postloop()
             result = command_line.default(inp[+increment:].strip())
         command_line.do_exit("dummy do not remove")

@@ -2,7 +2,7 @@ import os
 import readline
 from openad.helpers.output import output_text, output_error, output_success
 
-DEBUG_HIST = True
+DEBUG_HIST = False
 
 
 def init_history(cmd_pointer):
@@ -17,14 +17,17 @@ def init_history(cmd_pointer):
             if is_startup:
                 readline.read_history_file(cmd_pointer.histfile)
                 if DEBUG_HIST:
-                    output_success(f"load_history_file: {cmd_pointer.histfile}")
+                    output_success(f"load_history_file: {cmd_pointer.histfile}", return_val=False)
         except Exception as err:  # pylint: disable=broad-exception-caught
             if DEBUG_HIST:
-                output_error(["load_history_file", err])
+                output_error(["load_history_file", err], return_val=False)
     elif DEBUG_HIST:
         output_error(
-            f"load_history_file - .cmd_history not found in {cmd_pointer.settings['workspace']}",
-            cmd_pointer.histfile,
+            [
+                f"load_history_file - .cmd_history not found in {cmd_pointer.settings['workspace']}",
+                cmd_pointer.histfile,
+            ],
+            return_val=False,
         )
 
 
@@ -42,21 +45,26 @@ def clear_memory_history(cmd_pointer):
         os.remove(cmd_pointer.histfile + "--temp")
     except Exception as err:  # pylint: disable=broad-exception-caught
         if DEBUG_HIST:
-            output_error(["refresh_history", err])
+            output_error(["refresh_history", err], return_val=False)
 
 
-def add_history_entry(inp):
+def add_history_entry(cmd_pointer, inp):
     """
     Add the current command to the in-memory history.
     This is called when a command is executed.
     """
     try:
         readline.add_history(inp)
+
+        # Prevent the history from growing too large
+        if readline.get_current_history_length() > cmd_pointer.histfile_size:
+            readline.remove_history_item(0)
+
         if DEBUG_HIST:
-            output_text(f"add_history_entry: {inp}")
+            output_text(f"add_history_entry #{cmd_pointer.histfile_size}: {inp}", return_val=False)
     except Exception as err:  # pylint: disable=broad-exception-caught
         if DEBUG_HIST:
-            output_error(["add_history_entry", err])
+            output_error(["add_history_entry", err], return_val=False)
 
 
 def update_history_file(cmd_pointer):
@@ -66,7 +74,7 @@ def update_history_file(cmd_pointer):
     try:
         readline.write_history_file(cmd_pointer.histfile)
         if DEBUG_HIST:
-            output_text(f"update_history_file: {cmd_pointer.histfile}")
+            output_text(f"update_history_file: {cmd_pointer.histfile}", return_val=False)
     except Exception as err:  # pylint: disable=broad-exception-caught
         if DEBUG_HIST:
-            output_error(["update_history_file", err])
+            output_error(["update_history_file", err], return_val=False)
