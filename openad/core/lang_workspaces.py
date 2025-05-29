@@ -37,6 +37,7 @@ def set_workspace(cmd_pointer, parser):
 
         try:  # Open history file if not corrupt
             if readline and os.path.exists(cmd_pointer.histfile):
+                readline.clear_history()
                 readline.read_history_file(cmd_pointer.histfile)
         except Exception:
             readline.write_history_file(cmd_pointer.histfile)
