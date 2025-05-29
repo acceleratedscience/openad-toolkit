@@ -524,7 +524,10 @@ class RUNCMD(Cmd):
     def postloop(self):
         """CMD class called function: Post loop is called by cmd to get an update the history file"""
         readline.set_history_length(self.histfile_size)
-        readline.write_history_file(self.histfile)
+        try:
+            readline.write_history_file(self.histfile)
+        except:
+            print(readline.get_current_history_length)
 
     def add_history(self, inp):
         """CMD class called function: adds history file"""
@@ -1110,7 +1113,8 @@ def api_remote(
             if len(str(inp.strip())) < int(4096):
                 magic_prompt.add_history(inp)
             magic_prompt.postloop()
-            readline.write_history_file(magic_prompt.histfile)
+            # Not required as post loop writes history file
+            # readline.write_history_file(magic_prompt.histfile)
 
             result = magic_prompt.default(inp)
 
