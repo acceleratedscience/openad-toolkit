@@ -437,19 +437,3 @@ def loader(text="", anim=["◐", "◓", "◑", "◒"], no_format=False, exit_msg
     # _loop(text=text) # Sync
     asyncio.run(_loop(text=text))
     sys.stdout.write("\033[?25h")  # Show cursor
-
-
-# NOT USED
-# Clear the current line.
-# Couldn't get this to work, because I can't clear the buffer.
-# As a result, (eg.) when you try ctrl-c twice with n answer,
-# the second time it will have the first time's response in the buffer,
-# causing it to mess up the layout.
-def clear_current_line():
-    buffer = readline.get_line_buffer()
-    line_length = len(buffer)
-    # readline.clear_history()
-    eraser = "\b \b" * line_length
-    sys.stdout.write(eraser)
-    # readline.insert_text(' ')
-    # print(len(buffer), buffer)

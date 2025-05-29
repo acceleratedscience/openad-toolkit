@@ -55,9 +55,12 @@ def add_history_entry(cmd_pointer, inp):
     This is called when a command is executed.
     """
     try:
-        readline.add_history(inp)
+        # Ignore super long commands
+        if len(str(str(inp).strip())) < int(4096):
+            readline.add_history(str(str(inp).strip()))
 
-        # Prevent the memory history from growing too large
+        # Cap the in-memory history
+        # Without this, it will keep on growing until you switch workspaces or restart kernel
         if readline.get_current_history_length() > cmd_pointer.histfile_size:
             readline.remove_history_item(0)
 
