@@ -21,6 +21,7 @@ from openad.helpers.spinner import spinner
 # Sets the current workspace from the fgiven workspaces available
 def set_workspace(cmd_pointer, parser):
     """Sets the current Workspace"""
+    readline.set_history_length(cmd_pointer.histfile_size)
     readline.write_history_file(cmd_pointer.histfile)
     current_workspace_name = cmd_pointer.settings["workspace"].upper()
     new_workspace_name = parser["Workspace_Name"].upper()
@@ -40,8 +41,9 @@ def set_workspace(cmd_pointer, parser):
                 readline.clear_history()
                 readline.read_history_file(cmd_pointer.histfile)
         except Exception:
+            readline.set_history_length(cmd_pointer.histfile_size)
             readline.write_history_file(cmd_pointer.histfile)
-
+        readline.set_history_length(cmd_pointer.histfile_size)
         readline.write_history_file(cmd_pointer.histfile)
         return output_success(msg("success_workspace_set", new_workspace_name))
 
@@ -133,6 +135,7 @@ def remove_workspace(cmd_pointer, parser):
 def create_workspace(cmd_pointer, parser):
     """Creates a Workspace"""
     # Make sure existing workspace history file is saved.
+    readline.set_history_length(cmd_pointer.histfile_size)
     readline.write_history_file(cmd_pointer.histfile)
     cmd_pointer.refresh_vector = True
     cmd_pointer.refresh_train = True
@@ -208,6 +211,7 @@ def create_workspace(cmd_pointer, parser):
         write_registry(cmd_pointer.settings, cmd_pointer)
 
         readline.clear_history()
+        readline.set_history_length(cmd_pointer.histfile_size)
         readline.write_history_file(cmd_pointer.histfile)
         # raise ValueError('This is a test error.\n') @later this causes the app to break permamenently.
     except Exception as err:

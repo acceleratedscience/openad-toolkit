@@ -23,6 +23,7 @@ def _create_workspace_dir_if_nonexistent(cmd_pointer, dir_name):
 def save_run(cmd_pointer, parser):
     """Saves a Run"""
     _create_workspace_dir_if_nonexistent(cmd_pointer, "_runs")
+    readline.set_history_length(self.histfile_size)
     readline.write_history_file(cmd_pointer.histfile)
 
     # f =_meta_workspaces+'/'+ cmd_pointer.settings['workspace'].upper()+'/.cmd_history'

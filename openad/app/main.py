@@ -511,6 +511,7 @@ class RUNCMD(Cmd):
         if readline and os.path.exists(self.histfile):
             # note history files can get corrupted so using try to compensate
             try:
+                readline.clear_history()
                 readline.read_history_file(self.histfile)
             except Exception:  # pylint: disable=broad-exception-caught # do not need to know exception
                 # Create history file in case it doesn't exist yet.
@@ -527,10 +528,13 @@ class RUNCMD(Cmd):
         """CMD class called function: Post loop is called by cmd to get an update the history file"""
         readline.set_history_length(self.histfile_size)
         try:
+            readline.read_history_file(self.histfile)
+            readline.set_history_length(self.histfile_size)
             readline.write_history_file(self.histfile)
         except:
             print(readline.get_current_history_length())
             readline.clear_history()
+            readline.set_history_length(self.histfile_size)
             readline.write_history_file(self.histfile)
 
     def add_history(self, inp):
@@ -1079,10 +1083,12 @@ def api_remote(
     # We now manage history. The history sometimes gets corrupted through no fault of ours.
     # If so, we just reset it.
     try:
+        readline.clear_history()
         readline.read_history_file(magic_prompt.histfile)
     except Exception:  # pylint: disable=broad-exception-caught # could be a number of errors
         readline.add_history("")
         readline.write_history_file(magic_prompt.histfile)
+        readline.clear_history()
         readline.read_history_file(magic_prompt.histfile)
     for i in arguments:
         inp = inp + a_space + i
