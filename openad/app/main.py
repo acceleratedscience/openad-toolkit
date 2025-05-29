@@ -528,7 +528,8 @@ class RUNCMD(Cmd):
 
     def add_history(self, inp):
         """CMD class called function: adds history file"""
-        readline.add_history(inp)
+        if (inp.strip()) < 4096:
+            readline.add_history(inp)
 
     def complete(self, text, state):
         """CMD class called function:
@@ -1105,7 +1106,8 @@ def api_remote(
         # Note, may be possible add code completion here #revisit
         else:
             magic_prompt.preloop()
-            magic_prompt.add_history(inp)
+            if len(inp.strip()) < 4096:
+                magic_prompt.add_history(inp.strip())
             magic_prompt.postloop()
             readline.write_history_file(magic_prompt.histfile)
 
@@ -1170,8 +1172,10 @@ def cmd_line():
                 command_line.settings["workspace"] == words[1 + word_increment].upper()
                 and command_line.settings["context"] == words[2 + word_increment].upper()
             ):
+
                 command_line.preloop()
-                command_line.add_history(str(" ".join(words[3 + word_increment :])).strip())
+                if len(str(" ".join(words[3 + word_increment :])).strip()) < 4096:
+                    command_line.add_history(str(" ".join(words[3 + word_increment :])).strip())
                 command_line.postloop()
                 result = command_line.default(str(" ".join(words[3 + word_increment :])).strip())
         else:
@@ -1179,7 +1183,8 @@ def cmd_line():
             # Note, may be possible add code completion here #revisit
 
             command_line.preloop()
-            command_line.add_history(inp[+increment:].strip())
+            if len(inp[+increment:].strip()) < 4096:
+                command_line.add_history(inp[+increment:].strip())
             command_line.postloop()
             result = command_line.default(inp[+increment:].strip())
         command_line.do_exit("dummy do not remove")
