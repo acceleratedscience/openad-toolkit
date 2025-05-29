@@ -519,8 +519,6 @@ class RUNCMD(Cmd):
                 # >> create new workspace foobar
                 # >> ctrl+c
                 # (Reboot)
-                print(readline.get_current_history_length())
-                readline.clear_history()
                 readline.write_history_file(self.histfile)
 
     def postloop(self):
