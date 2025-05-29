@@ -21,6 +21,7 @@ from openad.gui.gui_launcher import gui_init, gui_shutdown
 from openad.gui.ws_server import ws_server  # Web socket server for gui - experimental
 from openad.helpers.output import output_table
 from openad.helpers.plugins import display_plugin_overview
+from openad.helpers.history import init_history, update_history_file, add_history_entry
 
 # Core
 import openad.core.help as openad_help
@@ -509,28 +510,12 @@ class RUNCMD(Cmd):
     def preloop(self):
         """CMD class called function: Preloop is called by cmd to get an update the history file each History File"""
         print("preloop")
-        # if readline and os.path.exists(self.histfile):
-        #     # note history files can get corrupted so using try to compensate
-        #     try:
-        #         readline.read_history_file(self.histfile)
-        #     except Exception as err:  # pylint: disable=broad-exception-caught # do not need to know exception
-        #         # Create history file in case it doesn't exist yet.
-        #         # - - -
-        #         # To trigger:
-        #         # >> create new workspace foobar
-        #         # >> ctrl+c
-        #         # (Reboot)
-        #         # readline.write_history_file(self.histfile)
-        #         print("preloop - read_history_file error:", err)
+        init_history(self)
 
     def postloop(self):
         """CMD class called function: Post loop is called by cmd to get an update the history file"""
-        print("> postloop write:", readline.get_current_history_length())
-        readline.write_history_file(self.histfile)
-
-    def add_history(self, inp):
-        """CMD class called function: adds history file"""
-        readline.add_history(inp)
+        print("postloop")
+        update_history_file(self)
 
     def complete(self, text, state):
         """CMD class called function:
@@ -1050,18 +1035,6 @@ def api_remote(
     else:
         magic_prompt = MAGIC_PROMPT
 
-    # Prevent history file from growing indefinitely
-    print(">> set length", magic_prompt.histfile_size)
-    readline.set_history_length(magic_prompt.histfile_size)
-    if readline and os.path.exists(magic_prompt.histfile):
-        try:
-            startup = readline.get_current_history_length() == 0
-            if startup:
-                print("LOAD HISTORY FILE")
-                readline.read_history_file(magic_prompt.histfile)
-        except Exception as err:  # pylint: disable=broad-exception-caught
-            print("init - read_history_file error:", err)
-
     if api_context["workspace"] is None:
         api_context["workspace"] = magic_prompt.settings["workspace"]
     else:
@@ -1080,15 +1053,6 @@ def api_remote(
             set_context(magic_prompt, x)
 
     magic_prompt.api_variables = api_var_list
-
-    # # We now manage history. The history sometimes gets corrupted through no fault of ours.
-    # # If so, we just reset it.
-    # try:
-    #     readline.read_history_file(magic_prompt.histfile)
-    # except Exception:  # pylint: disable=broad-exception-caught # could be a number of errors
-    #     readline.add_history("")
-    #     readline.write_history_file(magic_prompt.histfile)
-    #     readline.read_history_file(magic_prompt.histfile)
 
     for i in arguments:
         inp = inp + a_space + i
@@ -1121,9 +1085,8 @@ def api_remote(
         # Note, may be possible add code completion here #revisit
         else:
             magic_prompt.preloop()
-            magic_prompt.add_history(inp)
+            add_history_entry(inp)
             magic_prompt.postloop()
-            # readline.write_history_file(magic_prompt.histfile)
 
             result = magic_prompt.default(inp)
 
@@ -1187,7 +1150,7 @@ def cmd_line():
                 and command_line.settings["context"] == words[2 + word_increment].upper()
             ):
                 command_line.preloop()
-                command_line.add_history(str(" ".join(words[3 + word_increment :])).strip())
+                add_history_entry(str(" ".join(words[3 + word_increment :])).strip())
                 command_line.postloop()
                 result = command_line.default(str(" ".join(words[3 + word_increment :])).strip())
         else:
@@ -1195,7 +1158,7 @@ def cmd_line():
             # Note, may be possible add code completion here #revisit
 
             command_line.preloop()
-            command_line.add_history(inp[+increment:].strip())
+            add_history_entry(inp[+increment:].strip())
             command_line.postloop()
             result = command_line.default(inp[+increment:].strip())
         command_line.do_exit("dummy do not remove")

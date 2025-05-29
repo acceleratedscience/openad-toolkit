@@ -7,6 +7,7 @@ from IPython.display import display
 
 # Global variables
 from openad.app.global_var_lib import GLOBAL_SETTINGS
+from openad.helpers.history import update_history_file
 
 # Helpers
 from openad.helpers.output import output_text, output_error, output_success, output_table
@@ -23,7 +24,7 @@ def _create_workspace_dir_if_nonexistent(cmd_pointer, dir_name):
 def save_run(cmd_pointer, parser):
     """Saves a Run"""
     _create_workspace_dir_if_nonexistent(cmd_pointer, "_runs")
-    readline.write_history_file(cmd_pointer.histfile)
+    update_history_file(cmd_pointer)
 
     # f =_meta_workspaces+'/'+ cmd_pointer.settings['workspace'].upper()+'/.cmd_history'
     runlist = []
@@ -110,9 +111,6 @@ def display_run(cmd_pointer, parser):
 
     # Create _runs directory if it does not exist yet.
     _create_workspace_dir_if_nonexistent(cmd_pointer, "_runs")
-
-    # import readline
-    # readline.write_history_file(cmd_pointer.histfile)  # @Phil, I put this back but it was commented out
 
     # Read the run file.
     commands = []
