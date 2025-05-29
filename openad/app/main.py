@@ -527,7 +527,7 @@ class RUNCMD(Cmd):
         try:
             readline.write_history_file(self.histfile)
         except:
-            print(readline.get_current_history_length)
+            print(readline.get_current_history_length())
 
     def add_history(self, inp):
         """CMD class called function: adds history file"""
