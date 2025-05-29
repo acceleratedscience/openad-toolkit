@@ -528,7 +528,7 @@ class RUNCMD(Cmd):
 
     def add_history(self, inp):
         """CMD class called function: adds history file"""
-        inp - str(inp)
+        inp = str(inp)
         if len(str(str(inp).strip())) < int(4096):
             readline.add_history(str(str(inp).strip()))
 
