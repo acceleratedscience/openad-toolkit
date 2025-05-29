@@ -29,7 +29,7 @@ def refresh_prompt(settings):
 def is_notebook_mode():
     """Return True if we are running inside a Jupyter Notebook or Jupyter Lab."""
     try:
-        get_ipython()  # pylint: disable=undefined-variable
+        get_ipython()  # pylint: disable=undefined-variable # noqa: F821
         return True
     except Exception:  # pylint: disable=broad-exception-caught
         return False
@@ -191,7 +191,7 @@ def load_module_from_path(module_name, file_path):
         sys.modules[module_name] = module
         spec.loader.exec_module(module)
         return module
-    except Exception as err:
+    except Exception:
         # Silent fail - only enable this for debugging
         # output_error(f"load_module_from_path('{module_name}', {file_path})\n<soft>{err}</soft>")
         return None
@@ -201,7 +201,7 @@ def load_module_from_path(module_name, file_path):
 def print_separator(style=None, width=None, return_val=False):
     from openad.app.global_var_lib import GLOBAL_SETTINGS
 
-    if GLOBAL_SETTINGS["display"] == "terminal" or GLOBAL_SETTINGS["display"] == None:
+    if GLOBAL_SETTINGS["display"] == "terminal" or GLOBAL_SETTINGS["display"] is None:
         cli_width = get_print_width(full=True)
         width = cli_width if not width or cli_width < width else width
         if style:
@@ -340,7 +340,9 @@ def style_bool(value):
     return (
         style(f"<success>{value}</success>")
         if value is True
-        else style(f"<error>{value}</error>") if value is False else value
+        else style(f"<error>{value}</error>")
+        if value is False
+        else value
     )
 
 
