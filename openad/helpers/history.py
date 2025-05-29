@@ -11,6 +11,7 @@ def init_history(cmd_pointer):
     - On startup
     - When switching workspaces
     """
+    readline.set_history_length(cmd_pointer.histfile_size)
     if readline and os.path.exists(cmd_pointer.histfile):
         try:
             is_startup = readline.get_current_history_length() == 0
@@ -56,11 +57,9 @@ def add_history_entry(cmd_pointer, inp):
     try:
         readline.add_history(inp)
 
-        # Prevent the history from growing too large
-        print(555, readline.get_current_history_length(), ">", cmd_pointer.histfile_size)
+        # Prevent the memory history from growing too large
         if readline.get_current_history_length() > cmd_pointer.histfile_size:
             readline.remove_history_item(0)
-        print(666, readline.get_current_history_length(), ">", cmd_pointer.histfile_size)
 
         if DEBUG_HIST:
             output_text(f"add_history_entry #{cmd_pointer.histfile_size}: {inp}", return_val=False)
