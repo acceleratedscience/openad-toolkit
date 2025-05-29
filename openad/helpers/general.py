@@ -340,9 +340,7 @@ def style_bool(value):
     return (
         style(f"<success>{value}</success>")
         if value is True
-        else style(f"<error>{value}</error>")
-        if value is False
-        else value
+        else style(f"<error>{value}</error>") if value is False else value
     )
 
 
@@ -450,7 +448,7 @@ def loader(text="", anim=["◐", "◓", "◑", "◒"], no_format=False, exit_msg
 def clear_current_line():
     buffer = readline.get_line_buffer()
     line_length = len(buffer)
-    readline.clear_history()
+    # readline.clear_history()
     eraser = "\b \b" * line_length
     sys.stdout.write(eraser)
     # readline.insert_text(' ')

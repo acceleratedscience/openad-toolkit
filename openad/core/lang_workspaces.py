@@ -21,7 +21,8 @@ from openad.helpers.spinner import spinner
 # Sets the current workspace from the fgiven workspaces available
 def set_workspace(cmd_pointer, parser):
     """Sets the current Workspace"""
-    readline.write_history_file(cmd_pointer.histfile)
+    print("> set_workspace write:", readline.get_current_history_length())
+
     current_workspace_name = cmd_pointer.settings["workspace"].upper()
     new_workspace_name = parser["Workspace_Name"].upper()
     if new_workspace_name not in cmd_pointer.settings["workspaces"]:
@@ -29,19 +30,43 @@ def set_workspace(cmd_pointer, parser):
 
     elif new_workspace_name == current_workspace_name:
         return output_warning(msg("warn_workspace_already_active", new_workspace_name))
+
+    # New workspace
     else:
         cmd_pointer.settings["workspace"] = new_workspace_name
         write_registry(cmd_pointer.settings, cmd_pointer)
         cmd_pointer.histfile = os.path.expanduser(cmd_pointer.workspace_path(new_workspace_name) + "/.cmd_history")
+        print("--- new workspace")
+
+        print(">>>> clear history")
+        readline.write_history_file(cmd_pointer.histfile + "--temp")
         readline.clear_history()
 
-        try:  # Open history file if not corrupt
-            if readline and os.path.exists(cmd_pointer.histfile):
-                readline.read_history_file(cmd_pointer.histfile)
-        except Exception:
-            readline.write_history_file(cmd_pointer.histfile)
+        # Loads history from new workspace if it exists.
+        if readline and os.path.exists(cmd_pointer.histfile):
+            try:
+                startup = readline.get_current_history_length() == 0
+                if startup:
+                    print("LOAD HISTORY FILE -- set workspace")
+                    readline.read_history_file(cmd_pointer.histfile)
+            except Exception as err:  # pylint: disable=broad-exception-caught
+                print("set workspace - read_history_file error:", err)
+        else:
+            print("!! No histfile found for workspace:", cmd_pointer.histfile)
 
-        readline.write_history_file(cmd_pointer.histfile)
+        # print("C L E A R")
+        # readline.clear_history()
+
+        # try:  # Open history file if not corrupt
+        #     if readline and os.path.exists(cmd_pointer.histfile):
+        #         readline.read_history_file(cmd_pointer.histfile)
+        # except Exception as err:
+        #     print("set_workspace read_history_file error:", err)
+        #     # readline.write_history_file(cmd_pointer.histfile)
+
+        # print("> set_workspace write2:", readline.get_current_history_length())
+        # readline.write_history_file(cmd_pointer.histfile)
+
         return output_success(msg("success_workspace_set", new_workspace_name))
 
 
@@ -132,6 +157,7 @@ def remove_workspace(cmd_pointer, parser):
 def create_workspace(cmd_pointer, parser):
     """Creates a Workspace"""
     # Make sure existing workspace history file is saved.
+    print("> create_workspace write:", readline.get_current_history_length())
     readline.write_history_file(cmd_pointer.histfile)
     cmd_pointer.refresh_vector = True
     cmd_pointer.refresh_train = True
@@ -206,7 +232,9 @@ def create_workspace(cmd_pointer, parser):
         write_registry(cmd_pointer.settings, cmd_pointer, True)
         write_registry(cmd_pointer.settings, cmd_pointer)
 
-        readline.clear_history()
+        # print("C L E A R")
+        # readline.clear_history()
+        print("> create_workspace write2:", readline.get_current_history_length())
         readline.write_history_file(cmd_pointer.histfile)
         # raise ValueError('This is a test error.\n') @later this causes the app to break permamenently.
     except Exception as err:
