@@ -519,6 +519,7 @@ class RUNCMD(Cmd):
                 # >> create new workspace foobar
                 # >> ctrl+c
                 # (Reboot)
+                print(readline.get_current_history_length())
                 readline.set_history_length(self.histfile_size)
                 readline.write_history_file(self.histfile)
 
