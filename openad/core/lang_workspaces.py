@@ -34,8 +34,6 @@ def set_workspace(cmd_pointer, parser):
         cmd_pointer.settings["workspace"] = new_workspace_name
         write_registry(cmd_pointer.settings, cmd_pointer)
         cmd_pointer.histfile = os.path.expanduser(cmd_pointer.workspace_path(new_workspace_name) + "/.cmd_history")
-        readline.clear_history()
-
         try:  # Open history file if not corrupt
             if readline and os.path.exists(cmd_pointer.histfile):
                 readline.clear_history()
@@ -210,7 +208,6 @@ def create_workspace(cmd_pointer, parser):
         write_registry(cmd_pointer.settings, cmd_pointer, True)
         write_registry(cmd_pointer.settings, cmd_pointer)
 
-        readline.clear_history()
         readline.set_history_length(cmd_pointer.histfile_size)
         readline.write_history_file(cmd_pointer.histfile)
         # raise ValueError('This is a test error.\n') @later this causes the app to break permamenently.
