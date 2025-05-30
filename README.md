@@ -58,5 +58,5 @@ If you get an error when running `init_magic`, you may first need to setup the d
 
 ## Release Notes
 
-`0.7.5`
+`0.8.0`
 - We have retired the RXN and Deep Search toolkits and replaced them with new and more user-friendly [plugins](README/plugins.md).
