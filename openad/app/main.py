@@ -21,6 +21,7 @@ from openad.gui.gui_launcher import gui_init, gui_shutdown
 from openad.gui.ws_server import ws_server  # Web socket server for gui - experimental
 from openad.helpers.output import output_table
 from openad.helpers.plugins import display_plugin_overview
+from openad.helpers.history import init_history, update_history_file, add_history_entry
 
 # Core
 import openad.core.help as openad_help
@@ -508,27 +509,11 @@ class RUNCMD(Cmd):
 
     def preloop(self):
         """CMD class called function: Preloop is called by cmd to get an update the history file each History File"""
-        if readline and os.path.exists(self.histfile):
-            # note history files can get corrupted so using try to compensate
-            try:
-                readline.read_history_file(self.histfile)
-            except Exception:  # pylint: disable=broad-exception-caught # do not need to know exception
-                # Create history file in case it doesn't exist yet.
-                # - - -
-                # To trigger:
-                # >> create new workspace foobar
-                # >> ctrl+c
-                # (Reboot)
-                readline.write_history_file(self.histfile)
+        init_history(self)
 
     def postloop(self):
         """CMD class called function: Post loop is called by cmd to get an update the history file"""
-        readline.set_history_length(self.histfile_size)
-        readline.write_history_file(self.histfile)
-
-    def add_history(self, inp):
-        """CMD class called function: adds history file"""
-        readline.add_history(inp)
+        update_history_file(self)
 
     def complete(self, text, state):
         """CMD class called function:
@@ -747,10 +732,6 @@ class RUNCMD(Cmd):
 
     def default(self, line):
         """Default method call on hitting of the return Key, it tries to parse and execute the statements."""
-
-        # Prevent the history from growing too large
-        if readline.get_current_history_length() > self.histfile_size:
-            readline.remove_history_item(0)
 
         inp = line  # assigning line to input value
 
@@ -1031,7 +1012,6 @@ def api_remote(
     """
 
     global MAGIC_PROMPT
-    # GLOBAL_SETTINGS["display"] = "notebook"
 
     initialise()
 
@@ -1066,14 +1046,7 @@ def api_remote(
             set_context(magic_prompt, x)
 
     magic_prompt.api_variables = api_var_list
-    # We now manage history. The history sometimes gets corrupted through no fault of ours.
-    # If so, we just reset it.
-    try:
-        readline.read_history_file(magic_prompt.histfile)
-    except Exception:  # pylint: disable=broad-exception-caught # could be a number of errors
-        readline.add_history("")
-        readline.write_history_file(magic_prompt.histfile)
-        readline.read_history_file(magic_prompt.histfile)
+
     for i in arguments:
         inp = inp + a_space + i
         a_space = " "
@@ -1105,9 +1078,8 @@ def api_remote(
         # Note, may be possible add code completion here #revisit
         else:
             magic_prompt.preloop()
-            magic_prompt.add_history(inp)
+            add_history_entry(magic_prompt, inp)
             magic_prompt.postloop()
-            readline.write_history_file(magic_prompt.histfile)
 
             result = magic_prompt.default(inp)
 
@@ -1171,7 +1143,7 @@ def cmd_line():
                 and command_line.settings["context"] == words[2 + word_increment].upper()
             ):
                 command_line.preloop()
-                command_line.add_history(str(" ".join(words[3 + word_increment :])).strip())
+                add_history_entry(command_line, str(" ".join(words[3 + word_increment :])).strip())
                 command_line.postloop()
                 result = command_line.default(str(" ".join(words[3 + word_increment :])).strip())
         else:
@@ -1179,7 +1151,7 @@ def cmd_line():
             # Note, may be possible add code completion here #revisit
 
             command_line.preloop()
-            command_line.add_history(inp[+increment:].strip())
+            add_history_entry(command_line, inp[+increment:].strip())
             command_line.postloop()
             result = command_line.default(inp[+increment:].strip())
         command_line.do_exit("dummy do not remove")
