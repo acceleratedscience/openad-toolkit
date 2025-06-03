@@ -13,7 +13,7 @@ from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.smols.smol_cache import create_analysis_record, save_result
 from openad.smols.smol_functions import canonicalize, valid_smiles
 from openad.helpers.general import load_tk_module
-from openad.helpers.spinner import Spinner
+from openad.helpers.spinner import spinner
 
 
 def get_reaction_from_smiles(reaction_smiles: str) -> Chem.rdChemReactions.ChemicalReaction:
@@ -145,8 +145,7 @@ def predict_retro(inputs: dict, cmd_pointer):
 
     # Prepare the data query
     print("\n")
-    newspin = Spinner(GLOBAL_SETTINGS["VERBOSE"])
-    newspin.start("Starting Retrosynthesis")
+    spinner.start("Starting Retrosynthesis")
     try:
         retries = 0
         status = False
@@ -155,7 +154,7 @@ def predict_retro(inputs: dict, cmd_pointer):
         while retries < 10 and status is False:
             try:
                 if retries == 0:
-                    newspin.info("Submitting Retrosynthesis ")
+                    spinner.info("Submitting Retrosynthesis ")
                 predict_retro_response = rxn4chemistry_wrapper.predict_automatic_retrosynthesis(
                     product_smiles,
                     availability_pricing_threshold=availability_pricing_threshold,
@@ -174,9 +173,9 @@ def predict_retro(inputs: dict, cmd_pointer):
                 sleep(2)
                 retries = retries + 1
                 if retries >= 10:
-                    newspin.fail("Unable to Process")
-                    newspin.start()
-                    newspin.stop()
+                    spinner.fail("Unable to Process")
+                    spinner.start()
+                    spinner.stop()
                     raise Exception(
                         "Server unresponsive: Unable to submit for processing after 10 retires" + str(e)
                     ) from e  # pylint: disable=broad-exception-raised
@@ -195,7 +194,7 @@ def predict_retro(inputs: dict, cmd_pointer):
         while status != "SUCCESS":
             try:
                 if status != previous_status:
-                    newspin.info("Processing Retrosynthesis :" + status)
+                    spinner.info("Processing Retrosynthesis :" + status)
                     previous_status = status
 
                 predict_automatic_retrosynthesis_results = (
@@ -220,7 +219,7 @@ def predict_retro(inputs: dict, cmd_pointer):
                 retries = retries + 1
                 sleep(15)
                 status = "Waiting"
-                newspin.info("Processing Retrosynthesis: Waiting")
+                spinner.info("Processing Retrosynthesis: Waiting")
                 if retries > 20:
                     raise Exception(
                         "Server unresponsive: Unable to complete processing for prediction id:'"
@@ -229,9 +228,9 @@ def predict_retro(inputs: dict, cmd_pointer):
                         + str(e)
                     ) from e  # pylint: disable=broad-exception-raised
     except Exception as e:
-        newspin.fail("Unable to Process")
-        newspin.start()
-        newspin.stop()
+        spinner.fail("Unable to Process")
+        spinner.start()
+        spinner.stop()
         raise Exception("Unable to complete processing " + str(e)) from e  # pylint: disable=broad-exception-raised
     reactions_text = []
     # print(predict_automatic_retrosynthesis_results)
@@ -243,17 +242,17 @@ def predict_retro(inputs: dict, cmd_pointer):
                 # print("inner")
 
     except Exception as e:  # pylint: disable=broad-exception-caught
-        newspin.fail("Unable to Process")
-        newspin.stop()
+        spinner.fail("Unable to Process")
+        spinner.stop()
         raise Exception(
             "The following Error message was received while trying to process results:" + str(e)
         ) from e  # pylint: disable=broad-exception-raised
     num_results = 0
     # print(reactions_text)
     try:
-        newspin.succeed("Finished Processing")
-        newspin.start()
-        newspin.stop()
+        spinner.succeed("Finished Processing")
+        spinner.start()
+        spinner.stop()
         results = {}
         i = 0
         for index, tree in enumerate(predict_automatic_retrosynthesis_results["retrosynthetic_paths"]):
@@ -262,7 +261,7 @@ def predict_retro(inputs: dict, cmd_pointer):
                 "",
                 return_val=False,
             )
-            if num_results < 4 or GLOBAL_SETTINGS["VERBOSE"] == False:
+            if num_results < 4 or GLOBAL_SETTINGS["display"] == "api"::
                 results[str(index)] = {"confidence": tree["confidence"], "reactions": []}
 
             output_text(
@@ -274,7 +273,7 @@ def predict_retro(inputs: dict, cmd_pointer):
             )
 
             for reaction in collect_reactions_from_retrosynthesis(tree):
-                if num_results < 4 or GLOBAL_SETTINGS["VERBOSE"] == False:
+                if num_results < 4 or GLOBAL_SETTINGS["display"] == "api"::
                     results[str(index)]["reactions"].append(reactions_text[i])
                 output_text("<green> Reaction: </green>" + reactions_text[i], return_val=False)
                 i = i + 1
@@ -295,7 +294,7 @@ def predict_retro(inputs: dict, cmd_pointer):
         return False
     i = 0
 
-    if GLOBAL_SETTINGS["VERBOSE"] == False:
+    if GLOBAL_SETTINGS["display"] == "api":
         return results
     else:
         return True

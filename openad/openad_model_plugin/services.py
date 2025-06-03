@@ -369,7 +369,6 @@ class ModelService(Dispatcher):
     # @auth
     def refresh_remote_service(self, service_name, endpoint, auth_token) -> bool:
         """Refresh remote service with new auth token"""
-        output_warning(f"Refreshing remote service: {service_name}")
         logger.debug(f"refreshing remote service | {service_name=}")
         if service_name not in self.list():
             output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
@@ -447,6 +446,7 @@ class ModelService(Dispatcher):
                     update_lookup_table(auth_group=auth_group_name, service=service_name, api_key=auth_token)
                 elif "authorization" in params_lower:
                     self.refresh_remote_service(service_name, endpoint, auth_token)
+            spinner.stop()
 
     def get_service_cache(self) -> LruCache[dict]:
         return REMOTE_SERVICES_CACHE

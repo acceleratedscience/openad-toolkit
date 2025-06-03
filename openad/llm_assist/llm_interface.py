@@ -16,7 +16,7 @@ from openad.helpers.credentials import load_credentials
 
 from openad.helpers.credentials import write_credentials, get_credentials
 from openad.app.global_var_lib import GLOBAL_SETTINGS
-from openad.helpers.spinner import Spinner
+from openad.helpers.spinner import spinner
 
 # Constants
 TRAINING_LLM_DIR = "/prompt_train/"
@@ -127,15 +127,14 @@ def how_do_i(cmd_pointer, parser):
     else:
         from halo import Halo  # pylint: disable=import-outside-toplevel
 
-    newspin = Spinner(GLOBAL_SETTINGS["VERBOSE"])
-    newspin.start("Processing Request ")
+    spinner.start("Processing Request ")
     # Now we are asking the prompt a Question
 
     try:
         # text = cmd_pointer.llm_handle.how_to_search(CHAT_PRIMER + " ".join(parser["Chat_String"]) + CHAT_PRIMER_SUFFIX)
         text = cmd_pointer.llm_handle.how_to_search(CHAT_PRIMER + " ".join(parser["Chat_String"]))
     except Exception as e:
-        newspin.fail("Running Request Failed")
+        spinner.fail("Running Request Failed")
         output_text(
             "Unable to Execute request. check LLM credentials and or Connectivity",
             return_val=False,
@@ -143,7 +142,7 @@ def how_do_i(cmd_pointer, parser):
             edge=True,
         )
         return False
-    newspin.succeed("See Answer Below.")
+    spinner.succeed("See Answer Below.")
     text = clean_up_llm_text(cmd_pointer, text)
 
     if GLOBAL_SETTINGS["display"] == "notebook":

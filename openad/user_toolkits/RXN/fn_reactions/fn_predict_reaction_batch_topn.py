@@ -13,7 +13,7 @@ from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.helpers.output import output_text, output_warning, output_error, output_table
 from openad.helpers.output_msgs import msg
 from openad.helpers.general import load_tk_module
-from openad.helpers.spinner import Spinner
+from openad.helpers.spinner import spinner
 
 
 def get_reaction_from_smiles(
@@ -142,19 +142,18 @@ def predict_reaction_batch_topn(inputs: dict, cmd_pointer):
     if len(new_from_list) > 0:
         val = "val"
         from_list = new_from_list
-        newspin = Spinner(GLOBAL_SETTINGS["VERBOSE"])
         retries = 0
         status = False
         rxn4chemistry_wrapper = cmd_pointer.login_settings["client"][
             cmd_pointer.login_settings["toolkits"].index("RXN")
         ]
 
-        newspin.start("Starting Prediction")
+        spinner.start("Starting Prediction")
 
         while status is False:
             try:
                 if retries == 0:
-                    newspin.info("Processing Prediction")
+                    spinner.info("Processing Prediction")
                 sleep(2)
                 predict_rection_batch_response = rxn4chemistry_wrapper.predict_reaction_batch_topn(
                     precursors_lists=new_from_list,
@@ -165,8 +164,8 @@ def predict_reaction_batch_topn(inputs: dict, cmd_pointer):
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retries = retries + 1
                 if retries > 4:
-                    newspin.fail("Unable to Process")
-                    newspin.stop()
+                    spinner.fail("Unable to Process")
+                    spinner.stop()
                     raise Exception("Server unresponsive" + str(e)) from e  # pylint: disable=broad-exception-raised
 
         x = {}
@@ -186,14 +185,14 @@ def predict_reaction_batch_topn(inputs: dict, cmd_pointer):
             except Exception as e:  # pylint: disable=broad-exception-caught
                 retries = retries + 1
                 if retries > 10:
-                    newspin.fail("Unable to Process")
-                    newspin.stop()
+                    spinner.fail("Unable to Process")
+                    spinner.stop()
                     raise Exception("Server unresponsive " + str(e)) from e  # pylint: disable=broad-exception-raised
 
         reaction_no = 0
-        newspin.succeed("Finished Processing")
-        newspin.start()
-        newspin.stop()
+        spinner.succeed("Finished Processing")
+        spinner.start()
+        spinner.stop()
         for i, reaction_predictions in enumerate(x["predictions"], 1):
             output_text("\n", return_val=False)
             output_text(
@@ -216,7 +215,7 @@ def predict_reaction_batch_topn(inputs: dict, cmd_pointer):
                 )
         output_text(" ", return_val=False)
 
-    if not GLOBAL_SETTINGS["VERBOSE"]:
+    if GLOBAL_SETTINGS["display"] == "api":
         return x
     else:
         return True
