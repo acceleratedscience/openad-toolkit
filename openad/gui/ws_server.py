@@ -28,7 +28,7 @@ def ws_server(cmd_pointer):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        start_server = websockets.serve(hello, "127.0.0.1", PORT)
+        start_server = websockets.serve(hello, "0.0.0.0", PORT)
 
         loop.run_until_complete(start_server)
         loop.run_forever()
