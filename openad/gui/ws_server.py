@@ -45,7 +45,7 @@ def ws_server(cmd_pointer):
 
 
 async def send(message):
-    uri = f"ws://127.0.0.1:{PORT}"
+    uri = f"ws://0.0.0.0:{PORT}"
     async with websockets.connect(uri) as websocket:
         await websocket.send(message)
         # print(f"Message sent: {message}")
