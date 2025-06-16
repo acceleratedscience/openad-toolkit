@@ -1104,8 +1104,8 @@ def cmd_line():
         a_space = " "
     try:
         command_line = RUNCMD()
-        # Launch the GUI if it is installed.
-        # gui_init(command_line)
+        # Launch the GUI on startup
+        gui_init(command_line)
         # ws_server(command_line) # Experimental
     except KeyboardInterrupt:
         output_error(msg("err_key_exit_before_init"))
