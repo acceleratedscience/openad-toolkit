@@ -419,26 +419,59 @@ class MoleculesApi:
         query = data["query"] if "query" in data else {}
 
         if len(self.cmd_pointer.molecule_list) > 0:
-            # Compile molset.
+            # Compile molset
             molset = []
             for i, smol in enumerate(self.cmd_pointer.molecule_list):
                 smol["index"] = i + 1
                 molset.append(smol)
 
-            # Create cache working copy.
+            # Create cache working copy
             cache_id = create_molset_cache_file(self.cmd_pointer, molset)
 
-            # Read molset from cache.
+            # Read molset from cache
             try:
                 molset = read_molset_from_cache(self.cmd_pointer, cache_id)
             except ValueError as err:
                 return f"get_my_mols() -> {err}", 500
 
-            # Formulate response object.
+            # Formulate response object
             return create_molset_response(molset, query, cache_id), 200
 
         else:
             return "empty", 200
+
+    def get_molset_adhoc(self):
+        """
+        Get a molset from a list of identifiers.
+        """
+
+        data = json.loads(request.data) if request.data else {}
+        identifiers = data["identifiers"] if "identifiers" in data else []
+        query = data["query"] if "query" in data else {}
+
+        # Compile molset
+        molset = []
+        for identifier in identifiers:
+            smol = find_smol(self.cmd_pointer, identifier, basic=True)
+            if not smol:
+                smol = {
+                    "identifiers": {"name": identifier},
+                    "properties": {},
+                }
+            molset.append(smol)
+            smol["index"] = len(molset)
+
+        # Create cache working copy
+        cache_id = create_molset_cache_file(self.cmd_pointer, molset)
+
+        # Read molset from cache
+        try:
+            molset = read_molset_from_cache(self.cmd_pointer, cache_id)
+        except ValueError as err:
+            return f"get_my_mols() -> {err}", 500
+
+        # Formulate response object
+        return create_molset_response(molset, query, cache_id), 200
 
     ##
 
@@ -475,7 +508,7 @@ class MoleculesApi:
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(molset, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
 
-        # Create response object.
+        # Create response object
         return create_molset_response(molset, query, cache_id), 200
 
     def clear_molset_working_copy(self):
@@ -582,18 +615,18 @@ class MoleculesApi:
             return f"_save_molset() -> Cached working copy not found: {cache_path}", 500
 
         try:
-            # For .molset.json files, we simply copy the cache file to the destination.
+            # For .molset.json files, we simply copy the cache file to the destination
             if format_as == "molset_json":
                 shutil.copy(cache_path, file_path)
 
             # For all other formats, we need to read the
-            # molset data into memory so we can transform it.
+            # molset data into memory so we can transform it
             else:
                 molset, err = open_file(cache_path, return_err=True)
                 if err:
                     return err, 500
 
-            # Save as SDF file.
+            # Save as SDF file
             if format_as == "sdf":
                 try:
                     df = molset2dataframe(molset, remove_invalid_mols, include_romol=True)
@@ -604,7 +637,7 @@ class MoleculesApi:
                         "invalidMols": err.args[1],
                     }, 422
 
-            # Save as CSV file.
+            # Save as CSV file
             elif format_as == "csv":
                 try:
                     df = molset2dataframe(molset, remove_invalid_mols)
@@ -615,7 +648,7 @@ class MoleculesApi:
                         "invalidMols": err.args[1],
                     }, 422
 
-            # Save as SMILES file.
+            # Save as SMILES file
             elif format_as == "smiles":
                 smiles_list = []
                 missing_smiles = []
@@ -626,14 +659,14 @@ class MoleculesApi:
                     else:
                         missing_smiles.append(mol["index"])
 
-                # Return error if there are missing SMILES.
+                # Return error if there are missing SMILES
                 if missing_smiles:
                     return {
                         "error": "Some molecules are missing SMILES.",
                         "invalidMols": missing_smiles,
                     }, 422
 
-                # Write to file.
+                # Write to file
                 try:
                     with open(file_path, "w", encoding="utf-8") as f:
                         f.write("\n".join(smiles_list))
@@ -641,12 +674,12 @@ class MoleculesApi:
                     return f"Error writing SMILES file: {err}", 500
 
             elif format_as == "my-mols":
-                # Read file from cache.
+                # Read file from cache
                 molset, err_code = open_file(cache_path, return_err="code")
                 if err_code:
                     return err_code, 500
 
-                # Compile molset.
+                # Compile molset
                 molecule_list = []
                 for mol in molset:
                     try:
@@ -685,16 +718,16 @@ class MoleculesApi:
         # Compile path
         cache_path = assemble_cache_path(self.cmd_pointer, "molset", cache_id)
 
-        # Read file from cache.
+        # Read file from cache
         molset, err_code = open_file(cache_path, return_err="code")
         if err_code:
             return err_code, 500
 
-        # Replace molecule in molset working copy.
+        # Replace molecule in molset working copy
         index = mol.get("index")
         molset[index - 1] = mol
 
-        # Write to cache.
+        # Write to cache
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(molset, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
 
@@ -732,12 +765,12 @@ def create_molset_response(molset, query=None, cache_id=None):
         for mol in molset:
             found = False
 
-            # Substructure search - match against smiles only.
+            # Substructure search - match against smiles only
             if smarts_mode:
                 if search_str.lower() in mol["identifiers"]["canonical_smiles"].lower():
                     results.append(mol)
 
-            # Regular search - match against all identifiers and properties.
+            # Regular search - match against all identifiers and properties
             else:
                 for key in mol["identifiers"]:
                     if search_str.lower() in str(mol["identifiers"][key]).lower():
@@ -764,7 +797,7 @@ def create_molset_response(molset, query=None, cache_id=None):
             results = sorted(results, key=lambda mol: _sort_mol(mol, sort_key), reverse=reverse)
     except TypeError as err:
         # In the edge case where our dataset mixes string and
-        # number values, we want to avoid crashing the app.
+        # number values, we want to avoid crashing the app
         output_error(err)
 
     # Store all indices - used by 'select all'
@@ -775,7 +808,7 @@ def create_molset_response(molset, query=None, cache_id=None):
 
     # Paginate
     total_pages = len(results) // page_size + 1
-    page = min(page, total_pages)  # Make sure that page number is lowered in case of a too high value.
+    page = min(page, total_pages)  # Make sure that page number is lowered in case of a too high value
     total = len(molset)
     result_count = len(results)
     skip = 48 * (page - 1)

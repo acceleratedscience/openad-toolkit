@@ -60,8 +60,9 @@ def fetchRoutes(cmd_pointer):
         #
         #
         # Molecules - Molsets
-        f"{api_v1}/get-molset": {"func": molecules_api.get_molset, "method": "POST"},
-        f"{api_v1}/get-molset-mymols": {"func": molecules_api.get_molset_mws, "method": "POST"},
+        f"{api_v1}/get-molset": {"func": molecules_api.get_molset, "method": "POST"}, # Molset file
+        f"{api_v1}/get-molset-mws": {"func": molecules_api.get_molset_mws, "method": "POST"}, # Molecule working set
+        f"{api_v1}/get-molset-adhoc": {"func": molecules_api.get_molset_adhoc, "method": "POST"}, # Molset from URL identifiers
         #
         f"{api_v1}/remove-from-molset": {"func": molecules_api.remove_from_molset, "method": "POST"},
         f"{api_v1}/clear-molset-working-copy": {"func": molecules_api.clear_molset_working_copy, "method": "POST"},
