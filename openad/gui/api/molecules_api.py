@@ -126,7 +126,7 @@ class MoleculesApi:
 
         return molset[index - 1], 200
 
-    ##
+    ## Molecule working set
 
     def add_mol_to_mws(self):
         """
@@ -202,7 +202,7 @@ class MoleculesApi:
 
         return smol, 200
 
-    ##
+    ## Save
 
     def save_smol_as_json(self):
         """
@@ -265,7 +265,7 @@ class MoleculesApi:
             mmol = cif2mmol(cif_data)
             return mmol, 200
 
-    ##
+    ## Save
 
     def save_mmol_as_mmol_json(self):
         """
@@ -473,7 +473,7 @@ class MoleculesApi:
         # Formulate response object
         return create_molset_response(molset, query, cache_id), 200
 
-    ##
+    ## Remove
 
     def remove_from_molset(self):
         """
@@ -527,7 +527,7 @@ class MoleculesApi:
 
         return "ok", 200
 
-    ##
+    ## Update
 
     def update_molset(self):
         """
@@ -541,7 +541,7 @@ class MoleculesApi:
         """
         return self._save_molset(format_as="my-mols")
 
-    ##
+    ## Save
 
     def save_molset_as_json(self):
         """
