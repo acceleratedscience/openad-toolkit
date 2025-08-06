@@ -51,11 +51,14 @@ PCY_IDFR = {
     "cid": "cid",
     "formula": "formula",
 }
+# [{'urn': {'label': 'SMILES', 'name': 'Absolute', 'datatype': 1, 'version': '2.3.0', 'software': 'OEChem', 'source': 'OpenEye Scientific Software', 'release': '2025.04.14'}, 'value': {'sval': 'CCCCCCO'}}, {'urn': {'label': 'SMILES', 'name': 'Connectivity', 'datatype': 1, 'version': '2.3.0', 'software': 'OEChem', 'source': 'OpenEye Scientific Software', 'release': '2025.06.30'}, 'value': {'sval': 'CCCCCCO'}}]
 MOL_PROPERTY_SOURCES = {
     "Log P-XLogP3-AA": "xlogp",
     "Log P-XLogP3": "xlogp",
-    "SMILES-Isomeric": "isomeric_smiles",
-    "SMILES-Canonical": "canonical_smiles",
+    # "SMILES-Isomeric": "isomeric_smiles",
+    # "SMILES-Canonical": "canonical_smiles",
+    "SMILES-Absolute": "isomeric_smiles",
+    "SMILES-Connectivity": "canonical_smiles",
     "Molecular Weight": "molecular_weight",
     "Compound Complexity": "complexity",
     "Count-Rotatable Bond": "rotatable_bond_count",
@@ -432,7 +435,6 @@ def _add_pcy_data(smol, smol_pcy, identifier, identifier_type):
     synonyms = pcy.get_synonyms(smol_pcy["iupac_name"], "name")
     smol["synonyms"] = synonyms[0].get("Synonym") if synonyms and len(synonyms) > 0 else []
 
-    # Add name
     if identifier_type == PCY_IDFR["name"]:
         smol["identifiers"]["name"] = identifier
     elif len(smol.get("synonyms", [])) > 1:
@@ -456,13 +458,17 @@ def _add_pcy_data(smol, smol_pcy, identifier, identifier_type):
     # - Before: {"source": "pubchem"}
     # - After: { 'label': 'IUPAC Name', 'name': 'Preferred', 'datatype': 1, 'version': '2.7.0',
     #            'software': 'Lexichem TK', 'source': 'OpenEye Scientific Software', 'release': '2021.10.14'}
+
     for x in SMOL_PROPERTIES:
         smol["property_sources"][x] = {"source": "PubChem"}
         for prop_name, prop_name_key in MOL_PROPERTY_SOURCES.items():
             if prop_name_key == x:
                 if len(prop_name.split("-")) > 0:
+
                     for y in smol_pcy["record"]["props"]:
+
                         if "label" not in y["urn"]:
+
                             pass
                         elif y["urn"]["label"] == prop_name.split("-", maxsplit=1)[0] and "name" not in y["urn"]:
                             smol["property_sources"][x] = y["urn"]
@@ -499,6 +505,14 @@ def _sep_identifiers_from_properties(smol: dict) -> dict:
     for prop in list(smol["properties"]):
         if prop.lower() in molIdfrs:
             del smol["properties"][prop]
+
+    # This is a Workaround for Pub Chempy and Pubchem being out of sync
+    for src in smol["properties"]["record"]["props"]:
+        if "urn" in src:
+            if src["urn"]["label"] == "SMILES" and src["urn"]["name"] == "Absolute":
+                smol["identifiers"]["isomeric_smiles"] = src["value"]["sval"]
+            elif src["urn"]["label"] == "SMILES" and src["urn"]["name"] == "Connectivity":
+                smol["identifiers"]["canonical_smiles"] = src["value"]["sval"]
 
     return smol
 
