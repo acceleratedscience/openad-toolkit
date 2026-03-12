@@ -3,18 +3,18 @@
 import os
 import glob
 import faiss
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from langchain_community.document_loaders import NotebookLoader, pdf, JSONLoader, UnstructuredMarkdownLoader
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
 
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 
 
-from langchain.schema.runnable import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough
 
 
 from openad.helpers.output import output_error, output_warning
@@ -172,7 +172,7 @@ class Chatobject:
                         loader = DirectoryLoader(i, glob=j, loader_cls=pdf.BasePDFLoader)
                         documents = loader.load()
                         text_splitter = RecursiveCharacterTextSplitter(
-                            chunk_size=1000, chunk_overlap=30, separators=["\@"], keep_separator=False
+                            chunk_size=1000, chunk_overlap=30, separators=["\\@"], keep_separator=False
                         )
                         docs.extend(text_splitter.split_documents(documents))
                     elif j == "**/*.md":
@@ -183,12 +183,12 @@ class Chatobject:
                             markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
 
                             """text_splitter = MarkdownHeaderTextSplitter(
-                                chunk_size=2000, chunk_overlap=100, separators=["\@"], keep_separator=False
+                                chunk_size=2000, chunk_overlap=100, separators=["\\@"], keep_separator=False
                             )"""
                             text_splitter = RecursiveCharacterTextSplitter(
                                 chunk_size=2000,
                                 chunk_overlap=30,  # 30,
-                                separators=["\@"],
+                                separators=["\\@"],
                                 length_function=len_func,
                                 keep_separator=False,
                             )
@@ -218,7 +218,7 @@ class Chatobject:
                         loader = DirectoryLoader(i, glob=j, loader_cls=TextLoader)
                         documents = loader.load()
                         text_splitter = RecursiveCharacterTextSplitter(
-                            chunk_size=2000, chunk_overlap=30, separators=["\@", "Property:"], keep_separator=False
+                            chunk_size=2000, chunk_overlap=30, separators=["\\@", "Property:"], keep_separator=False
                         )
                         docs.extend(text_splitter.split_documents(documents))
                     else:

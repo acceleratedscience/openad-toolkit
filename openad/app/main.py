@@ -1,6 +1,6 @@
 """Main application contain runtime class RUNCMD()"""
 
-#!/usr/local/opt/python@3.9/bin/python3.9
+#!/usr/bin/env python3
 # Copyright 2022 IBM, Inc. or its affiliates. All Rights Reserved.
 
 import os
@@ -60,17 +60,44 @@ from openad.app.global_var_lib import GLOBAL_SETTINGS
 from openad.app.global_var_lib import MEMORY
 
 # Load available_Plugins modules
-import pkg_resources
 import inspect
 import importlib
 
-
 MAGIC_PROMPT = None
 PLUGIN_CLASS_LIST = []
-installed_packages = pkg_resources.working_set
-installed_packages_list = [
-    i.key for i in installed_packages if i.key.startswith("openad-plugin-") or i.key.startswith("openad_plugin_")
-]
+
+# Lazy load distributions only when needed
+_distributions_cache = None
+
+def get_installed_packages():
+    """Get installed packages with lazy loading for better startup performance."""
+    global _distributions_cache
+    if _distributions_cache is None:
+        try:
+            from importlib.metadata import distributions
+            _distributions_cache = distributions()
+        except ImportError:
+            # Fallback for Python < 3.8
+            import pkg_resources  # type: ignore
+            _distributions_cache = pkg_resources.working_set
+    return _distributions_cache
+
+# Get plugin package list
+try:
+    from importlib.metadata import distributions
+    installed_packages = distributions()
+    installed_packages_list = [
+        dist.name for dist in installed_packages
+        if dist.name.startswith("openad-plugin-") or dist.name.startswith("openad_plugin_")
+    ]
+except ImportError:
+    # Fallback to pkg_resources if importlib.metadata not available
+    import pkg_resources  # type: ignore
+    installed_packages = pkg_resources.working_set
+    installed_packages_list = [
+        i.key for i in installed_packages
+        if i.key.startswith("openad-plugin-") or i.key.startswith("openad_plugin_")
+    ]
 
 for module_name in installed_packages_list:
     try:
@@ -84,10 +111,11 @@ for module_name in installed_packages_list:
 sys.ps1 = "\x01\033[31m\x02>>> \x01\033[0m\x02"
 
 
-# Used for for converting lists to strings.
 def convert(lst):
-    """Used for for converting lists to strings."""
-    return str(lst).translate("[],'")
+    """Used for converting lists to strings by removing brackets and quotes."""
+    # Note: This function is used with strings (iterates over characters)
+    # The name 'lst' is misleading - it's actually used with strings
+    return str(lst).replace("[", "").replace("]", "").replace("'", "").replace(",", "")
 
 
 class RUNCMD(Cmd):
@@ -111,7 +139,7 @@ class RUNCMD(Cmd):
     session_id = "_session_" + str(uuid.uuid4()).replace("-", "")
     toolkit_current = None
     prompt = None
-    histfile = os.path.expanduser(_meta_dir + "/.cmd_history")
+    histfile = os.path.join(os.path.expanduser(_meta_dir), ".cmd_history")
     histfile_size = 50  # prompt history file per workspace limit
     current_help = openad_help.OpenadHelp()  # handle to the current help object
     current_help.help_orig = grammar_help.copy()  # copy of the base line command help functions (excludes Toolkits)
@@ -130,7 +158,11 @@ class RUNCMD(Cmd):
 
     # Load OpenAD plugins into cmd_pointer
     plugins = PLUGIN_CLASS_LIST.copy()
-    plugin_instances = []
+    
+    # Optimize plugin initialization with list comprehension
+    plugin_instances = [plugin() for plugin in plugins]
+    
+    # Initialize collections
     plugin_objects = {}
     plugins_statements = []
     plugins_help = []
@@ -140,24 +172,25 @@ class RUNCMD(Cmd):
     plugin_names_lowercase = set()  # Lowercase names
     plugin_name_ns_map = {}  # Lets us map lowercase name to namespace
     plugin_ns_name_map = {}  # Lets us map namespace to name
-    for plugin in plugins:
-        p = plugin()
-        plugin_instances.append(p)
+    
+    # Batch update operations for better performance
+    for p in plugin_instances:
         plugin_objects.update(p.PLUGIN_OBJECTS)
         plugins_statements.extend(p.statements)
         plugins_help.extend(p.help)
-
+        
         plugin_namespace = p.metadata.get("namespace")
         if plugin_namespace:
             plugin_namespaces.add(plugin_namespace)
             plugins_metadata[plugin_namespace] = p.metadata
-
+        
         plugin_name = p.metadata.get("name")
         if plugin_name:
+            plugin_name_lower = plugin_name.lower()
             plugin_names.add(plugin_name)
-            plugin_names_lowercase.add(plugin_name.lower())
-            if not plugin_name in plugin_name_ns_map:
-                plugin_name_ns_map[plugin_name.lower()] = plugin_namespace
+            plugin_names_lowercase.add(plugin_name_lower)
+            if plugin_name_lower not in plugin_name_ns_map:
+                plugin_name_ns_map[plugin_name_lower] = plugin_namespace
                 plugin_ns_name_map[plugin_namespace] = plugin_name
 
     # # Instantiate memory class # Trash
@@ -718,7 +751,8 @@ class RUNCMD(Cmd):
         """CMD Funcion: called on exit command"""
         try:
             cleanup()
-        except:
+        except Exception:
+            # Silently handle cleanup errors
             pass
         write_registry(self.settings, self, True)
         delete_session_registry(self.session_id)

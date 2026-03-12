@@ -388,11 +388,11 @@ def _append_matches(match_list, inp, output, match_word=False):
                 )
 
             # Work around for escape character compensation in re
-            cmd_str = cmd_str.replace("\ ", " ")
-            cmd_str = cmd_str.replace("\[", "[")
-            cmd_str = cmd_str.replace("\]", "]")
-            cmd_str = cmd_str.replace("\<", "<")
-            cmd_str = cmd_str.replace("\>", ">")
+            cmd_str = cmd_str.replace(r"\ ", " ")
+            cmd_str = cmd_str.replace(r"\[", "[")
+            cmd_str = cmd_str.replace(r"\]", "]")
+            cmd_str = cmd_str.replace(r"\<", "<")
+            cmd_str = cmd_str.replace(r"\>", ">")
 
             output.append(f"- <cmd>{cmd_str}</cmd>")
     return output

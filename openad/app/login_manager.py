@@ -1,9 +1,8 @@
 """Used for logging into toolkits"""
 
-# python 3.8
 import pickle
 import os
-import imp  # TODO: future improvement to upgrade from imp
+import importlib.util
 from openad.app.global_var_lib import _meta_login_registry
 from openad.app.global_var_lib import _meta_login_registry_settings
 from openad.helpers.output import output_success, output_error
@@ -33,8 +32,7 @@ def load_login_registry():
     a holding place for a persist to disk solution for storing login handles"""
     try:
         with open(_meta_login_registry, "rb") as handle:
-            login_registry = pickle.load(handle.read())
-            handle.close()
+            login_registry = pickle.load(handle)
     except Exception:
         login_registry = _meta_login_registry_settings.copy()
     return login_registry
@@ -49,8 +47,14 @@ def write_login_registry(login_registry: dict):
 
 # writes the users registry data
 def load_src(name, fpath):
-    """loads the source library"""
-    return imp.load_source(name, os.path.join(os.path.dirname(__file__), fpath))
+    """Load a Python module from a file path using importlib."""
+    file_path = os.path.join(os.path.dirname(__file__), fpath)
+    spec = importlib.util.spec_from_file_location(name, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module {name} from {file_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def load_login_api(cmd_pointer, toolkit_name, reset=False):

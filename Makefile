@@ -1,4 +1,4 @@
-.PHONY: check-lint test setupt setup lint
+.PHONY: check-lint test setupt setup lint install clean
 
 setup_file_path := $(PWD)/setup.sh
 
@@ -8,16 +8,44 @@ setupt:
 	fi
 	@./setup.sh
 
-setup:
-	poetry install
-	poetry run python -m ipykernel install --user --name=ad-kernel
+install:
+	uv sync
+	uv run python -m ipykernel install --user --name=ad-kernel
+
+setup: install
 
 check-lint:
-	poetry run black --check .
+	uv run black --check .
+	uv run ruff check .
 
 lint:
-	poetry run black .
+	uv run black .
+	uv run ruff check --fix .
 
 test:
-	poetry run coverage run --branch --source=./openad/app/ -m pytest --durations=10 --color=yes tests/unit
-	poetry run coverage report
+	uv run coverage run --branch --source=./openad -m pytest --durations=10 --color=yes tests/
+	uv run coverage report
+
+test-unit:
+	uv run pytest tests/unit/ -v
+
+test-imports:
+	uv run pytest tests/unit/test_imports.py -v
+
+test-helpers:
+	uv run pytest tests/unit/test_helpers.py -v
+
+test-api:
+	uv run pytest tests/unit/test_api.py -v
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf .pytest_cache .coverage htmlcov dist build
+
+type-check:
+	uv run mypy openad/ --ignore-missing-imports
+
+pre-commit:
+	uv run pre-commit run --all-files

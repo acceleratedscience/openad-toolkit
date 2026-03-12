@@ -1,7 +1,7 @@
-#!/usr/local/opt/python@3.9/bin/python3.9
+#!/usr/bin/env python3
 import os
 import re
-import imp
+import importlib.util
 import glob
 import json
 import logging
@@ -167,7 +167,14 @@ def execute_tookit(cmd_pointer, parser):
 
 # Fetch the load path for a toolkit library.
 def load_src(name, fpath):
-    return imp.load_source(name, os.path.join(os.path.dirname(__file__), fpath))
+    """Load a Python module from a file path using importlib."""
+    file_path = os.path.join(os.path.dirname(__file__), fpath)
+    spec = importlib.util.spec_from_file_location(name, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module {name} from {file_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 # Extra type checking on top of pyparsing, specifically for float types.

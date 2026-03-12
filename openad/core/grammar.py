@@ -1488,7 +1488,7 @@ def output_train_statements(cmd_pointer):
             
             The Model Service is a capability to register and launch model services for property prediction and data set generation and allows you to launch ones you catalog yourself or remotely catalog already running services.
 
-           \@
+           \\\@
             If a user asks for parameters or options this refers to the parameters that can be given to a function. Make sure all parameters are provided to the user
             
             The Following commands are used to work with the molecule working set of molecules:
@@ -1514,7 +1514,7 @@ def output_train_statements(cmd_pointer):
             A parameter designated by <smiles> refers to a parameter with a caluse such as C(C(C1C(=C(C(=O)O1)O)O)O)O 
 
             ?: will display help and if positioned prior to a command will display help options for that command
-        \@
+        \\@
              The Model Service is a capability to register and launch model services for property generation and data set generation and allows you to launch ones you catalog yourself or remotely catalog already running services.
     
             ***Molecules Properties***
@@ -1577,7 +1577,7 @@ def output_train_statements(cmd_pointer):
             Generate A SINGLE molecules property FOR a list of smiles strings using an additional parameter and merge it back into the molecule working set
             - <cmd>prop GET MOLECULE PROPERTY activity_against_target FOR ['C(C(C1C(=C(C(=O)O1)O)O)O)O','[H-]'] using(target=drd2) merge with mols</cmd>
             }
-            \@
+            \\@
             ***GET PROTEIN PROPERTY***
 
             when identifying a protein we can use what is known as a FASTA string. In bioinformatics and biochemistry, the FASTA format is a text-based format for representing either nucleotide sequences or amino acid (protein) sequences, in which nucleotides or amino acids are represented using single-letter codes.
@@ -1591,7 +1591,7 @@ def output_train_statements(cmd_pointer):
             this is what we use for identifying proteins for property generation.
             The Command syntax for 'GET PROTEIN PROPERTY' command is as follows :<cmd><model_prefix> GET MOLECULE PROTEIN <protein property identifer> | [<list of protein property identifers>] FOR  <FASTA string> | [<list of FASTA strings> ] USING(<option>=<value>)</cmd>
             <cmd>prop get protein property [ charge_density, charge ]  for ['MKYNNRKLSFNPTTVSIAGTLLTVFFLTRLVLSFFSISLFQLVTFQGIFKPYVPDFKNTPSVEFYDLRNYQGNKDGWQQGDRILFCVPLRDASEHLPMFFNHLNTMTYPHNLIDLSFLVSDSSDNTMGVLLSNLQMAQSQQDKSKRFGNIEIYEKDFGQIIGQSFSDRHGFGAQGPRRKLMARARNWLGSVALKPYHSWVYWRDVDVETIPTTIMEDLMHHDKDVIVPNVWRPLPDWLGNIQPYDLNSWKESEGGLQLADSLDEDAVIVEGYPEYATWRPHLAYMRDPNGNPEDEMELDGIGGVSILAKAKVFRTGSHFPAFSFEKHAETEAFGRLSRRMNYNVIGLPHYVIWHIYEPSSDDLKHMAWMAEEEKRKLEEERIREFYNKIWEIGFEDVRDQWNEERDSILKNIDSTLNNKVTVDWSEEGDGSELVDSKGDFVSPNNQQQQQQQQQQQQQQQQQQQQQQLDGNPQGKPLDDNDKNKKKHPKEVPLDFDPDRN','MQYLNFPRMPNIMMFLEVAILCLWVVADASASSAKFGSTTPASAQQSDVELEPINGTLNYRLYAKKGRDDKPWFDGLDSRHIQCVRRARCYPTSNATNTCFGSKLPYELSSLDLTDFHTEKELNDKLNDYYALKHVPKCWAAIQPFLCAVFKPKCEKINGEDMVYLPSYEMCRITMEPCRILYNTTFFPKFLRCNETLFPTKCTNGARGMKFNGTGQCLSPLVPTDTSASYYPGIEGCGVRCKDPLYTDDEHRQIHKLIGWAGSICLLSNLFVVSTFFIDWKNANKYPAVIVFYINLCFLIACVGWLLQFTSGSREDIVCRKDGTLRHSEPTAGENLSCIVIFVLVYYFLTAGMVWFVFLTYAWHWRAMGHVQDRIDKKGSYFHLVAWSLPLVLTITTMAFSEVDGNSIVGICFVGYINHSMRAGLLLGPLCGVILIGGYFITRGMVMLFGLKHFANDIKSTSASNKIHLIIMRMGVCALLTLVFILVAIACHVTEFRHADEWAQSFRQFIICKISSVFEEKSSCRIENRPSVGVLQLHLLCLFSSGIVMSTWCWTPSSIETWKRYIRKKCGKEVVEEVKMPKHKVIAQTWAKRKDFEDKGRLSITLYNTHTDPVGLNFDVNDLNSSETNDISSTWAAYLPQCVKRRMALTGAATGNSSSHGPRKNSLDSEISVSVRHVSVESRRNSVDSQVSVKIAEMKTKVASRSRGKHGGSSSNRRTQRRRDYIAAATGKSSRRRESSTSVESQVIALKKTTYPNASHKVGVFAHHSSKKQHNYTSSMKRRTANAGLDPSILNEFLQKNGDFIFPFLQNQDMSSSSEEDNSRASQKIQDLNVVVKQQEISEDDHDGIKIEELPNSKQVALENFLKNIKKSNESNSNRHSRNSARSQSKKSQKRHLKNPAADLDFRKDCVKYRSNDSLSCSSEELDVALDVGSLLNSSFSGISMGKPHSRNSKTSCDVGIQANPFELVPSYGEDELQQAMRLLNAASRQRTEAANEDFGGTELQGLLGHSHRHQREPTFMSESDKLKMLLLPSK']</cmd>
- \@ \n"""
+ \\@ \n"""
     )
 
     """training_file.write(
@@ -1599,10 +1599,10 @@ def output_train_statements(cmd_pointer):
               The users Domain Specific Language commands will be interpreted from these command definitions which the application\
                   trainslates into the Domain specific Language (DSL) .. for reference \n command_name : is the name of the command\n command_group :\
                       is the toolkit group the command belongs to, command_syntax : is the Syntax description for the command \n command_help :\
-                          is the associated help instructions and examples on how to use the command.  \@\n"
+                          is the associated help instructions and examples on how to use the command.  \\@\n"
     )"""
     # for i in training_statements:
-    #    training_file.write(str(i) + "\\@\n")
+    #    training_file.write(str(i) + "\\\@\n")
     training_file.close()
     cmds = []
     cmds.extend(_compile_section(organize_commands(grammar_help)))
@@ -1659,7 +1659,7 @@ def output_train_statements(cmd_pointer):
             + a_toolkit.toolkit_name
             + " toolkit with their  command definition and description \n "
             + str(a_toolkit.toolkit_description.replace("\n", new_line_replace))
-            + " \n When displaying an answer always interpret the command specified \@ \n"
+            + " \n When displaying an answer always interpret the command specified \\@ \n"
         )
 
         x = 0
@@ -1674,7 +1674,7 @@ def output_train_statements(cmd_pointer):
             )
             x += 1
         for i in training_statements:
-            training_file.write("\@ " + str(i))
+            training_file.write("\\@ " + str(i))
         training_file.close()
     return
 
@@ -1708,7 +1708,7 @@ def _compile_section(cmds_organized):
         for cmd_str, cmd_description in cmds_organized[category]:
             category_output = (
                 category_output
-                + f"Command Category: {category}\n Command Syntax: `{cmd_str.strip()}`\nCommand Description: {_parse_description(cmd_description)}<br>\n \@"
+                + f"Command Category: {category}\n Command Syntax: `{cmd_str.strip()}`\nCommand Description: {_parse_description(cmd_description)}<br>\n \\@"
             )
 
         output.append(category_output)
