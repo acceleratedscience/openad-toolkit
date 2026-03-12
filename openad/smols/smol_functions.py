@@ -286,50 +286,49 @@ def get_smol_from_pubchem(identifier: str, show_spinner: bool = False) -> dict |
         Valid inputs: InChI, SMILES, InChIKey, name, CID.
     """
 
-    error_msg = "<error>x</error> <soft>{} search on PubChem returned empty</soft>"
-
     smol = None
+    search_type = None
+    
+    # Try different search methods based on identifier format
     if identifier.startswith("InChI="):
         if show_spinner:
             spinner.start("Searching PubChem for InChI")
         smol = _get_pubchem_compound(identifier, PCY_IDFR["inchi"])
-        if not smol and show_spinner:
-            spinner.stop()
-            output_text(error_msg.format("InChI"))
-    if not smol and len(identifier) == 27:
+        search_type = "InChI"
+    elif len(identifier) == 27:
         if show_spinner:
             spinner.start("Searching PubChem for inchikey")
         smol = _get_pubchem_compound(identifier, PCY_IDFR["inchikey"])
-        if not smol and show_spinner:
-            spinner.stop()
-            output_text(error_msg.format("inchikey"))
-    if not smol and is_numeric(identifier):
+        search_type = "inchikey"
+    elif is_numeric(identifier):
         if show_spinner:
             spinner.start("Searching PubChem for CID")
         smol = _get_pubchem_compound(identifier, PCY_IDFR["cid"])
-        if not smol and show_spinner:
-            spinner.stop()
-            output_text(error_msg.format("CID"))
-    if not smol and possible_smiles(identifier):
+        search_type = "CID"
+    elif possible_smiles(identifier):
         if show_spinner:
             spinner.start("Searching PubChem for SMILES")
         smol = _get_pubchem_compound(identifier, PCY_IDFR["smiles"])
-        if not smol and show_spinner:
-            spinner.stop()
-            output_text(error_msg.format("SMILES"))
+        search_type = "SMILES"
+    
+    # If not found yet, try name search
     if not smol:
         if show_spinner:
             spinner.start("Searching PubChem for name")
         smol = _get_pubchem_compound(identifier, PCY_IDFR["name"])
-        if not smol and show_spinner:
-            spinner.stop()
-            output_text(error_msg.format("name"))
+        search_type = "name"
+    
     # # Commented out until getting no time outs from pubchem.
     # if not smol:
     #     smol = _get_pubchem_compound(identifier, PCY_IDFR["formula"])
 
     if show_spinner:
         spinner.stop()
+
+    # Only show error if ALL search methods failed
+    if not smol and show_spinner:
+        error_msg = "<error>x</error> <soft>PubChem search returned no results for '{}'</soft>"
+        output_text(error_msg.format(identifier))
 
     if smol:
         return _sep_identifiers_from_properties(smol)

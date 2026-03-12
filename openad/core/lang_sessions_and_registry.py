@@ -1,6 +1,5 @@
 """Provides Settings Management and Toolkit Management"""
 
-import pickle
 import os
 import datetime
 import tarfile
@@ -22,6 +21,7 @@ from openad.app.global_var_lib import _all_toolkits
 from openad.helpers.output import output_text, output_error, output_success, output_warning
 from openad.helpers.output_msgs import msg
 from openad.helpers.general import confirm_prompt, refresh_prompt, other_sessions_exist
+from openad.helpers.serialization import load_data, save_data
 
 logger = get_logger(__name__, color=bcolors.OKCYAN + bcolors.UNDERLINE)
 
@@ -29,14 +29,13 @@ logger = get_logger(__name__, color=bcolors.OKCYAN + bcolors.UNDERLINE)
 def initialise_registry():
     """
     Initialise the registry file.
-    The registry file is a pickle file that contains the user's settings.
+    The registry file uses msgpack for fast, secure serialization.
     """
     try:
-        with open(_meta_registry, "wb") as handle:
-            settings = pickle.dump(_meta_registry_settings, handle)
+        save_data(_meta_registry_settings, _meta_registry, use_msgpack=True)
         return True
     except Exception as err:
-        output_error("Error initialising the registry: " + err)
+        output_error(f"Error initialising the registry: {err}")
         return False
 
 
@@ -54,7 +53,7 @@ def update_main_registry_env_var(cmd_pointer, var_name, value):
 
 def load_registry(cmd_pointer, orig_reg=False):
     """
-    Load the registry file from disk.
+    Load the registry file from disk with backward compatibility for pickle files.
     If orig_reg=False, it loads the session registry file,
     otherwise it loads the master registry file.
     """
@@ -63,10 +62,11 @@ def load_registry(cmd_pointer, orig_reg=False):
     else:
         registry_file = _meta_registry_session + cmd_pointer.session_id
     try:
-        with open(registry_file, "rb") as handle:
-            registry = pickle.loads(handle.read())
+        # Use new serialization helper with automatic pickle fallback
+        registry = load_data(registry_file, migrate_to_msgpack=True)
     except Exception:
         registry = _meta_registry_settings
+    
     # New Section to test for updated Registry elements and add them
     # possibly is now redundant / Deprecated leaving for template
     # to show how we can manage settings file changes cross version
@@ -80,7 +80,7 @@ def load_registry(cmd_pointer, orig_reg=False):
 
 def write_registry(registry: dict, cmd_pointer, orig_reg=False):
     """
-    Write the registry file to disk.
+    Write the registry file to disk using msgpack (faster and safer than pickle).
     If orig_reg=False it writes to the session registry file,
     otherwise it writes to the master registry file.
     """
@@ -95,10 +95,9 @@ def write_registry(registry: dict, cmd_pointer, orig_reg=False):
     else:
         registry_file = _meta_registry_session + cmd_pointer.session_id
     try:
-        with open(registry_file, "wb") as handle:
-            settings = pickle.dump(registry, handle)
+        save_data(registry, registry_file, use_msgpack=True)
     except Exception as err:
-        output_error("error writing registry" + err, return_val=False)
+        output_error(f"error writing registry: {err}", return_val=False)
         return False
     return True
 
@@ -159,8 +158,7 @@ def registry_add_toolkit(cmd_pointer, parser, switch_context=True, suppress_outp
     toolkit_name = parser["toolkit_name"]
     try:
         # raise Exception("This is a test exception")
-        with open(_meta_registry, "rb") as handle:
-            settings = pickle.loads(handle.read())
+        settings = load_data(_meta_registry, migrate_to_msgpack=True)
         if toolkit_name.upper() not in settings["toolkits"]:
             full_original_directory_name = (
                 os.path.dirname(os.path.abspath(__file__)) + "/../user_toolkits/" + toolkit_name.upper() + "/"
@@ -233,26 +231,25 @@ def registry_remove_toolkit(cmd_pointer, parser, suppress_output=False):
     toolkit_name = parser["toolkit_name"].upper()
     try:
         # raise Exception("This is a test exception")
-        with open(_meta_registry, "rb") as handle:
-            settings = pickle.loads(handle.read())
-            if toolkit_name in settings["toolkits"]:
-                settings["toolkits"].remove(toolkit_name.upper())
-                cmd_pointer.settings["toolkits"].remove(toolkit_name.upper())
-                write_registry(cmd_pointer.settings, cmd_pointer)
+        settings = load_data(_meta_registry, migrate_to_msgpack=True)
+        if toolkit_name in settings["toolkits"]:
+            settings["toolkits"].remove(toolkit_name.upper())
+            cmd_pointer.settings["toolkits"].remove(toolkit_name.upper())
+            write_registry(cmd_pointer.settings, cmd_pointer)
 
-            else:
-                # if not suppress_output:
-                output_error(msg("fail_toolkit_not_registered", toolkit_name), return_val=False)
-                return False
+        else:
+            # if not suppress_output:
+            output_error(msg("fail_toolkit_not_registered", toolkit_name), return_val=False)
+            return False
 
-            if cmd_pointer.settings["context"] == toolkit_name:
-                settings["context"] = None
-                cmd_pointer.settings["context"] = None
-                cmd_pointer.toolkit_current = None
-                cmd_pointer.current_help.reset_help()
-                write_registry(cmd_pointer.settings, cmd_pointer)
-                refresh_prompt(cmd_pointer.settings)
-                create_statements(cmd_pointer)
+        if cmd_pointer.settings["context"] == toolkit_name:
+            settings["context"] = None
+            cmd_pointer.settings["context"] = None
+            cmd_pointer.toolkit_current = None
+            cmd_pointer.current_help.reset_help()
+            write_registry(cmd_pointer.settings, cmd_pointer)
+            refresh_prompt(cmd_pointer.settings)
+            create_statements(cmd_pointer)
 
     except Exception as err:
         # if not suppress_output:

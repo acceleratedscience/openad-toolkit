@@ -4,11 +4,11 @@ import os
 import glob
 import copy
 import time
-import pickle
 from rdkit import Chem
 from openad.smols.smol_functions import canonicalize
 from openad.helpers.data_formats import ANALYSIS_RECORD
 from openad.helpers.output import output_success, output_error, output_warning
+from openad.helpers.serialization import load_data, save_data
 
 
 CACHE_DIR = "/_result_cache/"
@@ -48,25 +48,27 @@ def save_result(result: dict, cmd_pointer) -> bool:
         return False
 
     filename = f'{inchikey}-{str(result["toolkit"]).upper()}-{str(result["function"]).upper()}-{timestr}.res'
-    _write_analysis(result, _create_workspace_dir_if_nonexistent(cmd_pointer, CACHE_DIR) + filename)
+    filepath = _create_workspace_dir_if_nonexistent(cmd_pointer, CACHE_DIR) + filename
+    # Save using msgpack (faster and safer than pickle)
+    save_data(result, filepath, use_msgpack=True)
     return True
 
 
 def _retrieve_results(smiles: str, cmd_pointer) -> list | bool:
     """
-    Retrieve results from workspace cache
+    Retrieve results from workspace cache with backward compatibility for pickle files
     """
 
     rdkit_mol = Chem.MolFromSmiles(smiles)  # pylint: disable=no-member
     inchi = Chem.rdinchi.MolToInchi(rdkit_mol)[0]
     inchikey = Chem.inchi.InchiToInchiKey(inchi)
     results = []
-    for i in glob.glob(
+    for filepath in glob.glob(
         _create_workspace_dir_if_nonexistent(cmd_pointer, CACHE_DIR) + inchikey + "-*.res",
         recursive=True,
     ):
-        func_file = open(i, "rb")
-        results.append(pickle.load(func_file))
+        # Load with automatic pickle fallback
+        results.append(load_data(filepath, migrate_to_msgpack=True))
 
     return results.copy()
 
@@ -161,7 +163,6 @@ def enrich_mws_with_analysis(cmd_pointer, inp) -> bool:
 
 
 def _write_analysis(result: dict, location):
-    """writes molecules to a given file"""
-    with open(os.path.expanduser(location), "wb") as handle:
-        pickle.dump(result, handle)
+    """writes molecules to a given file using msgpack (faster and safer than pickle)"""
+    save_data(result, os.path.expanduser(location), use_msgpack=True)
     return True

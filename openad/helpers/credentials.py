@@ -1,9 +1,9 @@
 """Helpers for getting and Saving Credentials"""
 
-import pickle
 import readline
 import os
 from openad.helpers.general import user_input, user_secret
+from openad.helpers.serialization import load_data, save_data
 
 DEFAULT_SECRET = ["api_key", "password"]
 DEFAULT_USER = ["user_name", "email", "name"]
@@ -43,17 +43,22 @@ def assign_dict_value(input_dict: dict, path: str, value) -> dict:
 
 
 def load_credentials(location):
-    """Load the user's api login data."""
-    if not os.path.exists(os.path.expanduser(location)):
+    """Load the user's api login data with backward compatibility for pickle files."""
+    location = os.path.expanduser(location)
+    if not os.path.exists(location):
         return None
-    with open(os.path.expanduser(location), "rb") as handle:
-        credentials = pickle.loads(handle.read())
-        handle.close()
-        return credentials
+    try:
+        # Use new serialization helper with automatic pickle fallback
+        return load_data(location, migrate_to_msgpack=True)
+    except Exception:
+        return None
 
 
 def write_credentials(registry: dict, location):
-    """Dumps the LLM api details to home directory of app"""
-    with open(os.path.expanduser(location), "wb") as handle:
-        pickle.dump(registry, handle)
-    return True
+    """Saves credentials using msgpack (faster and safer than pickle)"""
+    location = os.path.expanduser(location)
+    try:
+        save_data(registry, location, use_msgpack=True)
+        return True
+    except Exception:
+        return False

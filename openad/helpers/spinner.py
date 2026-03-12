@@ -45,7 +45,32 @@ class Spinner(Halo):
         }
 
         if GLOBAL_SETTINGS["display"] != "api":
+            # Snapshot IPython callbacks before Halo registers its broken clean_up.
+            # Halo's clean_up takes no args but IPython passes an ExecutionResult to it.
+            _ip = None
+            _pre_count = 0
+            try:
+                from IPython import get_ipython
+
+                _ip = get_ipython()
+                if _ip is not None:
+                    _pre_count = len(_ip.events.callbacks.get("post_run_cell", []))
+            except Exception:
+                pass
+
             super().__init__(spinner="triangle", color="white", interval=700)
+
+            # Replace Halo's broken clean_up with a wrapper that accepts IPython's result arg.
+            if _ip is not None:
+                callbacks = _ip.events.callbacks.get("post_run_cell", [])
+                if len(callbacks) > _pre_count:
+                    broken = callbacks[-1]
+                    _ip.events.unregister("post_run_cell", broken)
+
+                    def _fixed_cleanup(result=None, _orig=broken):
+                        _orig()
+
+                    _ip.events.register("post_run_cell", _fixed_cleanup)
 
             # Fancy spinner
             # super().__init__(spinner=wave_spinner, color="yellow")

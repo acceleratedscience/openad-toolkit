@@ -1,19 +1,19 @@
 import os
-import pickle
 from typing import Dict, TypedDict
 
 from filelock import FileLock
 
 from openad.openad_model_plugin.config import SERVICE_MODEL_PATH
 from openad.openad_model_plugin.utils import bcolors, get_logger
+from openad.helpers.serialization import load_data, save_data
 
 logger = get_logger(__name__, color=bcolors.OKGREEN)
 
 
-# path to authentication lookup table
-auth_lookup_path = os.path.join(SERVICE_MODEL_PATH, "auth_lookup.pkl")
+# path to authentication lookup table (now using msgpack)
+auth_lookup_path = os.path.join(SERVICE_MODEL_PATH, "auth_lookup.msgpack")
 # lock file to prevent concurrent access
-auth_lookup_lock = FileLock(os.path.join(SERVICE_MODEL_PATH, "auth_lookup.pkl.lock"))
+auth_lookup_lock = FileLock(os.path.join(SERVICE_MODEL_PATH, "auth_lookup.msgpack.lock"))
 
 
 class LookupTable(TypedDict):
@@ -24,11 +24,10 @@ class LookupTable(TypedDict):
 
 
 def save_lookup_table(data: LookupTable):
-    """save authentication lookup table to pickle file"""
+    """save authentication lookup table using msgpack (faster and safer than pickle)"""
     logger.info("saving auth lookup table")
     with auth_lookup_lock:  # lock file to prevent concurrent access
-        with open(auth_lookup_path, "wb") as file:
-            pickle.dump(data, file)
+        save_data(data, auth_lookup_path, use_msgpack=True)
 
 
 def hide_api_keys(data: LookupTable) -> LookupTable:
@@ -40,13 +39,18 @@ def hide_api_keys(data: LookupTable) -> LookupTable:
 
 
 def load_lookup_table(hide_api: bool = False) -> LookupTable:
-    """load authentication lookup table from pickle file"""
+    """load authentication lookup table with backward compatibility for pickle files"""
     logger.debug("loading auth lookup table")
     with auth_lookup_lock:  # lock file to prevent concurrent access
-        # load the current auth groups
+        # Check for new msgpack file first, then legacy pickle file
         if os.path.exists(auth_lookup_path):
-            with open(auth_lookup_path, "rb") as file:
-                data = pickle.load(file)
+            data = load_data(auth_lookup_path, migrate_to_msgpack=True)
+        elif os.path.exists(auth_lookup_path.replace('.msgpack', '.pkl')):
+            # Migrate from old pickle file
+            old_path = auth_lookup_path.replace('.msgpack', '.pkl')
+            data = load_data(old_path, migrate_to_msgpack=False)
+            save_lookup_table(data)  # Save as msgpack
+            logger.info(f"Migrated auth lookup from pickle to msgpack")
         else:
             data = {"auth_table": {}, "service_table": {}}
             save_lookup_table(data)  # create an empty lookup table

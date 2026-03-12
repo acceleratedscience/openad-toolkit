@@ -1,6 +1,5 @@
 """Used for logging into toolkits"""
 
-import pickle
 import os
 import importlib.util
 from openad.app.global_var_lib import _meta_login_registry
@@ -8,17 +7,13 @@ from openad.app.global_var_lib import _meta_login_registry_settings
 from openad.helpers.output import output_success, output_error
 from openad.helpers.output_msgs import msg
 from openad.app.global_var_lib import _meta_dir_toolkits
-
-# Initialise  Login Pickle
+from openad.helpers.serialization import load_data, save_data
 
 
 def initialise_toolkit_login():
-    """Initialises the settings file for login, currently this code
-    is a holding place for a persist to disk solution for storing login handles"""
+    """Initialises the settings file for login using msgpack (faster and safer than pickle)"""
     try:
-        with open(_meta_login_registry, "wb") as handle:
-            pickle.dump(_meta_login_registry_settings, handle)
-            handle.close()
+        save_data(_meta_login_registry_settings, _meta_login_registry, use_msgpack=True)
         output_success(msg("success_login_init"), return_val=False)
         return True
     except Exception as err:
@@ -26,13 +21,10 @@ def initialise_toolkit_login():
         return False
 
 
-# loads the user's registry data
 def load_login_registry():
-    """Loads connection handles from disk, currently this code is
-    a holding place for a persist to disk solution for storing login handles"""
+    """Loads connection handles from disk with backward compatibility for pickle files"""
     try:
-        with open(_meta_login_registry, "rb") as handle:
-            login_registry = pickle.load(handle)
+        login_registry = load_data(_meta_login_registry, migrate_to_msgpack=True)
     except Exception:
         login_registry = _meta_login_registry_settings.copy()
     return login_registry
