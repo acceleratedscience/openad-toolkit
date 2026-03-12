@@ -1,5 +1,5 @@
 import datetime
-import json
+import orjson
 import os
 import time
 from typing import Any, Dict
@@ -211,7 +211,7 @@ class ModelService(Dispatcher):
         status = self.status(name).get("data")
         if status["data"]:
             logger.debug(f"service has additional data | {name=}")
-            return json.loads(status["data"])
+            return orjson.loads(status["data"])
         return dict()
 
     def get_url(self, name: str):
@@ -373,7 +373,7 @@ class ModelService(Dispatcher):
         if service_name not in self.list():
             output_error(f"Service <yellow>{service_name}</yellow> not found in catalog")
             return False
-        config = json.dumps(
+        config = orjson.dumps(
             {
                 "remote_service": True,
                 "remote_endpoint": endpoint,
@@ -461,7 +461,7 @@ class ModelService(Dispatcher):
         Returns:
             Dict[str, Any]: data
         """
-        return json.loads(super().status(name, pretty))
+        return orjson.loads(super().status(name, pretty))
 
     def get_user_provided_config(self, name: str) -> UserProvidedConfig:
         logger.debug(f"getting provider config | {name=}")
@@ -477,4 +477,4 @@ if __name__ == "__main__":
     dispatcher1 = ModelService()
     dispatcher1.load()
     print(dispatcher1.list())
-    print(json.dumps(dispatcher1.status(dispatcher1.list()[0]), indent=2))
+    print(orjson.dumps(dispatcher1.status(dispatcher1.list()[0]), option=orjson.OPT_INDENT_2).decode('utf-8'))

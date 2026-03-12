@@ -1,11 +1,12 @@
 import os
-import json
 import ijson
 import pandas as pd
 from io import StringIO
+import orjson
 from openad.helpers.output import output_error
 from openad.helpers.output_msgs import msg
 from openad.helpers.json_decimal_encoder import DecimalEncoder
+from openad.helpers.serialization import load_json
 
 
 # Standardized file opener.
@@ -63,9 +64,9 @@ def open_file(file_path, return_err=False, dumb=False, page=None, _stats_only=Fa
                     if dumb:
                         data = f.read()
 
-                    # Parse JSON as dict
+                    # Parse JSON as dict (using optimized orjson)
                     elif ext == "json" or ext == "cjson":
-                        data = json.load(f)
+                        data = load_json(file_path)
 
                     # # Parse CSV as dataframe
                     # elif ext == "csv":
@@ -148,10 +149,11 @@ def get_chunk_json(file_path, start, chunk_size, as_string=False):
         # case we read the entire file and return it as a single chunk.
         if chunk == []:
             f.seek(0)
-            chunk = [json.loads(f.read())]
+            chunk = [orjson.loads(f.read())]
 
     if as_string:
-        return json.dumps(chunk, cls=DecimalEncoder)
+        # orjson doesn't support custom encoders, but handles Decimal natively
+        return orjson.dumps(chunk).decode('utf-8')
     else:
         return chunk
 

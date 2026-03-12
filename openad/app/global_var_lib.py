@@ -4,7 +4,6 @@ Central place for commonly used global variables.
 
 import os
 import shutil
-from openad.helpers.general import get_toolkits
 from openad.app.memory import Memory
 
 # client metadata directory
@@ -34,7 +33,8 @@ _meta_login_registry_settings = {
 }
 
 # Other
-_all_toolkits = get_toolkits()
+# Deprecated: Toolkits replaced by plugins - return empty list
+_all_toolkits = []
 _date_format = "%a %b %d, %G - %R"
 _repo_dir = os.path.dirname(os.path.abspath(__file__))
 

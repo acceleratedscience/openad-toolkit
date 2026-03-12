@@ -1,7 +1,7 @@
 """Functions that are called for molecule commands"""
 
 import os
-import json
+import orjson
 import glob
 import copy
 import pickle
@@ -263,8 +263,8 @@ def export_molecule(cmd_pointer, inp):
     if "as_file" in inp.as_dict() or GLOBAL_SETTINGS["display"] in ["terminal"]:
         filename = smol.get("identifiers", {}).get("name") or get_best_available_identifier(smol)[1]
         file_path = prepare_file_path(cmd_pointer, filename, force_ext="sdf")
-        json_file = open(file_path, "w", encoding="utf-8")
-        json.dump(smol, json_file)
+        with open(file_path, "wb") as json_file:
+            json_file.write(orjson.dumps(smol, option=orjson.OPT_INDENT_2))
         fs_success(cmd_pointer, filename, file_path, "Molecule")
     elif GLOBAL_SETTINGS["display"] in ["api", "notebook"]:
         return deepcopy(smol)

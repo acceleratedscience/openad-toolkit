@@ -6,7 +6,7 @@ import os
 import re
 import ast
 import time
-import json
+import orjson
 import shutil
 import pandas
 import asyncio
@@ -814,9 +814,9 @@ def load_mols_from_file(cmd_pointer, file_path):
         # Read file and return the molset
         source_type = "molset"
         try:
-            with open(file_path, "r", encoding="utf-8") as file:
+            with open(file_path, "rb") as file:
                 molset = file.read()
-            molset = json.loads(molset) if molset else None
+            molset = orjson.loads(molset) if molset else None
         except Exception as err:  # pylint: disable=broad-except
             error = err
 
@@ -869,8 +869,9 @@ def save_molset_as_json(molset: list, file_path: str):
 
     # Write json to disk
     try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(molset, f, cls=DecimalEncoder, indent=4)
+        with open(file_path, "wb") as f:
+            # orjson handles Decimal natively, no custom encoder needed
+            f.write(orjson.dumps(molset, option=orjson.OPT_INDENT_2))
             return True, None
     except Exception as err:  # pylint: disable=broad-except
         return False, {"error_msg": f"Error writing molset.json file: {err}"}
@@ -1305,8 +1306,8 @@ def create_molset_cache_file(cmd_pointer: object, molset: dict = None, path_abso
     # we need to write the molset object to disk (slow).
     else:
         # timeit("write_cache")
-        with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(molset, f)
+        with open(cache_path, "wb") as f:
+            f.write(orjson.dumps(molset))
         # timeit("write_cache", True)
 
     return cache_id
@@ -1747,13 +1748,14 @@ def index_molset_file_async(path_absolute):
         # Read
         async with aiofiles.open(cache_path, "r", encoding="utf-8") as f:
             content = await f.read()
-        molset = json.loads(content)
+        molset = orjson.loads(content)
         for i, mol in enumerate(molset):
             mol["index"] = i + 1
             molset[i] = mol
         # Write
-        async with aiofiles.open(cache_path, "w", encoding="utf-8") as f:
-            await f.write(json.dumps(molset, ensure_ascii=False, indent=4, cls=DecimalEncoder))
+        async with aiofiles.open(cache_path, "wb") as f:
+            # orjson handles Decimal natively and is faster
+            await f.write(orjson.dumps(molset, option=orjson.OPT_INDENT_2))
 
     asyncio.run(_index_molset_file(path_absolute))
 

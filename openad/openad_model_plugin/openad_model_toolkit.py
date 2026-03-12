@@ -3,7 +3,7 @@
 # import openad_model_property_service.service_defs as new_prop_services
 
 import glob
-import json
+import orjson
 import os
 import shutil, re
 import openad.helpers.general as helpers_general
@@ -694,7 +694,7 @@ def request_generate(cmd_pointer, request_input):
         if "sample_size" in request_input.as_dict():
             Sample_Size = request_input.as_dict()["sample_size"]
         if "target@object" in request_input.as_dict():
-            subjects = [json.loads(str(request_input.as_dict()["target@object"]).replace("'", '"'))]
+            subjects = [orjson.loads(str(request_input.as_dict()["target@object"]).replace("'", '"'))]
         if "target@string" in request_input.as_dict():
             subjects = request_input.as_dict()["target@string"]
         if "target@number" in request_input.as_dict():
@@ -758,7 +758,7 @@ def request_generate(cmd_pointer, request_input):
                 )
             elif actual_param.split("@")[1] == "object":
                 # x = dict(json.loads(request_input.as_dict()[param]["val"].replace("'", '"')))
-                template["parameters"][actual_param.split("@")[0]] = json.loads(
+                template["parameters"][actual_param.split("@")[0]] = orjson.loads(
                     request_input.as_dict()[param]["val"].replace("'", '"')
                 )
             elif actual_param.split("@")[1] == "integer":

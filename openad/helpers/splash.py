@@ -1,5 +1,4 @@
 import os
-import json
 
 from openad.helpers.files import open_file
 from openad.helpers.output import output_text, output_error
@@ -31,7 +30,9 @@ def splash(toolkit_name=None, cmd_pointer=None, startup=False, raw=False):
     if main_splash:
         file_path = base__path + f"app/metadata.json"
     else:
-        file_path = base__path + f"user_toolkits/{toolkit_name}/metadata.json"
+        # DEPRECATED: Toolkits have been replaced by plugins
+        # Toolkit metadata is no longer available from user_toolkits
+        return output_error("Toolkits are deprecated. Please use plugins instead.", return_val=True)
 
     # Load metadata from JSON file.
     data = open_file(file_path)

@@ -1,5 +1,5 @@
 import os
-import json
+import orjson
 from urllib.parse import unquote
 from flask import request
 from openad.workers.file_system import (
@@ -38,7 +38,7 @@ class FileSystemApi:
         """
         Set the active workspace.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         new_workspace_name = data["workspace"] if "workspace" in data else ""
         current_workspace_name = self.cmd_pointer.settings["workspace"]
         workspace_diff = new_workspace_name != current_workspace_name
@@ -57,7 +57,7 @@ class FileSystemApi:
         Fetch your active workspace's content as a JSON object.
         """
         # data = request.data.decode("utf-8")
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         path = unquote(data["path"]) if "path" in data else ""
         return fs_get_workspace_files(self.cmd_pointer, path)
 
@@ -65,7 +65,7 @@ class FileSystemApi:
         """
         Fetch a file's content as a JSON object.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         path = unquote(data["path"]) if "path" in data else ""  # unquote = decodeURIComponent in JS
         query = data["query"] if "query" in data else {}
 
@@ -83,7 +83,7 @@ class FileSystemApi:
         """
         Open a file in its designated OS application.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         path_absolute = unquote(data["path_absolute"]) if "path_absolute" in data else ""
 
         try:
@@ -97,7 +97,7 @@ class FileSystemApi:
         Move a file to the workspace trash.
         The trash gets cleared at the end of a session.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         path_absolute = unquote(data["path_absolute"]) if "path_absolute" in data else ""
 
         trash_dir = f"{self.cmd_pointer.workspace_path()}/.trash"

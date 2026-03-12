@@ -3,7 +3,7 @@ Functions to translate between different molecule and molecule set formats.
 """
 
 import ast
-import json
+import orjson
 import pandas as pd
 from rdkit import Chem, RDLogger
 
@@ -406,8 +406,8 @@ def sdf_path2molset(sdf_path):
     # gets converted into a number, which then becomes "Infinite" after parsing.
     def _try_parse_json(value):
         try:
-            return json.loads(value)
-        except json.JSONDecodeError:
+            return orjson.loads(value)
+        except (orjson.JSONDecodeError, ValueError):
             try:
                 return ast.literal_eval(value)
             except (ValueError, SyntaxError):

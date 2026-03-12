@@ -141,6 +141,16 @@ def clear_sessions(cmd_pointer, parser):
 
 def registry_add_toolkit(cmd_pointer, parser, switch_context=True, suppress_output=False):
     """
+    DEPRECATED: Toolkits have been replaced by plugins.
+    This function is kept for backward compatibility but will return an error.
+    """
+    if not suppress_output:
+        output_error("Toolkits are deprecated. Please use plugins instead. See: https://openad.accelerate.science/documentation/plugins", return_val=False)
+    return False
+    
+def registry_add_toolkit_DEPRECATED(cmd_pointer, parser, switch_context=True, suppress_output=False):
+    """
+    DEPRECATED: Original implementation kept for reference.
     Installs a toolkit by copying it from the installation
     source (openad/user_toolkits) to the toolkits directory.
     """

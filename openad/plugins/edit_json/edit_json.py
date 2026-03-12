@@ -2,7 +2,8 @@ import ast
 import os
 import re
 import operator
-import json
+import orjson
+import json  # Keep for JSONDecodeError exception
 import math
 import copy
 from functools import reduce
@@ -333,7 +334,7 @@ class EditJson:
         schema = None
         try:
             with open(schema_path, encoding="UTF-8") as file:
-                schema = json.load(file)
+                schema = orjson.loads(file.read())
                 # raise FileNotFoundError("Bla bla bla.")  # For testing
         except FileNotFoundError as err:
             print_s(
@@ -419,7 +420,7 @@ class EditJson:
         file_valid = True
         try:
             with open(json_path, "r", encoding="UTF-8") as file:
-                data = json.load(file)
+                data = orjson.loads(file.read())
                 file_exists = True
         except FileNotFoundError:
             if not self.new and not self.template:
@@ -438,7 +439,7 @@ class EditJson:
         try:
             with open(template_path, encoding="UTF-8") as file:
                 # raise FileNotFoundError("Bla bla bla.")  # For testing
-                self.template = json.load(file)
+                self.template = orjson.loads(file.read())
                 success = True
         except FileNotFoundError as err:
             print_s(
@@ -1703,7 +1704,7 @@ class EditJson:
         def _has_changes():
             try:
                 with open(self.json_path, "r", encoding="UTF-8") as f:
-                    file_data = json.load(f)
+                    file_data = orjson.loads(f.read())
                 if self.data == file_data:
                     return False
                 else:
@@ -1865,8 +1866,8 @@ class ConfirmExitScreen:
                     )
                     # return self.ej.term.green('Changes saved to JSON file.') + self.ej.term.yellow('\nNote: you were in demo mode so your changes have not really been saved.')  # noqa
                 else:
-                    with open(self.ej.json_path, "w", encoding="UTF-8") as f:
-                        json.dump(self.ej.data, f, indent=4)
+                    with open(self.ej.json_path, "wb") as f:
+                        f.write(orjson.dumps(self.ej.data, option=orjson.OPT_INDENT_2))
                     # return self.ej.term.green('Changes saved to JSON file.')
                     return style("<green>Changes saved to JSON file.</green>", pad=1)
             except ValueError as err:

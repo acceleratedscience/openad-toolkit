@@ -1,5 +1,5 @@
 import glob
-import json
+import orjson
 import os
 import shlex
 import shutil
@@ -74,7 +74,7 @@ def get_local_service_defs(reference: str) -> list:
     for file in service_files:
         with open(file, "r") as file_handle:
             try:
-                jdoc = json.load(file_handle)
+                jdoc = orjson.loads(file_handle.read())
                 service_list.append(jdoc)
             except Exception as e:
                 output_error("invalid service json definition  " + file)
@@ -88,7 +88,7 @@ def load_service_cache() -> Dict[str, dict] | None:
     try:
         with open(os.path.join(DISPATCHER_SERVICE_PATH, "cached_service_defs.json"), "w+") as f_cached:
             logger.debug("loading service defs cache")
-            return json.load(f_cached)
+            return orjson.loads(f_cached.read())
     except Exception as e:
         # catch all. if it fails should not stop us from proceeding
         logger.error(f"could not load service defs cache: {str(e)}")
@@ -100,7 +100,7 @@ def save_service_cache(service_definitions):
     try:
         with open(os.path.join(DISPATCHER_SERVICE_PATH, "cached_service_defs.json"), "w+") as f_cached:
             logger.debug("saving cache to file")
-            json.dump(service_definitions, f_cached)
+            f_cached.write(orjson.dumps(service_definitions))
     except Exception as e:
         # catch all. if it fails should not stop us from proceeding
         logger.error(f"could not save service defs cache to file: {str(e)}")
@@ -185,7 +185,7 @@ def model_service_status(cmd_pointer, parser):
                     # Add auth information
                     config = service.get_config_as_dict(name)
                     data = params = config.get("data", {}).get("data", "{}")
-                    data = json.loads(data)
+                    data = orjson.loads(data)
                     params = data.get("params", {})
                     _, auth_group = get_case_insensitive_key(params, "auth_group")
                     _, auth_key = get_case_insensitive_key(params, "authorization")
@@ -327,7 +327,7 @@ def load_service_config(local_service_path: str) -> UserProvidedConfig:
                 spinner.stop()
                 table_data = [[key, value] for key, value in conf.items()]
                 print(tabulate(table_data, headers=["Resource", "value"], tablefmt="pretty"))
-                return UserProvidedConfig(**conf, workdir=local_service_path, data=json.dumps({}))
+                return UserProvidedConfig(**conf, workdir=local_service_path, data=orjson.dumps({}).decode())
             else:
                 spinner.warn("error with (openad.cfg). Could not load user config. Loading defaults.")
         except Exception as e:
@@ -335,7 +335,7 @@ def load_service_config(local_service_path: str) -> UserProvidedConfig:
             spinner.warn("error with (openad.cfg). Could not load user config. Loading defaults.")
             spinner.stop()
     # use default config
-    return UserProvidedConfig(workdir=local_service_path, data=json.dumps({}))
+    return UserProvidedConfig(workdir=local_service_path, data=orjson.dumps({}).decode())
 
 
 def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
@@ -351,7 +351,7 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
             logger.debug(f"user added params: {params}")
         else:
             params = {}
-        config = json.dumps(
+        config = orjson.dumps(
             {
                 "remote_service": True,
                 "remote_endpoint": endpoint,
@@ -359,7 +359,7 @@ def add_remote_service_from_endpoint(cmd_pointer, parser) -> bool:
                 "params": params,  # header values for request
             }
         )
-        service.add_service(service_name, UserProvidedConfig(data=config))
+        service.add_service(service_name, UserProvidedConfig(data=config.decode()))
     return True
 
 
@@ -683,7 +683,7 @@ def get_model_service_result(cmd_pointer, parser):
         response_result = response.json()
         try:
             if isinstance(response_result, str):
-                response_result = json.loads(response_result)
+                response_result = orjson.loads(response_result)
             if isinstance(response_result, dict):
                 if "warning" in response_result:
                     return output_warning(response_result["warning"]["reason"])

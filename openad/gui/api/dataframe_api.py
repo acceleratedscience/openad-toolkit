@@ -1,4 +1,4 @@
-import json
+import orjson
 import pandas as pd
 from IPython import get_ipython
 from flask import jsonify, request
@@ -30,7 +30,7 @@ class DataframeApi:
         Fetch the data from a dataframe referred to in a magic command.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         query = data["query"] if "query" in data else {}
 
         if self.cmd_pointer.api_variables:
@@ -71,7 +71,7 @@ class DataframeApi:
         Save changes to a datraframe referred to in a magic command.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
 
         if not cache_id:

@@ -1,4 +1,4 @@
-import json
+import orjson
 import pandas as pd
 from flask import request
 from openad.helpers.files import open_file
@@ -29,7 +29,7 @@ class ResultApi:
         Get data currently stored in result memory.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         query = data["query"] if "query" in data else {}
 
         mem_data = MEMORY.get()
@@ -72,7 +72,7 @@ class ResultApi:
         Save changes to a molset result stored in memory.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
 
         if not cache_id:

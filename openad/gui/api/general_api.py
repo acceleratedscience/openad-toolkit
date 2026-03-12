@@ -1,4 +1,4 @@
-import json
+import orjson
 import pandas
 import IPython
 from flask import Flask, jsonify, request
@@ -25,7 +25,7 @@ class GeneralApi:
     def exec_command(self):
         from openad.app.main import api_remote
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         command = data["command"] if "command" in data else ""
         # print("Parsing command:\n", command)
         response = api_remote(command)

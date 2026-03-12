@@ -3,7 +3,7 @@ Molecules API
 """
 
 import os
-import json
+import orjson
 import shutil
 from urllib.parse import unquote
 from flask import Response, request
@@ -58,7 +58,7 @@ class MoleculesApi:
         Used when requesting a molecule by its identifier.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         identifier = data["identifier"] if "identifier" in data else ""
 
         if not identifier:
@@ -84,7 +84,7 @@ class MoleculesApi:
         Used when opening a .smol.json file.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         inchi_or_smiles = data["inchi_or_smiles"] if "inchi_or_smiles" in data else None
 
         if not inchi_or_smiles:
@@ -110,7 +110,7 @@ class MoleculesApi:
         """
         Get a molecule from a molset file.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
         index = data["index"] if "index" in data else 1
 
@@ -136,7 +136,7 @@ class MoleculesApi:
         Identifier is slow because the molecule data has to be loaded from PubChem.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         smol = data["mol"] if "mol" in data else ""
 
         # Get best available identifier.
@@ -160,7 +160,7 @@ class MoleculesApi:
         Identifier is slow because the molecule data has to be loaded from PubChem.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         smol = data["mol"] if "mol" in data else ""
 
         # Remove it from the working set.
@@ -173,7 +173,7 @@ class MoleculesApi:
         Check if a molecule is stored in your molecule working set.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         smol = data["mol"] if "mol" in data else ""
 
         # Get best available identifier.
@@ -189,7 +189,7 @@ class MoleculesApi:
         Enrich a molecule with PubChem data.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         smol = data["smol"] if "smol" in data else ""
 
         # Get best available identifier.
@@ -244,7 +244,7 @@ class MoleculesApi:
         Used when requesting a macromolecule by its identifier.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         identifier = data["identifier"] if "identifier" in data else ""
 
         if not identifier:
@@ -297,7 +297,7 @@ class MoleculesApi:
         # Note: the new_file parameter is always true for now, but later on
         # when we let users add comments etc, we'll want to be able to update
         # existing files.
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         new_file = data["newFile"] if "newFile" in data else False
         force = data["force"] if "force" in data else False
         path = unquote(data["path"]) if "path" in data else None
@@ -332,8 +332,8 @@ class MoleculesApi:
             # Save as .smol.json file.
             if format_as == "mol_json":
                 # Write to file
-                with open(file_path, "w", encoding="utf-8") as f:
-                    json.dump(smol, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+                with open(file_path, "wb") as f:
+                    f.write(orjson.dumps(smol, option=orjson.OPT_INDENT_2))
 
             # Save as .sdf file.
             elif format_as == "sdf":
@@ -361,8 +361,8 @@ class MoleculesApi:
 
             # Save as .mmol.json file.
             elif format_as == "mmol_json":
-                with open(file_path, "w", encoding="utf-8") as f:
-                    json.dump(mmol, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+                with open(file_path, "wb") as f:
+                    f.write(orjson.dumps(mmol, option=orjson.OPT_INDENT_2))
 
             # Save as .cif file.
             elif format_as == "cif":
@@ -397,7 +397,7 @@ class MoleculesApi:
         Note: opening molset files is handled by fs_attach_file_data() in workers/file_system.py
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
         query = data["query"] if "query" in data else {}
 
@@ -415,7 +415,7 @@ class MoleculesApi:
         Get the list of molecules currently stored in the molecule working set.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         query = data["query"] if "query" in data else {}
 
         if len(self.cmd_pointer.molecule_list) > 0:
@@ -447,7 +447,7 @@ class MoleculesApi:
         Remove molecules from a molset's cached working copy.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
         indices = data["indices"] if "indices" in data else []
         query = data["query"] if "query" in data else {}
@@ -472,8 +472,8 @@ class MoleculesApi:
         molset = [mol for mol in molset if mol["index"] not in indices]
 
         # Write to cache
-        with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(molset, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+        with open(cache_path, "wb") as f:
+            f.write(orjson.dumps(molset, option=orjson.OPT_INDENT_2))
 
         # Create response object.
         return create_molset_response(molset, query, cache_id), 200
@@ -482,7 +482,7 @@ class MoleculesApi:
         """
         Clear a molset's cached working copy.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
 
         if not cache_id:
@@ -514,7 +514,7 @@ class MoleculesApi:
         """
         Save molset as molset.json file.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         new_file = data["newFile"] if "newFile" in data else ""
         return self._save_molset(new_file=new_file)
 
@@ -522,7 +522,7 @@ class MoleculesApi:
         """
         Save molset as .sdf file.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         remove_invalid_mols = data["removeInvalidMols"] if "removeInvalidMols" in data else ""
         new_file = data["newFile"] if "newFile" in data else ""
         return self._save_molset(new_file=new_file, format_as="sdf", remove_invalid_mols=remove_invalid_mols)
@@ -531,7 +531,7 @@ class MoleculesApi:
         """
         Save molset as .csv file.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         new_file = data["newFile"] if "newFile" in data else ""
         return self._save_molset(new_file=new_file, format_as="csv")
 
@@ -539,7 +539,7 @@ class MoleculesApi:
         """
         Save molset as .smi file.
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         new_file = data["newFile"] if "newFile" in data else ""
         return self._save_molset(new_file=new_file, format_as="smiles")
 
@@ -557,7 +557,7 @@ class MoleculesApi:
             Whether to remove invalid molecules from the molset before saving.
 
         """
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
         path = unquote(data["path"]) if "path" in data else ""
 
@@ -672,7 +672,7 @@ class MoleculesApi:
         changes to the actual molset file, or to the my-mols list.
         """
 
-        data = json.loads(request.data) if request.data else {}
+        data = orjson.loads(request.data) if request.data else {}
         cache_id = data["cacheId"] if "cacheId" in data else ""
         mol = data["mol"] if "mol" in data else ""
         context = data["context"] if "context" in data else None
@@ -695,8 +695,8 @@ class MoleculesApi:
         molset[index - 1] = mol
 
         # Write to cache.
-        with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(molset, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+        with open(cache_path, "wb") as f:
+            f.write(orjson.dumps(molset, option=orjson.OPT_INDENT_2))
 
         # Now the working copy is updated, we also update the molset.
         return self._save_molset(new_file=False, format_as=format_as)

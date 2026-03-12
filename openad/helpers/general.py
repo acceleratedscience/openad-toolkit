@@ -7,7 +7,8 @@ import getpass
 import readline
 from datetime import datetime
 from IPython.display import clear_output
-from openad.helpers.output import output_text, output_error, output_success
+# Lazy imports to avoid circular dependency with helpers/output.py
+# from openad.helpers.output import output_text, output_error, output_success
 from openad.helpers.output_msgs import msg
 from openad.plugins.style_parser import style
 
@@ -83,6 +84,7 @@ def confirm_prompt(question: str = "", default=False) -> bool:
     reply = None
     while reply not in ("y", "n"):
         try:
+            from openad.helpers.output import output_text
             output_text(f"<yellow>{question}</yellow>", return_val=False)
             reply = input("(y/n): ").casefold()
             readline.remove_history_item(readline.get_current_history_length() - 1)
@@ -105,6 +107,7 @@ def other_sessions_exist(cmd_pointer):
         pass
 
     if len(file_list) > 0:
+        from openad.helpers.output import output_error
         output_error(msg("abort_clear_sessions"), return_val=False)
         return True
     else:
@@ -116,6 +119,7 @@ def user_input(cmd_pointer, question):
     """
     Basically the same as input(), but with some extra styling and history disabled.
     """
+    from openad.helpers.output import output_text
     prompt = output_text(f"<yellow>{question}: </yellow>", return_val=True, jup_return_format="plain")
     text = input(prompt)
     return text
@@ -125,21 +129,20 @@ def user_secret(cmd_pointer, question):
     """
     Basically the same as getpass.getpass(), but with some extra styling and history disabled.
     """
+    from openad.helpers.output import output_text
     prompt = output_text(f"<yellow>{question}: </yellow>", return_val=True, jup_return_format="plain")
     text = getpass.getpass(prompt)
     return text
 
 
+# DEPRECATED: Toolkits have been replaced by plugins
 # Return list of available toolkit names.
 def get_toolkits():
-    folder_path = os.path.dirname(os.path.abspath(__file__)) + "/../user_toolkits"
-    ignore_dirs = ["__pycache__", "readme"]
-    toolkit_names = [
-        name.upper()
-        for name in os.listdir(folder_path)
-        if os.path.isdir(os.path.join(folder_path, name)) and name not in ignore_dirs
-    ]
-    return toolkit_names
+    """
+    DEPRECATED: Toolkits have been replaced by plugins.
+    This function now returns an empty list for backward compatibility.
+    """
+    return []
 
 
 # Return boolean if toolkit is installed.
@@ -204,6 +207,7 @@ def print_separator(style=None, width=None, return_val=False):
     if GLOBAL_SETTINGS["display"] == "terminal" or GLOBAL_SETTINGS["display"] is None:
         cli_width = get_print_width(full=True)
         width = cli_width if not width or cli_width < width else width
+        from openad.helpers.output import output_text
         if style:
             return output_text(f"<{style}>{'-' * width}</{style}>", nowrap=True, return_val=return_val)
         else:
@@ -249,6 +253,7 @@ def pretty_date(timestamp=None, style="log", include_time=True):
         if include_time:
             fmt += " at %H:%M"  # Jan 7, 2024 at 15:12
     else:
+        from openad.helpers.output import output_error
         output_error("Invalid style for pretty_date()")
 
     # Parse date/time string

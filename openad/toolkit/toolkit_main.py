@@ -3,13 +3,13 @@ import os
 import re
 import importlib.util
 import glob
-import json
 import logging
 
 import openad.core.grammar as grammar  # Not using "from" to avoid circular import.
 from openad.helpers.output import output_error
 from openad.helpers.output_msgs import msg
 from openad.helpers.general import load_module_from_path
+from openad.helpers.serialization import load_json
 
 # Globals
 from openad.app.global_var_lib import _meta_dir_toolkits
@@ -47,12 +47,15 @@ def load_toolkit(toolkit_name, from_repo=False, for_training=False):
         Used by grammar.py to generate the training data.
 
     """
+    # DEPRECATED: Toolkits have been replaced by plugins
+    # This function is kept for backward compatibility but will return failure
+    
     # from_repo = True  # TEMP FOR TESTING! DELETE THIS LINE!!
 
     the_toolkit = Toolkit(toolkit_name)
     if from_repo:
-        openad_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        source = openad_dir + "/user_toolkits"
+        # user_toolkits directory has been removed - toolkits are deprecated
+        return False, None
     else:
         source = _meta_dir_toolkits
 
@@ -61,8 +64,8 @@ def load_toolkit(toolkit_name, from_repo=False, for_training=False):
     snippets = snippetsModule.snippets if snippetsModule else None
 
     for i in glob.glob(f"{source}/{toolkit_name}/**/fn_*.json", recursive=True):
-        fn_file = open(i, "r", encoding="utf-8")
-        x = json.load(fn_file)
+        # Use optimized JSON loading (2-3x faster with orjson)
+        x = load_json(i)
 
         # Load description from separate file if it is external.
         if x["help"]["description"] == "":
