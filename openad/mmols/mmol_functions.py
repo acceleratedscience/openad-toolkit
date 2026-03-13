@@ -1,9 +1,12 @@
 import re
-import json
+import orjson
 import requests
 from Bio import Entrez
 from collections import OrderedDict
 from openad.helpers.general import encode_uri_component
+
+# Request timeout in seconds
+REQUEST_TIMEOUT = 30
 
 
 def mmol_from_identifier(identifier):
@@ -22,6 +25,7 @@ def mmol_from_identifier(identifier):
     """
 
     success = False
+    cif_data = None
 
     # Try fetching the mmol by its PDB ID.
     if len(identifier) == 4:
@@ -70,14 +74,28 @@ def search_fasta_sequence(fasta_string, sequence_type="protein", return_first=Tr
     }
 
     # Make search_dict URL safe
-    search_str = json.dumps(search_dict)
+    search_str = orjson.dumps(search_dict).decode('utf-8')
     search_str = search_str.replace(" ", "")
     search_str = encode_uri_component(search_str)
 
     # Search for the sequence in the PDB
     search_url = f"https://search.rcsb.org/rcsbsearch/v2/query?json={search_str}"
-    search_response = requests.get(search_url)
-    search_results = search_response.json() if search_response.status_code == 200 else {}
+    
+    try:
+        search_response = requests.get(search_url, timeout=REQUEST_TIMEOUT)
+        search_response.raise_for_status()
+        search_results = orjson.loads(search_response.content)
+    except requests.exceptions.Timeout:
+        return False, f"Request timed out after {REQUEST_TIMEOUT} seconds."
+    except requests.exceptions.ConnectionError as e:
+        return False, f"Connection error: {str(e)}"
+    except requests.exceptions.HTTPError as e:
+        status_code = getattr(e.response, 'status_code', 'unknown')
+        return False, f"HTTP error {status_code}: {str(e)}"
+    except orjson.JSONDecodeError as e:
+        return False, f"Invalid JSON response: {str(e)}"
+    except Exception as e:
+        return False, f"Unexpected error during search: {str(e)}"
 
     # Error handling
     if not search_results.get("result_set"):
@@ -110,13 +128,21 @@ def fetch_pdb_file(pdb_id, file_format="cif"):
 
     # Fetch the file data.
     pdb_url = f"https://files.rcsb.org/download/{pdb_id}.{file_format}"
-    pdb_response = requests.get(pdb_url)
-
-    if pdb_response.status_code != 200:
-        return False, "Failed to retrieve PDB data."
-
-    file_data = pdb_response.text
-    return True, file_data
+    
+    try:
+        pdb_response = requests.get(pdb_url, timeout=REQUEST_TIMEOUT)
+        pdb_response.raise_for_status()
+        file_data = pdb_response.text
+        return True, file_data
+    except requests.exceptions.Timeout:
+        return False, f"Request timed out after {REQUEST_TIMEOUT} seconds while fetching {pdb_id}."
+    except requests.exceptions.ConnectionError as e:
+        return False, f"Connection error while fetching {pdb_id}: {str(e)}"
+    except requests.exceptions.HTTPError as e:
+        status_code = getattr(e.response, 'status_code', 'unknown')
+        return False, f"HTTP error {status_code} while fetching {pdb_id}: {str(e)}"
+    except Exception as e:
+        return False, f"Unexpected error while fetching {pdb_id}: {str(e)}"
 
 
 def parse_cif_block(cif_block):
@@ -201,50 +227,3 @@ def parse_cif_block(cif_block):
     return data
 
 
-# Unused
-def ncbi_search(identifier):
-    """
-    Search the NCBI database.
-
-    Test with:
-    ncbi_search("P0A9Q1")
-
-    Currently not used.
-    """
-
-    # NCBI identification
-    # https://biopython.org/docs/latest/Tutorial/chapter_entrez.html#entrez-guidelines
-    Entrez.tool = "IBM Research - OpenAD"
-    Entrez.email = "phil.downey1@ibm.com"  # Email required by NCBI
-    # Entrez.api_key = ""  # Allows 10 queries/s instead of 3 queries/s - See https://tinyurl.com/ncbi-api-key
-
-    # Search for the protein by identifier
-    search_handle = Entrez.esearch(db="protein", term=identifier)
-    search_results = Entrez.read(search_handle)
-    search_handle.close()
-
-    if not search_results["IdList"]:
-        print("No matching protein entries found.")
-        return
-
-    # Get the first matching protein ID
-    protein_id = search_results["IdList"][0]
-
-    # Fetch the protein data
-    fetch_handle = Entrez.efetch(db="protein", id=protein_id, rettype="gb", retmode="text")
-    protein_data = fetch_handle.read()
-    fetch_handle.close()
-
-    print("protein_data", protein_data)
-
-    return protein_data
-
-
-# fmt: off
-# For testing
-if __name__ == "__main__":
-    # x, y = search_fasta_sequence("IINVKTSLKTIIKNALDKIQX") # Positive result
-    # x, y = search_fasta_sequence("MSKGEELFTTYQDKDTAGHKHYGSHQYAERVGGMPEYMFTQVTGDRCDNAQYNGVLYQWDAMKKYGGERQGIVQLKPGTFGAVK") # No results
-    # print(x, y)
-    # ncbi_search("P0A9Q1")
-    pass

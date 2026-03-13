@@ -51,6 +51,7 @@ dependencies = [
     "langchain-core>=0.3.0",
     "langsmith>=0.2.0",
     "langchain-text-splitters>=0.3.5",
+    "langchain-ollama>=0.2.0",
     "ipykernel>=6.29.0",
     "pyperclip>=1.9.0",
     "jupyter-client>=8.6.0",

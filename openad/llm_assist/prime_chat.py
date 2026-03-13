@@ -30,34 +30,6 @@ def len_func(text):
     return len(text)
 
 
-## Creds clas for Watson X disabled currently
-class my_creds:
-    "Chat credentials Object"
-
-    DEFAULT_API = "https://workbench-api.res.ibm.com/v1"
-    api_key = None
-    api_endpoint = None
-
-    def __init__(
-        self,
-        api_key: str,
-        api_endpoint: str = DEFAULT_API,
-    ):
-        """
-        Instansiate the credentials object
-
-        Args:
-            api_key (str): The GENAI API Key
-            api_endpoint (str, optional): GENAI API Endpoint. Defaults to DEFAULT_API.
-        """
-        if api_key is None:
-            raise ValueError("api_key must be provided")
-        self.api_key = api_key
-        if api_endpoint is None:
-            raise ValueError("api_endpoint must be provided")
-        self.api_endpoint = api_endpoint
-
-
 class Chatobject:
     """This is the Chat Object that is instantiated once per session"""
 
@@ -102,15 +74,15 @@ class Chatobject:
             try:
                 self.db_handle = self.load_faiss_db(refresh_vector)
                 if self.db_handle is False:
-                    raise Exception(f"the embeddings for the service {self.llm_service} could be loaded")
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                raise Exception(
-                    f"the vector db {self.db_handle} was not able to be loaded"
-                ) from e  # pylint: disable=broad-exception-raised
+                    raise RuntimeError(f"Failed to load embeddings for service {self.llm_service}")
+            except (ConnectionError, TimeoutError) as e:
+                raise ConnectionError(f"Failed to connect to embeddings service: {e}") from e
+            except (FileNotFoundError, PermissionError) as e:
+                raise RuntimeError(f"Failed to access vector database: {e}") from e
+            except Exception as e:
+                raise RuntimeError(f"Failed to load vector database: {e}") from e
         else:
-            raise Exception(
-                f"the vector db {self.db_handle} is not currently supported"
-            )  # pylint: disable=broad-exception-raised
+            raise ValueError(f"Vector database '{self.vector_db}' is not currently supported")
 
     def prime_chat_history(self, primer: str):
         """ "add the prompt tuning text primer to the chat"""
@@ -137,9 +109,15 @@ class Chatobject:
                         allow_dangerous_deserialization=True,
                     )  # pylint: disable=no-member
                 return main_db
-            except:  # pylint: disable=bare-except
-                # if datatabase not there force a refresh
-
+            except FileNotFoundError:
+                # Database not found, force a refresh
+                output_warning("FAISS index not found, creating new embeddings", return_val=False)
+                refresh = True
+            except (PermissionError, OSError) as e:
+                output_error(f"Failed to access FAISS index: {e}", return_val=False)
+                return False
+            except Exception as e:
+                output_warning(f"Failed to load existing FAISS index, creating new: {e}", return_val=False)
                 refresh = True
 
         docs = []
@@ -163,11 +141,12 @@ class Chatobject:
                                     chunk_size=3000, chunk_overlap=0, separators=[","]
                                 )
                                 # docs.extend(text_splitter.split_documents(documents))
-                            except:  # pylint: disable=bare-except
-                                # excluded_files.append(file)
-                                # Some notebook files are just not processable rather than notifying as user could have many,
-                                # we skip over ones that cannot be processed
+                            except (ValueError, RuntimeError):
+                                # Some notebook files are not processable, skip them silently
+                                # to avoid overwhelming users with many error messages
                                 pass
+                            except Exception as e:
+                                output_warning(f"Failed to process notebook {file}: {e}", return_val=False)
                     elif j == "**/*.pdf":
                         loader = DirectoryLoader(i, glob=j, loader_cls=pdf.BasePDFLoader)
                         documents = loader.load()
@@ -182,26 +161,21 @@ class Chatobject:
                             headers_to_split_on = [("#", "Header 1"), ("##", "Header 2")]
                             markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
 
-                            """text_splitter = MarkdownHeaderTextSplitter(
-                                chunk_size=2000, chunk_overlap=100, separators=["\\@"], keep_separator=False
-                            )"""
                             text_splitter = RecursiveCharacterTextSplitter(
                                 chunk_size=2000,
-                                chunk_overlap=30,  # 30,
+                                chunk_overlap=30,
                                 separators=["\\@"],
                                 length_function=len_func,
                                 keep_separator=False,
                             )
                             for doc in documents:
-                                # print("-----------------------------------------------------------")
-                                # print(doc.page_content)
                                 docs.extend(
                                     text_splitter.split_documents(markdown_splitter.split_text(doc.page_content))
                                 )
-                                # print("-----------------------------------------------------------")
+                        except (ValueError, RuntimeError) as e:
+                            output_warning(f"Failed to process markdown file: {e}", return_val=False)
                         except Exception as e:
-                            print(e)
-                        # print(2)
+                            output_warning(f"Unexpected error processing markdown: {e}", return_val=False)
                     elif j == "**/*.json":
                         loader = DirectoryLoader(
                             i,
@@ -211,9 +185,11 @@ class Chatobject:
                         )
                         try:
                             documents = loader.lazy_load()
+                            docs.extend(documents)
+                        except (ValueError, RuntimeError) as e:
+                            output_warning(f"Failed to process JSON file: {e}", return_val=False)
                         except Exception as e:
-                            print(e)
-                        docs.extend(documents)
+                            output_warning(f"Unexpected error processing JSON: {e}", return_val=False)
                     elif j == "**/*.cdoc":
                         loader = DirectoryLoader(i, glob=j, loader_cls=TextLoader)
                         documents = loader.load()
@@ -233,8 +209,14 @@ class Chatobject:
 
             main_db.save_local(os.path.expanduser(self.db_dir + "/faiss_index"))
 
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            output_error("Error in creating vector database " + str(e), return_val=False)
+        except (ConnectionError, TimeoutError) as e:
+            output_error(f"Failed to connect to embeddings service: {e}", return_val=False)
+            return False
+        except (OSError, PermissionError) as e:
+            output_error(f"Failed to save vector database: {e}", return_val=False)
+            return False
+        except Exception as e:
+            output_error(f"Unexpected error creating vector database: {e}", return_val=False)
             return False
         return main_db
 
@@ -268,16 +250,21 @@ class Chatobject:
 
             try:
                 result = chain.invoke(question)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                return output_error("Unable to Execute Request: " + str(e), return_val=True)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            return output_error("Failed Querying LLM " + str(e), return_val=True)
+            except (ConnectionError, TimeoutError) as e:
+                return output_error(f"Failed to connect to LLM service: {e}", return_val=True)
+            except Exception as e:
+                return output_error(f"Unable to execute LLM request: {e}", return_val=True)
+        except (ConnectionError, TimeoutError) as e:
+            return output_error(f"Failed to connect to LLM service: {e}", return_val=True)
+        except Exception as e:
+            return output_error(f"Failed querying LLM: {e}", return_val=True)
         try:
             # self.chat_history.append((question, result["answer"]))
             if len(self.chat_history) > 3:
                 try:
                     self.chat_history.remove(2)
-                except Exception:  # pylint: disable=broad-exception-caught
+                except (IndexError, ValueError):
+                    # Chat history manipulation failed, not critical
                     pass
             if self.llm_service == "BAM":
                 result = result.split("Answer:")[-1].strip()

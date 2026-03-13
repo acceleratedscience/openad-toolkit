@@ -9,6 +9,44 @@ from openad.llm_assist.prime_chat import Chatobject
 
 from openad.helpers.output import output_text, output_error, output_warning, output_success
 
+# Compile regex patterns once at module level for performance
+_REGEX_PATTERNS = {
+    'python_block': re.compile(r'```python\n'),
+    'markdown_block': re.compile(r'```markdown\n'),
+    'markdown_inline': re.compile(r'`markdown\n'),
+    'python_inline': re.compile(r'`python\n'),
+    'plaintext_block': re.compile(r'```plaintext\n'),
+    'plaintext_inline': re.compile(r'`plaintext\n'),
+    'python_block_no_newline': re.compile(r'```python'),
+    'markdown_block_no_newline': re.compile(r'```markdown'),
+    'markdown_inline_no_newline': re.compile(r'`markdown'),
+    'python_inline_no_newline': re.compile(r'`python'),
+    'plaintext_block_no_newline': re.compile(r'```plaintext'),
+    'plaintext_inline_no_newline': re.compile(r'`plaintext'),
+    'triple_backtick_newline': re.compile(r'```\n'),
+    'triple_backtick_end': re.compile(r'\n```'),
+    'openad_magic_1': re.compile(r'```\n[\s]+%openad '),
+    'openad_magic_2': re.compile(r'```\n%openad '),
+    'openad_magic_3': re.compile(r'```[\s]+%openad '),
+    'openad_magic_4': re.compile(r'`[\n\r\s]+%openad '),
+    'openad_magic_5': re.compile(r'`%openad '),
+    'openad_magic_6': re.compile(r'`[\s]+%openad (.*?)\n'),
+    'openad_magic_7': re.compile(r'`[\s]+%openad (.*?)'),
+    'openad_magic_8': re.compile(r'[\s]+%openad'),
+    'code_block': re.compile(r'```([a-z]*[\s\S]*?)```'),
+    'code_block_complex': re.compile(r'```(\n*?)(\s*?)(%*?)([a-z]\n*[\s\S]*?)(\n*?)(\s*?)```'),
+    'single_quote': re.compile(r"\\'([a-z]*[\s\S]*?)\\'"),
+    'inline_code': re.compile(r'`([a-z]*[\s\S]*?)`'),
+    'inline_code_complex': re.compile(r'`(\n*?)(\s*?)(%*?)([a-z]\n*[\s\S]*?)(\n*?)(\s*?)`'),
+    'h3_with_end': re.compile(r'### (.*?) ###'),
+    'h3': re.compile(r'### (.*?)\n'),
+    'h2_with_end': re.compile(r'## (.*?) ##'),
+    'h2': re.compile(r'## (.*?)\n'),
+    'h1': re.compile(r'# (.*?)\n'),
+    'bold_triple': re.compile(r'\*\*\*(.*?)\*\*\*'),
+    'bold_double': re.compile(r'\*\*(.*?)\*\*'),
+}
+
 
 from openad.app.global_var_lib import _repo_dir
 from openad.app.global_var_lib import _meta_dir
@@ -25,12 +63,7 @@ PROMPT_DIR = "~/.chat_embedded"
 STANDARD_FILE_TYPES_EMBED = ["*.txt", "*.ipynb", "*.run", "*.cdoc", "*.pdf", "*.json", "*.md"]
 EXTENDED_FILE_TYPES_EMBED = ["**/*.txt", "**/*.ipynb", "**/*.run", "**/*.cdoc", "**/*.pdf", "**/*.json", "**/*.md"]
 NOTEBOOKS_DIR = "/../notebooks"
-DEFAULT_SOURCES_LIST = []  #
-# CHAT_PRIMER_old = """  In formatting the answer use markdown formatting syntax to highlight \
-#      instances of commands, Parameters, Examples, Command Options and Command Clauses. Here is a correct version of a example code \
-#       ``` search collection 'pubchem' for 'Ibuprofen' show (data)  ```. \
-#       Only format one line at a time. No "\n" characters in codeblocks. Do not mention formatting in response. Always format the response.
-#         Tell me """
+DEFAULT_SOURCES_LIST = []
 CHAT_PRIMER = """  In answering the following
             - Answer like a technical helpful writer
             -Explain what any requested commands do
@@ -60,10 +93,14 @@ def create_train_repo(
             os.mkdir(os.path.expanduser(location_for_documents))
         for file in glob.glob(os.path.expanduser(location_for_documents) + "/*"):
             os.remove(file)
-    # catch any error that may be caused by OS in creating document localtion
-    except Exception as err:  # pylint: disable=broad-exception-caught
+    except (OSError, PermissionError) as err:
         output_error(
-            f"unable to create training repository directory {location_for_documents}" + str(err), return_val=False
+            f"Unable to create training repository directory {location_for_documents}: {err}", return_val=False
+        )
+        return False
+    except Exception as err:
+        output_error(
+            f"Unexpected error creating training repository: {err}", return_val=False
         )
         return False
 
@@ -104,19 +141,32 @@ def how_do_i(cmd_pointer, parser):
             )
             if cmd_pointer.llm_handle is False:
                 return False
-        except BaseException as e:  # pylint: disable=broad-exception-caught
-            output_error("Problem Connecting to LLM: " + str(e), return_val=False)
-            return False  # if there any other error in calling LLM handle e.g. network , loss of connection etc.
+        except (ConnectionError, TimeoutError) as e:
+            output_error(f"Problem connecting to LLM service: {e}", return_val=False)
+            return False
+        except (KeyError, ValueError) as e:
+            output_error(f"Invalid LLM configuration: {e}", return_val=False)
+            return False
+        except Exception as e:
+            output_error(f"Unexpected error initializing LLM: {e}", return_val=False)
+            return False
 
         cmd_pointer.refresh_vector = False
         cmd_pointer.settings["env_vars"]["refresh_help_ai"] = False
-        # This puts Hostroy content that is instructional to the prompt on how to behave
+        # This puts History content that is instructional to the prompt on how to behave
         try:
             cmd_pointer.llm_handle.prime_chat_history(CHAT_HISTORY_PRIMER)
-        except:
-            #
+        except (ConnectionError, TimeoutError) as e:
             output_text(
-                "Unable to Execute request. check LLM credentials and or Connectivity",
+                f"Unable to execute request. Check LLM credentials and connectivity: {e}",
+                return_val=False,
+                pad=1,
+                edge=True,
+            )
+            return False
+        except Exception as e:
+            output_text(
+                f"Unexpected error priming chat history: {e}",
                 return_val=False,
                 pad=1,
                 edge=True,
@@ -131,12 +181,20 @@ def how_do_i(cmd_pointer, parser):
     # Now we are asking the prompt a Question
 
     try:
-        # text = cmd_pointer.llm_handle.how_to_search(CHAT_PRIMER + " ".join(parser["Chat_String"]) + CHAT_PRIMER_SUFFIX)
         text = cmd_pointer.llm_handle.how_to_search(CHAT_PRIMER + " ".join(parser["Chat_String"]))
+    except (ConnectionError, TimeoutError) as e:
+        spinner.fail("Running Request Failed")
+        output_text(
+            f"Unable to execute request. Check LLM credentials and connectivity: {e}",
+            return_val=False,
+            pad=1,
+            edge=True,
+        )
+        return False
     except Exception as e:
         spinner.fail("Running Request Failed")
         output_text(
-            "Unable to Execute request. check LLM credentials and or Connectivity",
+            f"Unexpected error executing LLM request: {e}",
             return_val=False,
             pad=1,
             edge=True,

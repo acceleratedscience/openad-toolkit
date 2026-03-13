@@ -4,10 +4,8 @@ import platform
 import os
 from openad.helpers.output import output_error
 
-
-# from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.chat_models import ChatOllama
+# Modern Langchain imports (replaces deprecated langchain_community)
+from langchain_ollama import OllamaEmbeddings, ChatOllama
 
 
 # Determine in the sentence transformer embbedings model is installed
@@ -80,15 +78,16 @@ def get_tell_me_model(service: str, api_key: str):
     if service == "OLLAMA":
         try:
             model = ChatOllama(model=SUPPORTED_TELL_ME_MODELS_SETTINGS[service]["model"], base_url=OLLAMA_HOST)
-
             return model, SUPPORTED_TELL_ME_MODELS_SETTINGS[service]["template"]
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            output_error("Error Loading  Model see error Messsage : \n" + e, return_val=False)
+        except (ConnectionError, TimeoutError) as e:
+            output_error(f"Failed to connect to Ollama service at {OLLAMA_HOST}: {e}", return_val=False)
             return None, None
-    elif service == "BAM":
-        # This is No Longer supported
-
-        return None, None
+        except (KeyError, ValueError) as e:
+            output_error(f"Invalid Ollama configuration: {e}", return_val=False)
+            return None, None
+        except Exception as e:
+            output_error(f"Unexpected error loading Ollama model: {e}", return_val=False)
+            return None, None
 
 
 def get_embeddings_model(service: str, api_key: str):
@@ -99,14 +98,18 @@ def get_embeddings_model(service: str, api_key: str):
             embeddings = OllamaEmbeddings(
                 model=SUPPORTED_TELL_ME_MODELS_SETTINGS[service]["embeddings_model"],
                 base_url=OLLAMA_HOST,
-                model_kwargs={"truncation": True},
             )
+        except (ConnectionError, TimeoutError) as e:
+            raise ConnectionError(
+                f"Failed to connect to Ollama embeddings service at {OLLAMA_HOST}: {e}"
+            ) from e
+        except (KeyError, ValueError) as e:
+            raise ValueError(
+                f"Invalid Ollama embeddings configuration: {e}"
+            ) from e
         except Exception as e:
-            raise Exception(
-                "Error: cannot initialise embeddings, check API Key"
-            ) from e  # pylint: disable=broad-exception-raised
-    elif service == "BAM":
-        # BAM Not supported
-        return None
+            raise RuntimeError(
+                f"Unexpected error initializing Ollama embeddings: {e}"
+            ) from e
 
     return embeddings
