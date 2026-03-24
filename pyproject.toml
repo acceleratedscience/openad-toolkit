@@ -1,6 +1,6 @@
 [project]
 name = "openad"
-version = "0.7.5.2"
+version = "0.9.0"
 description = "Open Accelerated Discovery"
 authors = [
     {name = "Phil Downey", email = "phil.downey1@ibm.com"}
